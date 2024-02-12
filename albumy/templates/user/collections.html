@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+{% from 'macros.html' import photo_card %}
+
+{% block title %}{{ user.name }}'s collection{% endblock %}
+
+{% block content %}
+    {% include 'user/_header.html' %}
+    <div class="row">
+        <div class="col-md-12">
+            {% if user.public_collections or current_user == user %}
+                {% if collects %}
+                    {% for collect in collects %}
+                        {{ photo_card(collect.collected) }}
+                    {% endfor %}
+                {% else %}
+                    <div class="tip">
+                        <h3>No collection.</h3>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="tip">
+                    <h3>This user's collections was private.</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% if collects %}
+        <div class="page-footer">
+            {{ render_pagination(pagination, align='center') }}
+        </div>
+    {% endif %}
+{% endblock %}
