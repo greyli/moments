@@ -1,7 +1,7 @@
 from flask import url_for
 
-from albumy.extensions import db
-from albumy.models import User, Role, Tag
+from moments.core.extensions import db
+from moments.models import User, Role, Tag
 from tests.base import BaseTestCase
 
 
@@ -14,20 +14,20 @@ class AdminTestCase(BaseTestCase):
     def test_index_page(self):
         response = self.client.get(url_for('admin.index'))
         data = response.get_data(as_text=True)
-        self.assertIn('Albumy Dashboard', data)
+        self.assertIn('Moments Dashboard', data)
 
     def test_bad_permission(self):
         self.logout()
         response = self.client.get(url_for('admin.index'), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Please log in to access this page.', data)
-        self.assertNotIn('Albumy Dashboard', data)
+        self.assertNotIn('Moments Dashboard', data)
 
         self.login()  # normal user, without MODERATOR permission
         response = self.client.get(url_for('admin.index'))
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 403)
-        self.assertNotIn('Albumy Dashboard', data)
+        self.assertNotIn('Moments Dashboard', data)
 
     def test_edit_profile_admin(self):
         role_id = Role.query.filter_by(name='Locked').first().id

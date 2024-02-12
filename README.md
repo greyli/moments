@@ -1,19 +1,19 @@
-# Albumy
+# Moments
 
 *Capture and share every wonderful moment.*
 
-> Example application for *[Python Web Development with Flask](https://helloflask.com/en/book/1)* (《[Flask Web 开发实战](https://helloflask.com/book/1)》).
+> Example application for *[Python Web Development with Flask](https://helloflask.com/en/book/1)* (《[Flask Web 开发实战](https://helloflask.com/book/4)》).
 
-Demo: http://albumy.helloflask.com
+<!-- Demo: http://moments.helloflask.com
 
-![Screenshot](https://helloflask.com/screenshots/albumy.png)
+![Screenshot](https://helloflask.com/screenshots/moments.png) -->
 
 ## Installation
 
 clone:
 ```
-$ git clone https://github.com/greyli/albumy.git
-$ cd albumy
+$ git clone https://github.com/greyli/moments.git
+$ cd moments
 ```
 create & activate virtual env then install dependency:
 

@@ -1,5 +1,5 @@
-from albumy.extensions import db
-from albumy.models import Comment, Role, User, Photo, Tag
+from moments.core.extensions import db
+from moments.models import Comment, Role, User, Photo, Tag
 from tests.base import BaseTestCase
 
 

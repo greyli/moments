@@ -111,5 +111,7 @@ uploads/*
 !uploads/avatars
 uploads/avatars/*
 !uploads/avatars/.gitkeep
+logs/*
+!logs/.gitkeep
 
 whooshee

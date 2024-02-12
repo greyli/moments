@@ -1,7 +1,7 @@
 from flask import url_for
 
-from albumy.extensions import db
-from albumy.models import User, Photo, Comment, Notification, Tag
+from moments.core.extensions import db
+from moments.models import User, Photo, Comment, Notification, Tag
 from tests.base import BaseTestCase
 
 

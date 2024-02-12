@@ -1,8 +1,8 @@
 from flask import url_for
 
-from albumy.models import User
-from albumy.settings import Operations
-from albumy.utils import generate_token
+from moments.models import User
+from moments.settings import Operations
+from moments.utils import generate_token
 from tests.base import BaseTestCase
 
 
