@@ -6,7 +6,6 @@ from flask_avatars import Identicon
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, DateTime, event
-from sqlalchemy.orm import relationship
 
 from moments.core.extensions import db, whooshee
 
@@ -20,14 +19,14 @@ roles_permissions = db.Table('roles_permissions',
 class Permission(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(30), unique=True)
-    roles = relationship('Role', secondary=roles_permissions, back_populates='permissions')
+    roles = db.relationship('Role', secondary=roles_permissions, back_populates='permissions')
 
 
 class Role(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(30), unique=True)
-    users = relationship('User', back_populates='role')
-    permissions = relationship('Permission', secondary=roles_permissions, back_populates='roles')
+    users = db.relationship('User', back_populates='role')
+    permissions = db.relationship('Permission', secondary=roles_permissions, back_populates='roles')
 
     @staticmethod
     def init_role():
@@ -61,8 +60,8 @@ class Follow(db.Model):
                             primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-    follower = relationship('User', foreign_keys=[follower_id], back_populates='following', lazy='joined')
-    followed = relationship('User', foreign_keys=[followed_id], back_populates='followers', lazy='joined')
+    follower = db.relationship('User', foreign_keys=[follower_id], back_populates='following', lazy='joined')
+    followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers', lazy='joined')
 
 
 # relationship object
@@ -73,8 +72,8 @@ class Collect(db.Model):
                              primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-    collector = relationship('User', back_populates='collections', lazy='joined')
-    collected = relationship('Photo', back_populates='collectors', lazy='joined')
+    collector = db.relationship('User', back_populates='collections', lazy='joined')
+    collected = db.relationship('Photo', back_populates='collectors', lazy='joined')
 
 
 @whooshee.register_model('name', 'username')
@@ -104,14 +103,14 @@ class User(db.Model, UserMixin):
 
     role_id = Column(Integer, ForeignKey('role.id'))
 
-    role = relationship('Role', back_populates='users')
-    photos = relationship('Photo', back_populates='author', cascade='all')
-    comments = relationship('Comment', back_populates='author', cascade='all')
-    notifications = relationship('Notification', back_populates='receiver', cascade='all')
-    collections = relationship('Collect', back_populates='collector', cascade='all')
-    following = relationship('Follow', foreign_keys=[Follow.follower_id], back_populates='follower',
+    role = db.relationship('Role', back_populates='users')
+    photos = db.relationship('Photo', back_populates='author', cascade='all')
+    comments = db.relationship('Comment', back_populates='author', cascade='all')
+    notifications = db.relationship('Notification', back_populates='receiver', cascade='all')
+    collections = db.relationship('Collect', back_populates='collector', cascade='all')
+    following = db.relationship('Follow', foreign_keys=[Follow.follower_id], back_populates='follower',
                                 lazy='dynamic', cascade='all')
-    followers = relationship('Follow', foreign_keys=[Follow.followed_id], back_populates='followed',
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id], back_populates='followed',
                                 lazy='dynamic', cascade='all')
 
     def __init__(self, **kwargs):
@@ -230,10 +229,10 @@ class Photo(db.Model):
     flag = Column(Integer, default=0)
     author_id = Column(Integer, ForeignKey('user.id'))
 
-    author = relationship('User', back_populates='photos')
-    comments = relationship('Comment', back_populates='photo', cascade='all')
-    collectors = relationship('Collect', back_populates='collected', cascade='all')
-    tags = relationship('Tag', secondary=tagging, back_populates='photos')
+    author = db.relationship('User', back_populates='photos')
+    comments = db.relationship('Comment', back_populates='photo', cascade='all')
+    collectors = db.relationship('Collect', back_populates='collected', cascade='all')
+    tags = db.relationship('Tag', secondary=tagging, back_populates='photos')
 
 
 @whooshee.register_model('name')
@@ -241,7 +240,7 @@ class Tag(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(64), index=True, unique=True)
 
-    photos = relationship('Photo', secondary=tagging, back_populates='tags')
+    photos = db.relationship('Photo', secondary=tagging, back_populates='tags')
 
 
 class Comment(db.Model):
@@ -254,10 +253,10 @@ class Comment(db.Model):
     author_id = Column(Integer, ForeignKey('user.id'))
     photo_id = Column(Integer, ForeignKey('photo.id'))
 
-    photo = relationship('Photo', back_populates='comments')
-    author = relationship('User', back_populates='comments')
-    replies = relationship('Comment', back_populates='replied', cascade='all')
-    replied = relationship('Comment', back_populates='replies', remote_side=[id])
+    photo = db.relationship('Photo', back_populates='comments')
+    author = db.relationship('User', back_populates='comments')
+    replies = db.relationship('Comment', back_populates='replied', cascade='all')
+    replied = db.relationship('Comment', back_populates='replies', remote_side=[id])
 
 
 class Notification(db.Model):
@@ -268,7 +267,7 @@ class Notification(db.Model):
 
     receiver_id = Column(Integer, ForeignKey('user.id'))
 
-    receiver = relationship('User', back_populates='notifications')
+    receiver = db.relationship('User', back_populates='notifications')
 
 
 @event.listens_for(User, 'after_delete', named=True)

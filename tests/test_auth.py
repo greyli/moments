@@ -1,9 +1,7 @@
-from flask import url_for
-
 from moments.models import User
 from moments.settings import Operations
 from moments.utils import generate_token
-from tests.base import BaseTestCase
+from tests import BaseTestCase
 
 
 class AuthTestCase(BaseTestCase):
@@ -15,7 +13,7 @@ class AuthTestCase(BaseTestCase):
 
     def test_login_locked_user(self):
         self.login(email='locked@helloflask.com', password='123')
-        response = self.client.get(url_for('user.index', username='locked'))
+        response = self.client.get('/user/locked')
         data = response.get_data(as_text=True)
         self.assertIn('Your account is locked.', data)
 
@@ -36,23 +34,23 @@ class AuthTestCase(BaseTestCase):
         self.assertIn('Logout success.', data)
 
     def test_login_protect(self):
-        response = self.client.get(url_for('main.upload'), follow_redirects=True)
+        response = self.client.get('/upload', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Please log in to access this page.', data)
 
     def test_unconfirmed_user_permission(self):
         self.login(email='unconfirmed@helloflask.com', password='123')
-        response = self.client.get(url_for('main.upload'), follow_redirects=True)
+        response = self.client.get('/upload', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Please confirm your account first.', data)
 
     def test_locked_user_permission(self):
         self.login(email='locked@helloflask.com', password='123')
-        response = self.client.get(url_for('main.upload'), follow_redirects=True)
+        response = self.client.get('/upload', follow_redirects=True)
         self.assertEqual(response.status_code, 403)
 
     def test_register_account(self):
-        response = self.client.post(url_for('auth.register'), data=dict(
+        response = self.client.post('/auth/register', data=dict(
             name='Grey Li',
             email='test@helloflask.com',
             username='test',
@@ -67,20 +65,20 @@ class AuthTestCase(BaseTestCase):
         self.assertFalse(user.confirmed)
         token = generate_token(user=user, operation='confirm')
         self.login(email='unconfirmed@helloflask.com', password='123')
-        response = self.client.get(url_for('auth.confirm', token=token), follow_redirects=True)
+        response = self.client.get(f'/auth/confirm/{str(token, "utf-8")}', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Account confirmed.', data)
         self.assertTrue(user.confirmed)
 
     def test_bad_confirm_token(self):
         self.login(email='unconfirmed@helloflask.com', password='123')
-        response = self.client.get(url_for('auth.confirm', token='bad token'), follow_redirects=True)
+        response = self.client.get(f'/auth/confirm/bad-token', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Invalid or expired token.', data)
         self.assertNotIn('Account confirmed.', data)
 
     def test_reset_password(self):
-        response = self.client.post(url_for('auth.forget_password'), data=dict(
+        response = self.client.post('/auth/forget-password', data=dict(
             email='normal@helloflask.com',
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -89,7 +87,7 @@ class AuthTestCase(BaseTestCase):
         self.assertTrue(user.validate_password('123'))
 
         token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
-        response = self.client.post(url_for('auth.reset_password', token=token), data=dict(
+        response = self.client.post(f'/auth/reset-password/{str(token, "utf-8")}', data=dict(
             email='normal@helloflask.com',
             password='new-password',
             password2='new-password'
@@ -100,7 +98,7 @@ class AuthTestCase(BaseTestCase):
         self.assertFalse(user.validate_password('123'))
 
         # bad token
-        response = self.client.post(url_for('auth.reset_password', token='bad token'), data=dict(
+        response = self.client.post('/auth/reset-password/bad-token', data=dict(
             email='normal@helloflask.com',
             password='new-password',
             password2='new-password'

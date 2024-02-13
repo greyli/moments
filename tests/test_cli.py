@@ -1,6 +1,6 @@
 from moments.core.extensions import db
 from moments.models import Comment, Role, User, Photo, Tag
-from tests.base import BaseTestCase
+from tests import BaseTestCase
 
 
 class CLITestCase(BaseTestCase):
@@ -10,16 +10,16 @@ class CLITestCase(BaseTestCase):
         db.drop_all()
 
     def test_initdb_command(self):
-        result = self.runner.invoke(args=['initdb'])
+        result = self.cli_runner.invoke(args=['initdb'])
         self.assertIn('Initialized database.', result.output)
 
     def test_initdb_command_with_drop(self):
-        result = self.runner.invoke(args=['initdb', '--drop'], input='y\n')
+        result = self.cli_runner.invoke(args=['initdb', '--drop'], input='y\n')
         self.assertIn('This operation will delete the database, do you want to continue?', result.output)
         self.assertIn('Drop tables.', result.output)
 
     def test_init_command(self):
-        result = self.runner.invoke(args=['init'])
+        result = self.cli_runner.invoke(args=['init'])
         self.assertIn('Initializing the database...', result.output)
         self.assertIn('Initializing the roles and permissions...', result.output)
         self.assertIn('Done.', result.output)
@@ -29,7 +29,7 @@ class CLITestCase(BaseTestCase):
         pass  # it will take too long time
 
     def test_forge_command_with_count(self):
-        result = self.runner.invoke(args=['forge', '--user', '5', '--follow', '10',
+        result = self.cli_runner.invoke(args=['forge', '--user', '5', '--follow', '10',
                                           '--photo', '10', '--tag', '10', '--collect', '10',
                                           '--comment', '10'])
 

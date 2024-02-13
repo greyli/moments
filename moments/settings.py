@@ -60,7 +60,7 @@ class BaseConfig:
     DROPZONE_ENABLE_CSRF = True
 
     WHOOSHEE_MIN_STRING_LEN = 1
-
+    MOMENTS_SLOW_QUERY_THRESHOLD = 1
 
 class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = \

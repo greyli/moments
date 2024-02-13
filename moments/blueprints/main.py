@@ -74,7 +74,7 @@ def show_notifications():
     return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
 
 
-@main_bp.route('/notification/read/<int:notification_id>', methods=['POST'])
+@main_bp.route('/notifications/read/<int:notification_id>', methods=['POST'])
 @login_required
 def read_notification(notification_id):
     notification = Notification.query.get_or_404(notification_id)

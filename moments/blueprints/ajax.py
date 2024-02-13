@@ -29,7 +29,7 @@ def followers_count(user_id):
     return jsonify(count=count)
 
 
-@ajax_bp.route('/<int:photo_id>/followers-count')
+@ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     count = len(photo.collectors)

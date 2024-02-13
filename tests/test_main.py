@@ -2,43 +2,43 @@ from flask import url_for
 
 from moments.core.extensions import db
 from moments.models import User, Photo, Comment, Notification, Tag
-from tests.base import BaseTestCase
+from tests import BaseTestCase
 
 
 class MainTestCase(BaseTestCase):
 
     def test_index_page(self):
-        response = self.client.get(url_for('main.index'))
+        response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('Join Now', data)
 
         self.login()
-        response = self.client.get(url_for('main.index'))
+        response = self.client.get('/index')
         data = response.get_data(as_text=True)
         self.assertNotIn('Join Now', data)
         self.assertIn('My Home', data)
 
     def test_explore_page(self):
-        response = self.client.get(url_for('main.explore'))
+        response = self.client.get('/explore')
         data = response.get_data(as_text=True)
         self.assertIn('Change', data)
 
     def test_search(self):
-        response = self.client.get(url_for('main.search', q=''), follow_redirects=True)
+        response = self.client.get('/search?q=', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Enter keyword about photo, user or tag.', data)
 
-        response = self.client.get(url_for('main.search', q='normal'))
+        response = self.client.get('/search?q=normal')
         data = response.get_data(as_text=True)
         self.assertNotIn('Enter keyword about photo, user or tag.', data)
         self.assertIn('No results.', data)
 
-        response = self.client.get(url_for('main.search', q='normal', category='tag'))
+        response = self.client.get('/search?q=normal&category=tag')
         data = response.get_data(as_text=True)
         self.assertNotIn('Enter keyword about photo, user or tag.', data)
         self.assertIn('No results.', data)
 
-        response = self.client.get(url_for('main.search', q='normal', category='user'))
+        response = self.client.get('/search?q=normal&category=user')
         data = response.get_data(as_text=True)
         self.assertNotIn('Enter keyword about photo, user or tag.', data)
         self.assertNotIn('No results.', data)
@@ -52,12 +52,12 @@ class MainTestCase(BaseTestCase):
         db.session.commit()
 
         self.login()
-        response = self.client.get(url_for('main.show_notifications'))
+        response = self.client.get('/notifications')
         data = response.get_data(as_text=True)
         self.assertIn('test 1', data)
         self.assertIn('test 2', data)
 
-        response = self.client.get(url_for('main.show_notifications', filter='unread'))
+        response = self.client.get('/notifications?filter=unread')
         data = response.get_data(as_text=True)
         self.assertNotIn('test 1', data)
         self.assertIn('test 2', data)
@@ -70,13 +70,13 @@ class MainTestCase(BaseTestCase):
         db.session.commit()
 
         self.login(email='admin@helloflask.com', password='123')
-        response = self.client.post(url_for('main.read_notification', notification_id=1))
+        response = self.client.post('/notifications/read/1')
         self.assertEqual(response.status_code, 403)
 
         self.logout()
         self.login()
 
-        response = self.client.post(url_for('main.read_notification', notification_id=1), follow_redirects=True)
+        response = self.client.post('/notifications/read/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Notification archived.', data)
 
@@ -91,7 +91,7 @@ class MainTestCase(BaseTestCase):
 
         self.login()
 
-        response = self.client.post(url_for('main.read_all_notification'), follow_redirects=True)
+        response = self.client.post('/notifications/read/all', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('All notifications archived.', data)
 
@@ -99,14 +99,14 @@ class MainTestCase(BaseTestCase):
         self.assertTrue(Notification.query.get(2).is_read)
 
     def test_show_photo(self):
-        response = self.client.get(url_for('main.show_photo', photo_id=1), follow_redirects=True)
+        response = self.client.get('/photo/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertNotIn('Delete', data)
         self.assertIn('test tag', data)
         self.assertIn('test comment body', data)
 
         self.login(email='admin@helloflask.com', password='123')
-        response = self.client.get(url_for('main.show_photo', photo_id=1), follow_redirects=True)
+        response = self.client.get('/photo/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Delete', data)
 
@@ -121,19 +121,19 @@ class MainTestCase(BaseTestCase):
         db.session.add_all([photo2, photo3, photo4])
         db.session.commit()
 
-        response = self.client.get(url_for('main.photo_next', photo_id=5), follow_redirects=True)
+        response = self.client.get('/photo/n/5', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 3', data)
 
-        response = self.client.get(url_for('main.photo_next', photo_id=4), follow_redirects=True)
+        response = self.client.get('/photo/n/4', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 2', data)
 
-        response = self.client.get(url_for('main.photo_next', photo_id=3), follow_redirects=True)
+        response = self.client.get('/photo/n/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 1', data)
 
-        response = self.client.get(url_for('main.photo_next', photo_id=1), follow_redirects=True)
+        response = self.client.get('/photo/n/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('This is already the last one.', data)
 
@@ -148,19 +148,19 @@ class MainTestCase(BaseTestCase):
         db.session.add_all([photo2, photo3, photo4])
         db.session.commit()
 
-        response = self.client.get(url_for('main.photo_previous', photo_id=1), follow_redirects=True)
+        response = self.client.get('/photo/p/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 2', data)
 
-        response = self.client.get(url_for('main.photo_previous', photo_id=3), follow_redirects=True)
+        response = self.client.get('/photo/p/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 3', data)
 
-        response = self.client.get(url_for('main.photo_previous', photo_id=4), follow_redirects=True)
+        response = self.client.get('/photo/p/4', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo 4', data)
 
-        response = self.client.get(url_for('main.photo_previous', photo_id=5), follow_redirects=True)
+        response = self.client.get('/photo/p/5', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('This is already the first one.', data)
 
@@ -172,25 +172,25 @@ class MainTestCase(BaseTestCase):
         self.assertEqual(Photo.query.get(3).collectors, [])
 
         self.login()
-        response = self.client.post(url_for('main.collect', photo_id=3), follow_redirects=True)
+        response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo collected.', data)
 
         self.assertEqual(Photo.query.get(3).collectors[0].collector.name, 'Normal User')
 
-        response = self.client.post(url_for('main.collect', photo_id=3), follow_redirects=True)
+        response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Already collected.', data)
 
     def test_uncollect(self):
         self.login()
-        self.client.post(url_for('main.collect', photo_id=1), follow_redirects=True)
+        self.client.post('/collect/1', follow_redirects=True)
 
-        response = self.client.post(url_for('main.uncollect', photo_id=1), follow_redirects=True)
+        response = self.client.post('/uncollect/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo uncollected.', data)
 
-        response = self.client.post(url_for('main.uncollect', photo_id=1), follow_redirects=True)
+        response = self.client.post('/uncollect/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Not collect yet.', data)
 
@@ -198,7 +198,7 @@ class MainTestCase(BaseTestCase):
         self.assertEqual(Comment.query.get(1).flag, 0)
 
         self.login()
-        response = self.client.post(url_for('main.report_comment', comment_id=1), follow_redirects=True)
+        response = self.client.post('/report/comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment reported.', data)
         self.assertEqual(Comment.query.get(1).flag, 1)
@@ -207,7 +207,7 @@ class MainTestCase(BaseTestCase):
         self.assertEqual(Photo.query.get(1).flag, 0)
 
         self.login()
-        response = self.client.post(url_for('main.report_photo', photo_id=1), follow_redirects=True)
+        response = self.client.post('/report/photo/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo reported.', data)
         self.assertEqual(Photo.query.get(1).flag, 1)
@@ -215,7 +215,7 @@ class MainTestCase(BaseTestCase):
     def test_show_collectors(self):
         user = User.query.get(2)
         user.collect(Photo.query.get(1))
-        response = self.client.get(url_for('main.show_collectors', photo_id=1), follow_redirects=True)
+        response = self.client.get('/photo/1/collectors', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('1 Collectors', data)
         self.assertIn('Normal User', data)
@@ -224,7 +224,7 @@ class MainTestCase(BaseTestCase):
         self.assertEqual(Photo.query.get(2).description, 'Photo 2')
 
         self.login()
-        response = self.client.post(url_for('main.edit_description', photo_id=2), data=dict(
+        response = self.client.post('/photo/2/description', data=dict(
             description='test description.'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -233,7 +233,7 @@ class MainTestCase(BaseTestCase):
 
     def test_new_comment(self):
         self.login()
-        response = self.client.post(url_for('main.new_comment', photo_id=1), data=dict(
+        response = self.client.post('/photo/1/comment/new', data=dict(
             body='test comment from normal user.'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -243,7 +243,7 @@ class MainTestCase(BaseTestCase):
     def test_new_tag(self):
         self.login(email='admin@helloflask.com', password='123')
 
-        response = self.client.post(url_for('main.new_tag', photo_id=1), data=dict(
+        response = self.client.post('/photo/1/tag/new', data=dict(
             tag='hello dog pet happy'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -256,18 +256,18 @@ class MainTestCase(BaseTestCase):
 
     def test_set_comment(self):
         self.login()
-        response = self.client.post(url_for('main.set_comment', photo_id=1), follow_redirects=True)
+        response = self.client.post('/set-comment/1', follow_redirects=True)
         self.assertEqual(response.status_code, 403)
 
         self.logout()
         self.login(email='admin@helloflask.com', password='123')
-        response = self.client.post(url_for('main.set_comment', photo_id=1), follow_redirects=True)
+        response = self.client.post('/set-comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Comment disabled', data)
         self.assertFalse(Photo.query.get(1).can_comment)
 
-        response = self.client.post(url_for('main.set_comment', photo_id=1), follow_redirects=True)
+        response = self.client.post('/set-comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Comment enabled', data)
@@ -275,29 +275,29 @@ class MainTestCase(BaseTestCase):
 
     def test_reply_comment(self):
         self.login()
-        response = self.client.get(url_for('main.reply_comment', comment_id=1), follow_redirects=True)
+        response = self.client.get('/reply/comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Reply to', data)
 
     def test_delete_photo(self):
         self.login()
-        response = self.client.post(url_for('main.delete_photo', photo_id=2), follow_redirects=True)
+        response = self.client.post('/delete/photo/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo deleted.', data)
         self.assertIn('Normal User', data)
 
     def test_delete_comment(self):
         self.login()
-        response = self.client.post(url_for('main.delete_comment', comment_id=1), follow_redirects=True)
+        response = self.client.post('/delete/comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment deleted.', data)
 
     def test_show_tag(self):
-        response = self.client.get(url_for('main.show_tag', tag_id=1))
+        response = self.client.get('/tag/1')
         data = response.get_data(as_text=True)
         self.assertIn('Order by time', data)
 
-        response = self.client.get(url_for('main.show_tag', tag_id=1, order='by_collects'))
+        response = self.client.get('/tag/1/by_collects')
         data = response.get_data(as_text=True)
         self.assertIn('Order by collects', data)
 
@@ -308,7 +308,7 @@ class MainTestCase(BaseTestCase):
         db.session.commit()
 
         self.login()
-        response = self.client.post(url_for('main.delete_tag', photo_id=2, tag_id=2), follow_redirects=True)
+        response = self.client.post('/delete/tag/2/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Tag deleted.', data)
 
