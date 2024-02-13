@@ -1,0 +1,36 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Grey Li", email = "withlihui@gmail.com"},
+]
+dependencies = [
+    "flask-sqlalchemy",
+    "flask-login",
+    "flask-dropzone",
+    "flask-mail",
+    "flask-moment",
+    "flask-wtf",
+    "python-dotenv",
+    "pillow",
+    "bootstrap-flask",
+    "flask",
+    "flask-whooshee",
+    "flask-avatars",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
+[[tool.pdm.source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "faker",
+    "watchdog",
+]
