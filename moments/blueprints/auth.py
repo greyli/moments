@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user, login_fresh, confirm_login
 
-from moments.emails import send_confirm_email, send_reset_password_email
+from moments.emails import send_confirmation_email, send_reset_password_email
 from moments.core.extensions import db
 from moments.forms.auth import LoginForm, RegisterForm, ForgetPasswordForm, ResetPasswordForm
 from moments.models import User
@@ -67,7 +67,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         token = generate_token(user=user, operation='confirm')
-        send_confirm_email(user=user, token=token)
+        send_confirmation_email(user=user, token=token)
         flash('Confirm email sent, check your inbox.', 'info')
         return redirect(url_for('.login'))
     return render_template('auth/register.html', form=form)
@@ -84,17 +84,17 @@ def confirm(token):
         return redirect(url_for('main.index'))
     else:
         flash('Invalid or expired token.', 'danger')
-        return redirect(url_for('.resend_confirm_email'))
+        return redirect(url_for('.resend_confirmation_email'))
 
 
-@auth_bp.route('/resend-confirm-email')
+@auth_bp.route('/resend-confirmation-email')
 @login_required
-def resend_confirm_email():
+def resend_confirmation_email():
     if current_user.confirmed:
         return redirect(url_for('main.index'))
 
     token = generate_token(user=current_user, operation=Operations.CONFIRM)
-    send_confirm_email(user=current_user, token=token)
+    send_confirmation_email(user=current_user, token=token)
     flash('New email sent, check your inbox.', 'info')
     return redirect(url_for('main.index'))
 

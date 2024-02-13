@@ -12,7 +12,7 @@ def confirm_required(func):
                 'Please confirm your account first.'
                 'Not receive the email?'
                 '<a class="alert-link" href="%s">Resend Confirm Email</a>' %
-                url_for('auth.resend_confirm_email'))
+                url_for('auth.resend_confirmation_email'))
             flash(message, 'warning')
             return redirect(url_for('main.index'))
         return func(*args, **kwargs)
