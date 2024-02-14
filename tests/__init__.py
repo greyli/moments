@@ -18,20 +18,20 @@ class BaseTestCase(unittest.TestCase):
         Role.init_role()
 
         admin_user = User(email='admin@helloflask.com', name='Admin', username='admin', confirmed=True)
-        admin_user.set_password('123')
+        admin_user.password = '123'
         normal_user = User(email='normal@helloflask.com', name='Normal User', username='normal', confirmed=True)
-        normal_user.set_password('123')
+        normal_user.password = '123'
         unconfirmed_user = User(email='unconfirmed@helloflask.com', name='Unconfirmed', username='unconfirmed',
                                 confirmed=False)
-        unconfirmed_user.set_password('123')
+        unconfirmed_user.password = '123'
         locked_user = User(email='locked@helloflask.com', name='Locked User', username='locked',
                            confirmed=True, locked=True)
-        locked_user.set_password('123')
+        locked_user.password = '123'
         locked_user.lock()
 
         blocked_user = User(email='blocked@helloflask.com', name='Blocked User', username='blocked',
                             confirmed=True, active=False)
-        blocked_user.set_password('123')
+        blocked_user.password = '123'
 
         photo = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
                       description='Photo 1', author=admin_user)

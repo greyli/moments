@@ -119,7 +119,12 @@ class User(db.Model, UserMixin):
         self.follow(self)  # follow self
         self.set_role()
 
-    def set_password(self, password):
+    @property
+    def password(self):
+        raise AttributeError('Write-only property!')
+
+    @password.setter
+    def password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def set_role(self):

@@ -151,7 +151,7 @@ class UserTestCase(BaseTestCase):
         token = generate_token(user=user, operation=Operations.CHANGE_EMAIL, new_email='new@helloflask.com')
 
         self.login()
-        response = self.client.get(f'/user/change-email/{str(token, "utf-8")}', follow_redirects=True)
+        response = self.client.get(f'/user/change-email/{token}', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Email updated.', data)
         self.assertEqual(user.email, 'new@helloflask.com')

@@ -18,6 +18,7 @@ dependencies = [
     "flask",
     "flask-whooshee",
     "flask-avatars",
+    "pyjwt>=2.8.0",
 ]
 requires-python = ">=3.10"
 readme = "README.md"

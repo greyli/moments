@@ -65,7 +65,7 @@ class AuthTestCase(BaseTestCase):
         self.assertFalse(user.confirmed)
         token = generate_token(user=user, operation='confirm')
         self.login(email='unconfirmed@helloflask.com', password='123')
-        response = self.client.get(f'/auth/confirm/{str(token, "utf-8")}', follow_redirects=True)
+        response = self.client.get(f'/auth/confirm/{token}', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Account confirmed.', data)
         self.assertTrue(user.confirmed)
@@ -87,7 +87,7 @@ class AuthTestCase(BaseTestCase):
         self.assertTrue(user.validate_password('123'))
 
         token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
-        response = self.client.post(f'/auth/reset-password/{str(token, "utf-8")}', data=dict(
+        response = self.client.post(f'/auth/reset-password/{token}', data=dict(
             email='normal@helloflask.com',
             password='new-password',
             password2='new-password'

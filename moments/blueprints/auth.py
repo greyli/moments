@@ -6,7 +6,7 @@ from moments.core.extensions import db
 from moments.forms.auth import LoginForm, RegisterForm, ForgetPasswordForm, ResetPasswordForm
 from moments.models import User
 from moments.settings import Operations
-from moments.utils import generate_token, validate_token, redirect_back
+from moments.utils import generate_token, parse_token, redirect_back
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -27,6 +27,7 @@ def login():
                 flash('Your account is blocked.', 'warning')
                 return redirect(url_for('main.index'))
         flash('Invalid email or password.', 'warning')
+        return redirect(url_for('.login'))
     return render_template('auth/login.html', form=form)
 
 
@@ -62,8 +63,7 @@ def register():
         email = form.email.data.lower()
         username = form.username.data
         password = form.password.data
-        user = User(name=name, email=email, username=username)
-        user.set_password(password)
+        user = User(name=name, email=email, username=username, password=password)
         db.session.add(user)
         db.session.commit()
         token = generate_token(user=user, operation='confirm')
@@ -79,7 +79,9 @@ def confirm(token):
     if current_user.confirmed:
         return redirect(url_for('main.index'))
 
-    if validate_token(user=current_user, token=token, operation=Operations.CONFIRM):
+    if parse_token(user=current_user, token=token, operation=Operations.CONFIRM):
+        current_user.confirmed = True
+        db.session.commit()
         flash('Account confirmed.', 'success')
         return redirect(url_for('main.index'))
     else:
@@ -127,8 +129,8 @@ def reset_password(token):
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user is None:
             return redirect(url_for('main.index'))
-        if validate_token(user=user, token=token, operation=Operations.RESET_PASSWORD,
-                          new_password=form.password.data):
+        if parse_token(user=user, token=token, operation=Operations.RESET_PASSWORD):
+            user.password = form.password.data
             flash('Password updated.', 'success')
             return redirect(url_for('.login'))
         else:

@@ -9,7 +9,7 @@ from moments.forms.user import EditProfileForm, UploadAvatarForm, CropAvatarForm
 from moments.models import User, Photo, Collect
 from moments.notifications import push_follow_notification
 from moments.settings import Operations
-from moments.utils import generate_token, validate_token, redirect_back, flash_errors
+from moments.utils import generate_token, parse_token, redirect_back, flash_errors
 
 user_bp = Blueprint('user', __name__)
 
@@ -161,7 +161,7 @@ def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if current_user.validate_password(form.old_password.data):
-            current_user.set_password(form.password.data)
+            current_user.password = form.password.data
             db.session.commit()
             flash('Password updated.', 'success')
             return redirect(url_for('.index', username=current_user.username))
@@ -185,7 +185,11 @@ def change_email_request():
 @user_bp.route('/change-email/<token>')
 @login_required
 def change_email(token):
-    if validate_token(user=current_user, token=token, operation=Operations.CHANGE_EMAIL):
+    payload = parse_token(user=current_user, token=token, operation=Operations.CHANGE_EMAIL)
+    new_email = payload.get('new_email')
+    if payload and new_email:
+        current_user.email = new_email
+        db.session.commit()
         flash('Email updated.', 'success')
         return redirect(url_for('.index', username=current_user.username))
     else:

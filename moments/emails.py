@@ -22,7 +22,7 @@ def send_mail(to, subject, template, **kwargs):
 
 
 def send_confirmation_email(user, token, to=None):
-    send_mail(subject='Email Confirm', to=to or user.email, template='emails/confirm', user=user, token=token)
+    send_mail(subject='Email Confirmation', to=to or user.email, template='emails/confirmation', user=user, token=token)
 
 
 def send_reset_password_email(user, token):
@@ -30,4 +30,4 @@ def send_reset_password_email(user, token):
 
 
 def send_change_email_email(user, token, to=None):
-    send_mail(subject='Change Email Confirm', to=to or user.email, template='emails/change_email', user=user, token=token)
+    send_mail(subject='Change Email Confirmation', to=to or user.email, template='emails/change_email', user=user, token=token)

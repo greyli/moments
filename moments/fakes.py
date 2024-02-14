@@ -15,11 +15,11 @@ fake = Faker()
 def fake_admin():
     admin = User(name='Grey Li',
                  username='greyli',
+                 password='helloflask',
                  email='admin@helloflask.com',
                  bio=fake.sentence(),
                  website='http://greyli.com',
                  confirmed=True)
-    admin.set_password('helloflask')
     notification = Notification(message='Hello, welcome to Moments.', receiver=admin)
     db.session.add(notification)
     db.session.add(admin)
@@ -31,12 +31,12 @@ def fake_user(count=10):
         user = User(name=fake.name(),
                     confirmed=True,
                     username=fake.user_name(),
+                    password='123456',
                     bio=fake.sentence(),
                     location=fake.city(),
                     website=fake.url(),
                     member_since=fake.date_this_decade(),
                     email=fake.email())
-        user.set_password('123456')
         db.session.add(user)
         try:
             db.session.commit()
