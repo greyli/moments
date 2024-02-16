@@ -34,7 +34,7 @@ def register_commands(app):
     @click.option('--tag', default=20, help='Quantity of tags, default is 20.')
     @click.option('--collect', default=50, help='Quantity of collects, default is 50.')
     @click.option('--comment', default=100, help='Quantity of comments, default is 100.')
-    def forge(user, follow, photo, tag, collect, comment):
+    def fake(user, follow, photo, tag, collect, comment):
         """Generate fake data."""
 
         from moments.fakes import fake_admin, fake_comment, fake_follow, fake_photo, fake_tag, fake_user, fake_collect

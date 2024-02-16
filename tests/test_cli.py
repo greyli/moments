@@ -25,11 +25,11 @@ class CLITestCase(BaseTestCase):
         self.assertIn('Done.', result.output)
         self.assertEqual(Role.query.count(), 4)
 
-    def test_forge_command(self):
+    def test_fake_command(self):
         pass  # it will take too long time
 
-    def test_forge_command_with_count(self):
-        result = self.cli_runner.invoke(args=['forge', '--user', '5', '--follow', '10',
+    def test_fake_command_with_count(self):
+        result = self.cli_runner.invoke(args=['fake', '--user', '5', '--follow', '10',
                                           '--photo', '10', '--tag', '10', '--collect', '10',
                                           '--comment', '10'])
 

@@ -131,6 +131,7 @@ def reset_password(token):
             return redirect(url_for('main.index'))
         if parse_token(user=user, token=token, operation=Operations.RESET_PASSWORD):
             user.password = form.password.data
+            db.session.commit()
             flash('Password updated.', 'success')
             return redirect(url_for('.login'))
         else:

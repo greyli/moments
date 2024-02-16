@@ -6,18 +6,18 @@ authors = [
     {name = "Grey Li", email = "withlihui@gmail.com"},
 ]
 dependencies = [
-    "flask-sqlalchemy",
-    "flask-login",
-    "flask-dropzone",
-    "flask-mail",
-    "flask-moment",
-    "flask-wtf",
-    "python-dotenv",
-    "pillow",
-    "bootstrap-flask",
-    "flask",
-    "flask-whooshee",
-    "flask-avatars",
+    "flask-sqlalchemy>=3.1.1",
+    "flask-login>=0.6.3",
+    "flask-dropzone>=1.6.0",
+    "flask-mail>=0.9.1",
+    "flask-moment>=1.0.5",
+    "flask-wtf>=1.2.1",
+    "python-dotenv>=1.0.1",
+    "pillow>=10.2.0",
+    "bootstrap-flask>=2.3.3",
+    "flask>=3.0.2",
+    "flask-whooshee>=0.9.1",
+    "flask-avatars>=0.2.3",
     "pyjwt>=2.8.0",
 ]
 requires-python = ">=3.10"
@@ -32,6 +32,6 @@ name = "pypi"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "faker",
-    "watchdog",
+    "faker>=23.2.0",
+    "watchdog>=4.0.0",
 ]
