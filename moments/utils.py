@@ -2,10 +2,7 @@ import os
 import uuid
 from datetime import datetime, timezone, timedelta
 
-try:
-    from urlparse import urlparse, urljoin
-except ImportError:
-    from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 
 import PIL
 from PIL import Image
@@ -47,7 +44,7 @@ def resize_image(image, filename, base_width):
     if img.size[0] <= base_width:
         return filename + ext
     w_percent = (base_width / float(img.size[0]))
-    h_size = int((float(img.size[1]) * float(w_percent)))
+    h_size = int(float(img.size[1]) * float(w_percent))
     img = img.resize((base_width, h_size), PIL.Image.ANTIALIAS)
 
     filename += current_app.config['MOMENTS_PHOTO_SUFFIX'][base_width] + ext
@@ -74,7 +71,7 @@ def redirect_back(default='main.index', **kwargs):
 def flash_errors(form):
     for field, errors in form.errors.items():
         for error in errors:
-            flash(u"Error in the %s field - %s" % (
+            flash("Error in the {} field - {}".format(
                 getattr(form, field).label.text,
                 error
             ))

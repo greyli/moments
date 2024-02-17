@@ -6,7 +6,7 @@ from tests import BaseTestCase
 class AdminTestCase(BaseTestCase):
 
     def setUp(self):
-        super(AdminTestCase, self).setUp()
+        super().setUp()
         self.login(email='admin@helloflask.com', password='123')
 
     def test_index_page(self):

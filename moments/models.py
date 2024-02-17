@@ -114,7 +114,7 @@ class User(db.Model, UserMixin):
                                 lazy='dynamic', cascade='all')
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.generate_avatar()
         self.follow(self)  # follow self
         self.set_role()

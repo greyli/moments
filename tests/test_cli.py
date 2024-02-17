@@ -6,7 +6,7 @@ from tests import BaseTestCase
 class CLITestCase(BaseTestCase):
 
     def setUp(self):
-        super(CLITestCase, self).setUp()
+        super().setUp()
         db.drop_all()
 
     def test_initdb_command(self):

@@ -8,11 +8,11 @@ def confirm_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
         if not current_user.confirmed:
+            resend_url = url_for('auth.resend_confirmation_email')
             message = Markup(
                 'Please confirm your account first.'
                 'Not receive the email?'
-                '<a class="alert-link" href="%s">Resend Confirm Email</a>' %
-                url_for('auth.resend_confirmation_email'))
+                f'<a class="alert-link" href="{resend_url}">Resend Confirm Email</a>')
             flash(message, 'warning')
             return redirect(url_for('main.index'))
         return func(*args, **kwargs)

@@ -5,26 +5,25 @@ from moments.models import Notification
 
 
 def push_follow_notification(follower, receiver):
-    message = 'User <a href="%s">%s</a> followed you.' % \
-              (url_for('user.index', username=follower.username), follower.username)
+    user_url = url_for('user.index', username=follower.username)
+    message = f'User <a href="{user_url}">{follower.username}</a> followed you.'
     notification = Notification(message=message, receiver=receiver)
     db.session.add(notification)
     db.session.commit()
 
 
 def push_comment_notification(photo_id, receiver, page=1):
-    message = '<a href="%s#comments">This photo</a> has new comment/reply.' % \
-              (url_for('main.show_photo', photo_id=photo_id, page=page))
+    photo_url = url_for('main.show_photo', photo_id=photo_id, page=page)
+    message = f'<a href="{photo_url}#comments">This photo</a> has new comment/reply.'
     notification = Notification(message=message, receiver=receiver)
     db.session.add(notification)
     db.session.commit()
 
 
 def push_collect_notification(collector, photo_id, receiver):
-    message = 'User <a href="%s">%s</a> collected your <a href="%s">photo</a>' % \
-              (url_for('user.index', username=collector.username),
-               collector.username,
-               url_for('main.show_photo', photo_id=photo_id))
+    user_url = url_for('user.index', username=collector.username)
+    photo_url = url_for('main.show_photo', photo_id=photo_id)
+    message = f'User <a href="{user_url}">{collector.username}</a> collected your <a href="{photo_url}">photo</a>'
     notification = Notification(message=message, receiver=receiver)
     db.session.add(notification)
     db.session.commit()

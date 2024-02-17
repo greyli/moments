@@ -27,7 +27,7 @@ def fake_admin():
 
 
 def fake_user(count=10):
-    for i in range(count):
+    for _ in range(count):
         user = User(name=fake.name(),
                     confirmed=True,
                     username=fake.user_name(),
@@ -45,14 +45,14 @@ def fake_user(count=10):
 
 
 def fake_follow(count=30):
-    for i in range(count):
+    for _ in range(count):
         user = User.query.get(random.randint(1, User.query.count()))
         user.follow(User.query.get(random.randint(1, User.query.count())))
     db.session.commit()
 
 
 def fake_tag(count=20):
-    for i in range(count):
+    for _ in range(count):
         tag = Tag(name=fake.word())
         db.session.add(tag)
         try:
@@ -67,7 +67,7 @@ def fake_photo(count=30):
     for i in range(count):
         print(i)
 
-        filename = 'random_%d.jpg' % i
+        filename = f'random_{i}.jpg'
         r = lambda: random.randint(128, 255)
         img = Image.new(mode='RGB', size=(800, 800), color=(r(), r(), r()))
         img.save(os.path.join(upload_path, filename))
@@ -92,14 +92,14 @@ def fake_photo(count=30):
 
 
 def fake_collect(count=50):
-    for i in range(count):
+    for _ in range(count):
         user = User.query.get(random.randint(1, User.query.count()))
         user.collect(Photo.query.get(random.randint(1, Photo.query.count())))
     db.session.commit()
 
 
 def fake_comment(count=100):
-    for i in range(count):
+    for _ in range(count):
         comment = Comment(
             author=User.query.get(random.randint(1, User.query.count())),
             body=fake.sentence(),
