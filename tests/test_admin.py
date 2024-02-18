@@ -1,6 +1,7 @@
 from moments.core.extensions import db
 from moments.models import User, Role, Tag
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class AdminTestCase(BaseTestCase):
@@ -39,7 +40,7 @@ class AdminTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Profile updated.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.name, 'New Name')
         self.assertEqual(user.username, 'newname')
         self.assertEqual(user.email, 'new@helloflask.com')
@@ -49,11 +50,11 @@ class AdminTestCase(BaseTestCase):
         response = self.client.post('/admin/block/user/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Account blocked.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.active, False)
 
     def test_unblock_user(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         user.active = False
         db.session.commit()
         self.assertEqual(user.active, False)
@@ -61,18 +62,18 @@ class AdminTestCase(BaseTestCase):
         response = self.client.post('/admin/unblock/user/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Block canceled.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.active, True)
 
     def test_lock_user(self):
         response = self.client.post('/admin/lock/user/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Account locked.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.role.name, 'Locked')
 
     def test_unlock_user(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         user.role = Role.query.filter_by(name='Locked').first()
         db.session.commit()
         self.assertEqual(user.role.name, 'Locked')
@@ -80,19 +81,19 @@ class AdminTestCase(BaseTestCase):
         response = self.client.post('/admin/unlock/user/2', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Lock canceled.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.role.name, 'User')
 
     def test_delete_tag(self):
         tag = Tag()
         db.session.add(tag)
         db.session.commit()
-        self.assertIsNotNone(Tag.query.get(1))
+        self.assertIsNotNone(db.session.get(Tag, 1))
 
         response = self.client.post('/admin/delete/tag/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Tag deleted.', data)
-        self.assertEqual(Tag.query.get(1), None)
+        self.assertEqual(db.session.get(Tag, 1), None)
 
     def test_manage_user_page(self):
         response = self.client.get('/admin/manage/user')

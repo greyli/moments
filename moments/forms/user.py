@@ -3,8 +3,10 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, HiddenField, ValidationError
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Optional, Regexp
+from sqlalchemy import select
 
 from moments.models import User
+from moments.core.extensions import db
 
 
 class EditProfileForm(FlaskForm):
@@ -43,7 +45,10 @@ class ChangeEmailForm(FlaskForm):
     submit = SubmitField()
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data.lower()).first():
+        user = db.session.execute(
+            select(User).filter_by(email=field.data.lower())
+        ).scalar()
+        if user:
             raise ValidationError('The email is already in use.')
 
 

@@ -1,10 +1,10 @@
-from flask_sqlalchemy import get_debug_queries
+from flask_sqlalchemy.record_queries import get_recorded_queries
 
 
 def register_request_handlers(app):
     @app.after_request
     def query_profiler(response):
-        for q in get_debug_queries():
+        for q in get_recorded_queries():
             if q.duration >= app.config['MOMENTS_SLOW_QUERY_THRESHOLD']:
                 app.logger.warning(
                     'Slow query: Duration: '

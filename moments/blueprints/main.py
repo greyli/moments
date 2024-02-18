@@ -3,7 +3,7 @@ import os
 from flask import render_template, flash, redirect, url_for, current_app, \
     send_from_directory, request, abort, Blueprint
 from flask_login import login_required, current_user
-from sqlalchemy.sql.expression import func
+from sqlalchemy import select, func
 
 from moments.decorators import confirm_required, permission_required
 from moments.core.extensions import db
@@ -20,22 +20,28 @@ def index():
     if current_user.is_authenticated:
         page = request.args.get('page', 1, type=int)
         per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-        pagination = Photo.query \
-            .join(Follow, Follow.followed_id == Photo.author_id) \
-            .filter(Follow.follower_id == current_user.id) \
-            .order_by(Photo.timestamp.desc()) \
-            .paginate(page, per_page)
+        pagination = db.paginate(
+            select(Photo)
+            .join(Follow, Follow.followed_id == Photo.author_id)
+            .filter(Follow.follower_id == current_user.id)
+            .order_by(Photo.timestamp.desc()),
+            page=page, per_page=per_page
+        )
         photos = pagination.items
     else:
         pagination = None
         photos = None
-    tags = Tag.query.join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
+    tags = db.session.execute(
+        select(Tag).join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
+    ).scalars().all()
     return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collect)
 
 
 @main_bp.route('/explore')
 def explore():
-    photos = Photo.query.order_by(func.random()).limit(12)
+    photos = db.session.execute(
+        select(Photo).order_by(func.random()).limit(12)
+    ).scalars().all()
     return render_template('main/explore.html', photos=photos)
 
 
@@ -49,12 +55,13 @@ def search():
     category = request.args.get('category', 'photo')
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_SEARCH_RESULT_PER_PAGE']
+    # TODO: add SQLAlchemy 2.x support to Flask-Whooshee then update the following code
     if category == 'user':
-        pagination = User.query.whooshee_search(q).paginate(page, per_page)
+        pagination = User.query.whooshee_search(q).paginate(page=page, per_page=per_page)
     elif category == 'tag':
-        pagination = Tag.query.whooshee_search(q).paginate(page, per_page)
+        pagination = Tag.query.whooshee_search(q).paginate(page=page, per_page=per_page)
     else:
-        pagination = Photo.query.whooshee_search(q).paginate(page, per_page)
+        pagination = Photo.query.whooshee_search(q).paginate(page=page, per_page=per_page)
     results = pagination.items
     return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)
 
@@ -64,12 +71,16 @@ def search():
 def show_notifications():
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_NOTIFICATION_PER_PAGE']
-    notifications = Notification.query.with_parent(current_user)
+    notifications = select(Notification).filter_by(receiver_id=current_user.id)
     filter_rule = request.args.get('filter')
     if filter_rule == 'unread':
         notifications = notifications.filter_by(is_read=False)
 
-    pagination = notifications.order_by(Notification.timestamp.desc()).paginate(page, per_page)
+    pagination = db.paginate(
+        notifications.order_by(Notification.timestamp.desc()),
+        page=page,
+        per_page=per_page
+    )
     notifications = pagination.items
     return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
 
@@ -77,7 +88,7 @@ def show_notifications():
 @main_bp.route('/notifications/read/<int:notification_id>', methods=['POST'])
 @login_required
 def read_notification(notification_id):
-    notification = Notification.query.get_or_404(notification_id)
+    notification = db.get_or_404(Notification, notification_id)
     if current_user != notification.receiver:
         abort(403)
 
@@ -131,10 +142,14 @@ def upload():
 
 @main_bp.route('/photo/<int:photo_id>')
 def show_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_COMMENT_PER_PAGE']
-    pagination = Comment.query.with_parent(photo).order_by(Comment.timestamp.asc()).paginate(page, per_page)
+    pagination = db.paginate(
+        select(Comment).filter_by(photo_id=photo.id).order_by(Comment.timestamp.asc()),
+        page=page,
+        per_page=per_page
+    )
     comments = pagination.items
 
     comment_form = CommentForm()
@@ -149,8 +164,10 @@ def show_photo(photo_id):
 
 @main_bp.route('/photo/n/<int:photo_id>')
 def photo_next(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    photo_n = Photo.query.with_parent(photo.author).filter(Photo.id < photo_id).order_by(Photo.id.desc()).first()
+    photo = db.get_or_404(Photo, photo_id)
+    photo_n = db.session.execute(
+        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
+    ).scalar()
 
     if photo_n is None:
         flash('This is already the last one.', 'info')
@@ -160,9 +177,10 @@ def photo_next(photo_id):
 
 @main_bp.route('/photo/p/<int:photo_id>')
 def photo_previous(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    photo_p = Photo.query.with_parent(photo.author).filter(Photo.id > photo_id).order_by(Photo.id.asc()).first()
-
+    photo = db.get_or_404(Photo, photo_id)
+    photo_p = db.session.execute(
+        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
+    ).scalar()
     if photo_p is None:
         flash('This is already the first one.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -174,7 +192,7 @@ def photo_previous(photo_id):
 @confirm_required
 @permission_required('COLLECT')
 def collect(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user.is_collecting(photo):
         flash('Already collected.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -189,7 +207,7 @@ def collect(photo_id):
 @main_bp.route('/uncollect/<int:photo_id>', methods=['POST'])
 @login_required
 def uncollect(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if not current_user.is_collecting(photo):
         flash('Not collect yet.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -203,7 +221,7 @@ def uncollect(photo_id):
 @login_required
 @confirm_required
 def report_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
+    comment = db.get_or_404(Comment, comment_id)
     comment.flag += 1
     db.session.commit()
     flash('Comment reported.', 'success')
@@ -214,7 +232,7 @@ def report_comment(comment_id):
 @login_required
 @confirm_required
 def report_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     photo.flag += 1
     db.session.commit()
     flash('Photo reported.', 'success')
@@ -223,18 +241,24 @@ def report_photo(photo_id):
 
 @main_bp.route('/photo/<int:photo_id>/collectors')
 def show_collectors(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = Collect.query.with_parent(photo).order_by(Collect.timestamp.asc()).paginate(page, per_page)
-    collects = pagination.items
-    return render_template('main/collectors.html', collects=collects, photo=photo, pagination=pagination)
+    pagination = db.paginate(
+        select(User)
+        .join(Collect, Collect.collector_id == User.id)
+        .filter(Collect.collected_id == photo.id),
+        page=page,
+        per_page=per_page
+    )
+    collectors = pagination.items
+    return render_template('main/collectors.html', collectors=collectors, photo=photo, pagination=pagination)
 
 
 @main_bp.route('/photo/<int:photo_id>/description', methods=['POST'])
 @login_required
 def edit_description(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
@@ -252,7 +276,7 @@ def edit_description(photo_id):
 @login_required
 @permission_required('COMMENT')
 def new_comment(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     page = request.args.get('page', 1, type=int)
     form = CommentForm()
     if form.validate_on_submit():
@@ -262,7 +286,7 @@ def new_comment(photo_id):
 
         replied_id = request.args.get('reply')
         if replied_id:
-            comment.replied = Comment.query.get_or_404(replied_id)
+            comment.replied = db.get_or_404(Comment, replied_id)
             if comment.replied.author.receive_comment_notification:
                 push_comment_notification(photo_id=photo.id, receiver=comment.replied.author)
         db.session.add(comment)
@@ -279,14 +303,16 @@ def new_comment(photo_id):
 @main_bp.route('/photo/<int:photo_id>/tag/new', methods=['POST'])
 @login_required
 def new_tag(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
     form = TagForm()
     if form.validate_on_submit():
         for name in form.tag.data.split():
-            tag = Tag.query.filter_by(name=name).first()
+            tag = db.session.execute(
+                select(Tag).filter_by(name=name)
+            ).scalar()
             if tag is None:
                 tag = Tag(name=name)
                 db.session.add(tag)
@@ -303,7 +329,7 @@ def new_tag(photo_id):
 @main_bp.route('/set-comment/<int:photo_id>', methods=['POST'])
 @login_required
 def set_comment(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user != photo.author:
         abort(403)
 
@@ -321,7 +347,7 @@ def set_comment(photo_id):
 @login_required
 @permission_required('COMMENT')
 def reply_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
+    comment = db.get_or_404(Comment, comment_id)
     return redirect(
         url_for('.show_photo', photo_id=comment.photo_id, reply=comment_id,
                 author=comment.author.name) + '#comment-form')
@@ -330,7 +356,7 @@ def reply_comment(comment_id):
 @main_bp.route('/delete/photo/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
@@ -338,9 +364,13 @@ def delete_photo(photo_id):
     db.session.commit()
     flash('Photo deleted.', 'info')
 
-    photo_n = Photo.query.with_parent(photo.author).filter(Photo.id < photo_id).order_by(Photo.id.desc()).first()
+    photo_n = db.session.execute(
+        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
+    ).scalar()
     if photo_n is None:
-        photo_p = Photo.query.with_parent(photo.author).filter(Photo.id > photo_id).order_by(Photo.id.asc()).first()
+        photo_p = db.session.execute(
+            select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
+        ).scalar()
         if photo_p is None:
             return redirect(url_for('user.index', username=photo.author.username))
         return redirect(url_for('.show_photo', photo_id=photo_p.id))
@@ -350,7 +380,7 @@ def delete_photo(photo_id):
 @main_bp.route('/delete/comment/<int:comment_id>', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
+    comment = db.get_or_404(Comment, comment_id)
     if current_user != comment.author and current_user != comment.photo.author \
             and not current_user.can('MODERATE'):
         abort(403)
@@ -363,11 +393,18 @@ def delete_comment(comment_id):
 @main_bp.route('/tag/<int:tag_id>', defaults={'order': 'by_time'})
 @main_bp.route('/tag/<int:tag_id>/<order>')
 def show_tag(tag_id, order):
-    tag = Tag.query.get_or_404(tag_id)
+    tag = db.get_or_404(Tag, tag_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
     order_rule = 'time'
-    pagination = Photo.query.with_parent(tag).order_by(Photo.timestamp.desc()).paginate(page, per_page)
+    pagination = db.paginate(
+        select(Photo)
+        .join(Photo.tags)
+        .filter(Tag.id == tag.id)
+        .order_by(Photo.timestamp.desc()),
+        page=page,
+        per_page=per_page
+    )
     photos = pagination.items
 
     if order == 'by_collects':
@@ -379,8 +416,8 @@ def show_tag(tag_id, order):
 @main_bp.route('/delete/tag/<int:photo_id>/<int:tag_id>', methods=['POST'])
 @login_required
 def delete_tag(photo_id, tag_id):
-    tag = Tag.query.get_or_404(tag_id)
-    photo = Photo.query.get_or_404(photo_id)
+    tag = db.get_or_404(Tag, tag_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
     photo.tags.remove(tag)

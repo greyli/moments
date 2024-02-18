@@ -5,6 +5,7 @@ from PIL import Image
 from faker import Faker
 from flask import current_app
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, func
 
 from moments.core.extensions import db
 from moments.models import User, Photo, Tag, Comment, Notification
@@ -46,8 +47,13 @@ def fake_user(count=10):
 
 def fake_follow(count=30):
     for _ in range(count):
-        user = User.query.get(random.randint(1, User.query.count()))
-        user.follow(User.query.get(random.randint(1, User.query.count())))
+        user = db.session.execute(
+            select(User).order_by(func.random()).limit(1)
+        ).scalar()
+        user2 = db.session.execute(
+            select(User).order_by(func.random()).limit(1)
+        ).scalar()
+        user.follow(user2)
     db.session.commit()
 
 
@@ -59,6 +65,7 @@ def fake_tag(count=20):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+            fake_tag(1)
 
 
 def fake_photo(count=30):
@@ -72,18 +79,21 @@ def fake_photo(count=30):
         img = Image.new(mode='RGB', size=(800, 800), color=(r(), r(), r()))
         img.save(os.path.join(upload_path, filename))
 
+        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user = db.session.get(User, random.randint(1, user_count))
         photo = Photo(
             description=fake.text(),
             filename=filename,
             filename_m=filename,
             filename_s=filename,
-            author=User.query.get(random.randint(1, User.query.count())),
+            author=user,
             timestamp=fake.date_time_this_year()
         )
 
         # tags
-        for j in range(random.randint(1, 5)):
-            tag = Tag.query.get(random.randint(1, Tag.query.count()))
+        for _ in range(random.randint(1, 5)):
+            tag_count = db.session.execute(select(func.count(Tag.id))).scalars().one()
+            tag = db.session.get(Tag, random.randint(1, tag_count))
             if tag not in photo.tags:
                 photo.tags.append(tag)
 
@@ -93,18 +103,25 @@ def fake_photo(count=30):
 
 def fake_collect(count=50):
     for _ in range(count):
-        user = User.query.get(random.randint(1, User.query.count()))
-        user.collect(Photo.query.get(random.randint(1, Photo.query.count())))
+        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user = db.session.get(User, random.randint(1, user_count))
+        photo_count = db.session.execute(select(func.count(Photo.id))).scalars().one()
+        photo = db.session.get(Photo, random.randint(1, photo_count))
+        user.collect(photo)
     db.session.commit()
 
 
 def fake_comment(count=100):
     for _ in range(count):
+        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user = db.session.get(User, random.randint(1, user_count))
+        photo_count = db.session.execute(select(func.count(Photo.id))).scalars().one()
+        photo = db.session.get(Photo, random.randint(1, photo_count))
         comment = Comment(
-            author=User.query.get(random.randint(1, User.query.count())),
+            author=user,
             body=fake.sentence(),
             timestamp=fake.date_time_this_year(),
-            photo=Photo.query.get(random.randint(1, Photo.query.count()))
+            photo=photo
         )
         db.session.add(comment)
     db.session.commit()

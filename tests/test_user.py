@@ -4,6 +4,7 @@ from moments.models import User, Photo
 from moments.settings import Operations
 from moments.utils import generate_token
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class UserTestCase(BaseTestCase):
@@ -25,8 +26,8 @@ class UserTestCase(BaseTestCase):
         self.assertIn("Normal User's collection", data)
         self.assertIn('No collection.', data)
 
-        user = User.query.get(2)
-        user.collect(Photo.query.get(1))
+        user = db.session.get(User, 2)
+        user.collect(db.session.get(Photo, 1))
         response = self.client.get('/user/normal/collections')
         data = response.get_data(as_text=True)
         self.assertNotIn('No collection.', data)
@@ -54,7 +55,7 @@ class UserTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Already followed.', data)
 
-        user = User.query.get(1)
+        user = db.session.get(User, 1)
         self.assertEqual(len(user.notifications), 1)
 
     def test_unfollow(self):
@@ -81,8 +82,8 @@ class UserTestCase(BaseTestCase):
         self.assertIn('Normal User\'s followers', data)
         self.assertIn('No followers.', data)
 
-        user = User.query.get(1)
-        user.follow(User.query.get(2))
+        user = db.session.get(User, 1)
+        user.follow(db.session.get(User, 2))
 
         response = self.client.get('/user/normal/followers')
         data = response.get_data(as_text=True)
@@ -93,10 +94,10 @@ class UserTestCase(BaseTestCase):
         response = self.client.get('/user/normal/following')
         data = response.get_data(as_text=True)
         self.assertIn('Normal User\'s following', data)
-        self.assertIn('No followings.', data)
+        self.assertIn('No following.', data)
 
-        user = User.query.get(2)
-        user.follow(User.query.get(1))
+        user = db.session.get(User, 2)
+        user.follow(db.session.get(User, 1))
 
         response = self.client.get('/user/normal/following')
         data = response.get_data(as_text=True)
@@ -111,7 +112,7 @@ class UserTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Profile updated.', data)
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.name, 'New Name')
         self.assertEqual(user.username, 'newname')
 
@@ -131,7 +132,7 @@ class UserTestCase(BaseTestCase):
         self.assertIn('Image uploaded, please crop.', data)
 
     def test_change_password(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertTrue(user.validate_password('123'))
 
         self.login()
@@ -146,7 +147,7 @@ class UserTestCase(BaseTestCase):
         self.assertFalse(user.validate_password('old-password'))
 
     def test_change_email(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         self.assertEqual(user.email, 'normal@helloflask.com')
         token = generate_token(user=user, operation=Operations.CHANGE_EMAIL, new_email='new@helloflask.com')
 
@@ -170,7 +171,7 @@ class UserTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Notification settings updated.', data)
 
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
 
         self.assertEqual(user.receive_collect_notification, False)
         self.assertEqual(user.receive_comment_notification, False)
@@ -191,7 +192,7 @@ class UserTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Privacy settings updated.', data)
 
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
 
         self.assertEqual(user.public_collections, False)
         self.logout()
@@ -207,4 +208,4 @@ class UserTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Your are free, goodbye!', data)
-        self.assertEqual(User.query.get(2), None)
+        self.assertEqual(db.session.get(User, 2), None)

@@ -1,7 +1,9 @@
 from flask import render_template, jsonify, Blueprint
 from flask_login import current_user
+from sqlalchemy import select, func
 
-from moments.models import User, Photo, Notification
+from moments.models import User, Photo, Notification, Collect, Follow
+from moments.core.extensions import db
 from moments.notifications import push_collect_notification, push_follow_notification
 
 ajax_bp = Blueprint('ajax', __name__)
@@ -12,27 +14,34 @@ def notifications_count():
     if not current_user.is_authenticated:
         return jsonify(message='Login required.'), 403
 
-    count = Notification.query.with_parent(current_user).filter_by(is_read=False).count()
+    count = db.session.execute(
+        select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False)
+    ).scalars().one()
     return jsonify(count=count)
 
 
 @ajax_bp.route('/profile/<int:user_id>')
 def get_profile(user_id):
-    user = User.query.get_or_404(user_id)
+
+    user = db.get_or_404(User, user_id)
     return render_template('main/profile_popup.html', user=user)
 
 
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
-    user = User.query.get_or_404(user_id)
-    count = user.followers.count() - 1  # minus user self
-    return jsonify(count=count)
+    user = db.get_or_404(User, user_id)
+    count = db.session.execute(
+        select(func.count(Follow.follower_id)).filter_by(followed_id=user.id)
+    ).scalars().one()
+    return jsonify(count=count - 1)  # minus user self
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    count = len(photo.collectors)
+    photo = db.get_or_404(Photo, photo_id)
+    count = db.session.execute(
+        select(func.count(Collect.collector_id)).filter_by(collected_id=photo.id)
+    ).scalars().one()
     return jsonify(count=count)
 
 
@@ -45,7 +54,7 @@ def collect(photo_id):
     if not current_user.can('COLLECT'):
         return jsonify(message='No permission.'), 403
 
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if current_user.is_collecting(photo):
         return jsonify(message='Already collected.'), 400
 
@@ -60,7 +69,7 @@ def uncollect(photo_id):
     if not current_user.is_authenticated:
         return jsonify(message='Login required.'), 403
 
-    photo = Photo.query.get_or_404(photo_id)
+    photo = db.get_or_404(Photo, photo_id)
     if not current_user.is_collecting(photo):
         return jsonify(message='Not collect yet.'), 400
 
@@ -77,7 +86,7 @@ def follow(username):
     if not current_user.can('FOLLOW'):
         return jsonify(message='No permission.'), 403
 
-    user = User.query.filter_by(username=username).first_or_404()
+    user = db.first_or_404(select(User).filter_by(username=username))
     if current_user.is_following(user):
         return jsonify(message='Already followed.'), 400
 
@@ -92,7 +101,7 @@ def unfollow(username):
     if not current_user.is_authenticated:
         return jsonify(message='Login required.'), 403
 
-    user = User.query.filter_by(username=username).first_or_404()
+    user = db.first_or_404(select(User).filter_by(username=username))
     if not current_user.is_following(user):
         return jsonify(message='Not follow yet.'), 400
 

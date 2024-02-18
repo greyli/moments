@@ -2,8 +2,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms import ValidationError
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Regexp
+from sqlalchemy import select
 
 from moments.models import User
+from moments.core.extensions import db
 
 
 class LoginForm(FlaskForm):
@@ -25,11 +27,17 @@ class RegisterForm(FlaskForm):
     submit = SubmitField()
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data.lower()).first():
+        user = db.session.execute(
+            select(User).filter_by(email=field.data.lower())
+        ).scalar()
+        if user:
             raise ValidationError('The email is already in use.')
 
     def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
+        user = db.session.execute(
+            select(User).filter_by(username=field.data)
+        ).scalar()
+        if user:
             raise ValidationError('The username is already in use.')
 
 

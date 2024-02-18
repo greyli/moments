@@ -41,7 +41,7 @@ class BaseTestCase(unittest.TestCase):
         comment = Comment(body='test comment body', photo=photo, author=normal_user)
         tag = Tag(name='test tag')
         photo.tags.append(tag)
-        db.session.add_all([admin_user, normal_user, unconfirmed_user, locked_user, blocked_user])
+        db.session.add_all([admin_user, normal_user, unconfirmed_user, locked_user, blocked_user, comment, photo2])
         db.session.commit()
 
     def tearDown(self):

@@ -1,5 +1,6 @@
 from moments.models import User, Photo
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class AjaxTestCase(BaseTestCase):
@@ -26,8 +27,8 @@ class AjaxTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['count'], 0)
 
-        user = User.query.get(2)
-        user.follow(User.query.get(1))
+        user = db.session.get(User, 2)
+        user.follow(db.session.get(User, 1))
 
         response = self.client.get('/ajax/followers-count/1')
         data = response.get_json()
@@ -40,8 +41,8 @@ class AjaxTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['count'], 0)
 
-        user = User.query.get(1)
-        user.collect(Photo.query.get(1))
+        user = db.session.get(User, 1)
+        user.collect(db.session.get(Photo, 1))
 
         response = self.client.get('/ajax/collectors-count/1')
         data = response.get_json()
@@ -84,8 +85,8 @@ class AjaxTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['message'], 'Not collect yet.')
 
-        user = User.query.get(2)
-        user.collect(Photo.query.get(1))
+        user = db.session.get(User, 2)
+        user.collect(db.session.get(Photo, 1))
 
         response = self.client.post('/ajax/uncollect/1')
         data = response.get_json()
@@ -128,8 +129,8 @@ class AjaxTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['message'], 'Not follow yet.')
 
-        user = User.query.get(2)
-        user.follow(User.query.get(1))
+        user = db.session.get(User, 2)
+        user.follow(db.session.get(User, 1))
 
         response = self.client.post('/ajax/unfollow/admin')
         data = response.get_json()

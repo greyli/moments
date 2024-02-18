@@ -1,6 +1,7 @@
 from moments.core.extensions import db
 from moments.models import Comment, Role, User, Photo, Tag
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class CLITestCase(BaseTestCase):

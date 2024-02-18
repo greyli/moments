@@ -3,6 +3,7 @@ from flask import url_for
 from moments.core.extensions import db
 from moments.models import User, Photo, Comment, Notification, Tag
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class MainTestCase(BaseTestCase):
@@ -45,7 +46,7 @@ class MainTestCase(BaseTestCase):
         self.assertIn('Normal User', data)
 
     def test_show_notifications(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         notification1 = Notification(message='test 1', is_read=True, receiver=user)
         notification2 = Notification(message='test 2', is_read=False, receiver=user)
         db.session.add_all([notification1, notification2])
@@ -63,7 +64,7 @@ class MainTestCase(BaseTestCase):
         self.assertIn('test 2', data)
 
     def test_read_notification(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         notification1 = Notification(message='test 1', receiver=user)
         notification2 = Notification(message='test 2', receiver=user)
         db.session.add_all([notification1, notification2])
@@ -83,7 +84,7 @@ class MainTestCase(BaseTestCase):
         self.assertTrue(Notification.query.get(1).is_read)
 
     def test_read_all_notification(self):
-        user = User.query.get(2)
+        user = db.session.get(User, 2)
         notification1 = Notification(message='test 1', receiver=user)
         notification2 = Notification(message='test 2', receiver=user)
         db.session.add_all([notification1, notification2])
@@ -111,7 +112,7 @@ class MainTestCase(BaseTestCase):
         self.assertIn('Delete', data)
 
     def test_photo_next(self):
-        user = User.query.get(1)
+        user = db.session.get(User, 1)
         photo2 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
                        description='Photo 2', author=user)
         photo3 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
@@ -138,7 +139,7 @@ class MainTestCase(BaseTestCase):
         self.assertIn('This is already the last one.', data)
 
     def test_photo_prev(self):
-        user = User.query.get(1)
+        user = db.session.get(User, 1)
         photo2 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
                        description='Photo 2', author=user)
         photo3 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
@@ -166,17 +167,17 @@ class MainTestCase(BaseTestCase):
 
     def test_collect(self):
         photo = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                      description='Photo 3', author=User.query.get(2))
+                      description='Photo 3', author=db.session.get(User, 2))
         db.session.add(photo)
         db.session.commit()
-        self.assertEqual(Photo.query.get(3).collectors, [])
+        self.assertEqual(db.session.get(Photo, 3).collectors, [])
 
         self.login()
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo collected.', data)
 
-        self.assertEqual(Photo.query.get(3).collectors[0].collector.name, 'Normal User')
+        self.assertEqual(db.session.get(Photo, 3).collectors[0].collector.name, 'Normal User')
 
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -195,33 +196,33 @@ class MainTestCase(BaseTestCase):
         self.assertIn('Not collect yet.', data)
 
     def test_report_comment(self):
-        self.assertEqual(Comment.query.get(1).flag, 0)
+        self.assertEqual(db.session.get(Comment, 1).flag, 0)
 
         self.login()
         response = self.client.post('/report/comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment reported.', data)
-        self.assertEqual(Comment.query.get(1).flag, 1)
+        self.assertEqual(db.session.get(Comment, 1).flag, 1)
 
     def test_report_photo(self):
-        self.assertEqual(Photo.query.get(1).flag, 0)
+        self.assertEqual(db.session.get(Photo, 1).flag, 0)
 
         self.login()
         response = self.client.post('/report/photo/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo reported.', data)
-        self.assertEqual(Photo.query.get(1).flag, 1)
+        self.assertEqual(db.session.get(Photo, 1).flag, 1)
 
     def test_show_collectors(self):
-        user = User.query.get(2)
-        user.collect(Photo.query.get(1))
+        user = db.session.get(User, 2)
+        user.collect(db.session.get(Photo, 1))
         response = self.client.get('/photo/1/collectors', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('1 Collectors', data)
         self.assertIn('Normal User', data)
 
     def test_edit_description(self):
-        self.assertEqual(Photo.query.get(2).description, 'Photo 2')
+        self.assertEqual(db.session.get(Photo, 2).description, 'Photo 2')
 
         self.login()
         response = self.client.post('/photo/2/description', data=dict(
@@ -229,7 +230,7 @@ class MainTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Description updated.', data)
-        self.assertEqual(Photo.query.get(2).description, 'test description.')
+        self.assertEqual(db.session.get(Photo, 2).description, 'test description.')
 
     def test_new_comment(self):
         self.login()
@@ -238,7 +239,7 @@ class MainTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment published.', data)
-        self.assertEqual(Photo.query.get(1).comments[1].body, 'test comment from normal user.')
+        self.assertEqual(db.session.get(Photo, 1).comments[1].body, 'test comment from normal user.')
 
     def test_new_tag(self):
         self.login(email='admin@helloflask.com', password='123')
@@ -249,10 +250,10 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Tag added.', data)
-        self.assertEqual(Photo.query.get(1).tags[1].name, 'hello')
-        self.assertEqual(Photo.query.get(1).tags[2].name, 'dog')
-        self.assertEqual(Photo.query.get(1).tags[3].name, 'pet')
-        self.assertEqual(Photo.query.get(1).tags[4].name, 'happy')
+        self.assertEqual(db.session.get(Photo, 1).tags[1].name, 'hello')
+        self.assertEqual(db.session.get(Photo, 1).tags[2].name, 'dog')
+        self.assertEqual(db.session.get(Photo, 1).tags[3].name, 'pet')
+        self.assertEqual(db.session.get(Photo, 1).tags[4].name, 'happy')
 
     def test_set_comment(self):
         self.login()
@@ -265,13 +266,13 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Comment disabled', data)
-        self.assertFalse(Photo.query.get(1).can_comment)
+        self.assertFalse(db.session.get(Photo, 1).can_comment)
 
         response = self.client.post('/set-comment/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Comment enabled', data)
-        self.assertTrue(Photo.query.get(1).can_comment)
+        self.assertTrue(db.session.get(Photo, 1).can_comment)
 
     def test_reply_comment(self):
         self.login()
@@ -302,7 +303,7 @@ class MainTestCase(BaseTestCase):
         self.assertIn('Order by collects', data)
 
     def test_delete_tag(self):
-        photo = Photo.query.get(2)
+        photo = db.session.get(Photo, 2)
         tag = Tag(name='test')
         photo.tags.append(tag)
         db.session.commit()
@@ -313,4 +314,4 @@ class MainTestCase(BaseTestCase):
         self.assertIn('Tag deleted.', data)
 
         self.assertEqual(photo.tags, [])
-        self.assertIsNone(Tag.query.get(2))
+        self.assertIsNone(db.session.get(Tag, 2))

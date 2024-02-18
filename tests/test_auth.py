@@ -2,6 +2,7 @@ from moments.models import User
 from moments.settings import Operations
 from moments.utils import generate_token
 from tests import BaseTestCase
+from moments.core.extensions import db
 
 
 class AuthTestCase(BaseTestCase):

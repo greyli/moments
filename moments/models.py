@@ -5,7 +5,7 @@ from flask import current_app
 from flask_avatars import Identicon
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, DateTime, event
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, DateTime, event, select
 
 from moments.core.extensions import db, whooshee
 
@@ -38,13 +38,17 @@ class Role(db.Model):
         }
 
         for role_name in roles_permissions_map:
-            role = Role.query.filter_by(name=role_name).first()
+            role = db.session.execute(
+                select(Role).filter_by(name=role_name)
+            ).scalar()
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
             for permission_name in roles_permissions_map[role_name]:
-                permission = Permission.query.filter_by(name=permission_name).first()
+                permission = db.session.execute(
+                    select(Permission).filter_by(name=permission_name)
+                ).scalar()
                 if permission is None:
                     permission = Permission(name=permission_name)
                     db.session.add(permission)
@@ -130,9 +134,12 @@ class User(db.Model, UserMixin):
     def set_role(self):
         if self.role is None:
             if self.email == current_app.config['MOMENTS_ADMIN_EMAIL']:
-                self.role = Role.query.filter_by(name='Administrator').first()
+                role_name = 'Administrator'
             else:
-                self.role = Role.query.filter_by(name='User').first()
+                role_name = 'User'
+            self.role = db.session.execute(
+                select(Role).filter_by(name=role_name)
+            ).scalar()
             db.session.commit()
 
     def validate_password(self, password):
@@ -145,7 +152,9 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = self.following.filter_by(followed_id=user.id).first()
+        follow = db.session.execute(
+            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
+        ).scalar()
         if follow:
             db.session.delete(follow)
             db.session.commit()
@@ -153,14 +162,25 @@ class User(db.Model, UserMixin):
     def is_following(self, user):
         if user.id is None:  # when follow self, user.id will be None
             return False
-        return self.following.filter_by(followed_id=user.id).first() is not None
+        following = db.session.execute(
+            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
+        ).scalar()
+        return following is not None
 
     def is_followed_by(self, user):
-        return self.followers.filter_by(follower_id=user.id).first() is not None
+        followed = db.session.execute(
+            select(Follow).filter_by(follower_id=user.id, followed_id=self.id)
+        ).scalar()
+        return followed is not None
 
     @property
     def followed_photos(self):
-        return Photo.query.join(Follow, Follow.followed_id == Photo.author_id).filter(Follow.follower_id == self.id)
+        photos = db.session.execute(
+            select(Photo)
+            .join(Follow, Follow.followed_id == Photo.author_id)
+            .filter(Follow.follower_id == self.id)
+        ).scalars().all()
+        return photos
 
     def collect(self, photo):
         if not self.is_collecting(photo):
@@ -169,22 +189,33 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def uncollect(self, photo):
-        collect = Collect.query.with_parent(self).filter_by(collected_id=photo.id).first()
+        collect = db.session.execute(
+            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
+        ).scalar()
         if collect:
             db.session.delete(collect)
             db.session.commit()
 
     def is_collecting(self, photo):
-        return Collect.query.with_parent(self).filter_by(collected_id=photo.id).first() is not None
+        collect = db.session.execute(
+            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
+        ).scalar()
+        return collect is not None
 
     def lock(self):
         self.locked = True
-        self.role = Role.query.filter_by(name='Locked').first()
+        locked_role = db.session.execute(
+            select(Role).filter_by(name='Locked')
+        ).scalar()
+        self.role = locked_role
         db.session.commit()
 
     def unlock(self):
         self.locked = False
-        self.role = Role.query.filter_by(name='User').first()
+        user_role = db.session.execute(
+            select(Role).filter_by(name='User')
+        ).scalar()
+        self.role = user_role
         db.session.commit()
 
     def block(self):
@@ -212,7 +243,9 @@ class User(db.Model, UserMixin):
         return self.active
 
     def can(self, permission_name):
-        permission = Permission.query.filter_by(name=permission_name).first()
+        permission = db.session.execute(
+            select(Permission).filter_by(name=permission_name)
+        ).scalar()
         return permission is not None and self.role is not None and permission in self.role.permissions
 
 
