@@ -38,17 +38,17 @@ class Role(db.Model):
         }
 
         for role_name in roles_permissions_map:
-            role = db.session.execute(
+            role = db.session.scalar(
                 select(Role).filter_by(name=role_name)
-            ).scalar()
+            )
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
             for permission_name in roles_permissions_map[role_name]:
-                permission = db.session.execute(
+                permission = db.session.scalar(
                     select(Permission).filter_by(name=permission_name)
-                ).scalar()
+                )
                 if permission is None:
                     permission = Permission(name=permission_name)
                     db.session.add(permission)
@@ -137,9 +137,9 @@ class User(db.Model, UserMixin):
                 role_name = 'Administrator'
             else:
                 role_name = 'User'
-            self.role = db.session.execute(
+            self.role = db.session.scalar(
                 select(Role).filter_by(name=role_name)
-            ).scalar()
+            )
             db.session.commit()
 
     def validate_password(self, password):
@@ -152,9 +152,9 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = db.session.execute(
+        follow = db.session.scalar(
             select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        ).scalar()
+        )
         if follow:
             db.session.delete(follow)
             db.session.commit()
@@ -162,24 +162,24 @@ class User(db.Model, UserMixin):
     def is_following(self, user):
         if user.id is None:  # when follow self, user.id will be None
             return False
-        following = db.session.execute(
+        following = db.session.scalar(
             select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        ).scalar()
+        )
         return following is not None
 
     def is_followed_by(self, user):
-        followed = db.session.execute(
+        followed = db.session.scalar(
             select(Follow).filter_by(follower_id=user.id, followed_id=self.id)
-        ).scalar()
+        )
         return followed is not None
 
     @property
     def followed_photos(self):
-        photos = db.session.execute(
+        photos = db.session.scalars(
             select(Photo)
             .join(Follow, Follow.followed_id == Photo.author_id)
             .filter(Follow.follower_id == self.id)
-        ).scalars().all()
+        ).all()
         return photos
 
     def collect(self, photo):
@@ -189,32 +189,32 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def uncollect(self, photo):
-        collect = db.session.execute(
+        collect = db.session.scalar(
             select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        ).scalar()
+        )
         if collect:
             db.session.delete(collect)
             db.session.commit()
 
     def is_collecting(self, photo):
-        collect = db.session.execute(
+        collect = db.session.scalar(
             select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        ).scalar()
+        )
         return collect is not None
 
     def lock(self):
         self.locked = True
-        locked_role = db.session.execute(
+        locked_role = db.session.scalar(
             select(Role).filter_by(name='Locked')
-        ).scalar()
+        )
         self.role = locked_role
         db.session.commit()
 
     def unlock(self):
         self.locked = False
-        user_role = db.session.execute(
+        user_role = db.session.scalar(
             select(Role).filter_by(name='User')
-        ).scalar()
+        )
         self.role = user_role
         db.session.commit()
 
@@ -243,9 +243,9 @@ class User(db.Model, UserMixin):
         return self.active
 
     def can(self, permission_name):
-        permission = db.session.execute(
+        permission = db.session.scalar(
             select(Permission).filter_by(name=permission_name)
-        ).scalar()
+        )
         return permission is not None and self.role is not None and permission in self.role.permissions
 
 

@@ -27,16 +27,16 @@ class RegisterForm(FlaskForm):
     submit = SubmitField()
 
     def validate_email(self, field):
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter_by(email=field.data.lower())
-        ).scalar()
+        )
         if user:
             raise ValidationError('The email is already in use.')
 
     def validate_username(self, field):
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter_by(username=field.data)
-        ).scalar()
+        )
         if user:
             raise ValidationError('The username is already in use.')
 

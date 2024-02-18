@@ -15,30 +15,30 @@ admin_bp = Blueprint('admin', __name__)
 @login_required
 @permission_required('MODERATE')
 def index():
-    user_count = db.session.execute(
+    user_count = db.session.scalar(
         select(func.count(User.id))
-    ).scalars().one()
-    locked_user_count = db.session.execute(
+    )
+    locked_user_count = db.session.scalar(
         select(func.count(User.id)).filter_by(locked=True)
-    ).scalars().one()
-    blocked_user_count = db.session.execute(
+    )
+    blocked_user_count = db.session.scalar(
         select(func.count(User.id)).filter_by(active=False)
-    ).scalars().one()
-    photo_count = db.session.execute(
+    )
+    photo_count = db.session.scalar(
         select(func.count(Photo.id))
-    ).scalars().one()
-    reported_photos_count = db.session.execute(
+    )
+    reported_photos_count = db.session.scalar(
         select(func.count(Photo.id)).filter(Photo.flag > 0)
-    ).scalars().one()
-    tag_count = db.session.execute(
+    )
+    tag_count = db.session.scalar(
         select(func.count(Tag.id))
-    ).scalars().one()
-    comment_count = db.session.execute(
+    )
+    comment_count = db.session.scalar(
         select(func.count(Comment.id))
-    ).scalars().one()
-    reported_comments_count = db.session.execute(
+    )
+    reported_comments_count = db.session.scalar(
         select(func.count(Comment.id)).filter(Comment.flag > 0)
-    ).scalars().one()
+    )
     return render_template('admin/index.html', user_count=user_count, photo_count=photo_count,
                            tag_count=tag_count, comment_count=comment_count, locked_user_count=locked_user_count,
                            blocked_user_count=blocked_user_count, reported_comments_count=reported_comments_count,

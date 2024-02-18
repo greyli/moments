@@ -31,17 +31,17 @@ def index():
     else:
         pagination = None
         photos = None
-    tags = db.session.execute(
+    tags = db.session.scalars(
         select(Tag).join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
-    ).scalars().all()
+    ).all()
     return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collect)
 
 
 @main_bp.route('/explore')
 def explore():
-    photos = db.session.execute(
+    photos = db.session.scalars(
         select(Photo).order_by(func.random()).limit(12)
-    ).scalars().all()
+    ).all()
     return render_template('main/explore.html', photos=photos)
 
 
@@ -165,9 +165,9 @@ def show_photo(photo_id):
 @main_bp.route('/photo/n/<int:photo_id>')
 def photo_next(photo_id):
     photo = db.get_or_404(Photo, photo_id)
-    photo_n = db.session.execute(
+    photo_n = db.session.scalar(
         select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
-    ).scalar()
+    )
 
     if photo_n is None:
         flash('This is already the last one.', 'info')
@@ -178,9 +178,9 @@ def photo_next(photo_id):
 @main_bp.route('/photo/p/<int:photo_id>')
 def photo_previous(photo_id):
     photo = db.get_or_404(Photo, photo_id)
-    photo_p = db.session.execute(
+    photo_p = db.session.scalar(
         select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
-    ).scalar()
+    )
     if photo_p is None:
         flash('This is already the first one.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -310,9 +310,9 @@ def new_tag(photo_id):
     form = TagForm()
     if form.validate_on_submit():
         for name in form.tag.data.split():
-            tag = db.session.execute(
+            tag = db.session.scalar(
                 select(Tag).filter_by(name=name)
-            ).scalar()
+            )
             if tag is None:
                 tag = Tag(name=name)
                 db.session.add(tag)
@@ -364,13 +364,13 @@ def delete_photo(photo_id):
     db.session.commit()
     flash('Photo deleted.', 'info')
 
-    photo_n = db.session.execute(
+    photo_n = db.session.scalar(
         select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
-    ).scalar()
+    )
     if photo_n is None:
-        photo_p = db.session.execute(
+        photo_p = db.session.scalar(
             select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
-        ).scalar()
+        )
         if photo_p is None:
             return redirect(url_for('user.index', username=photo.author.username))
         return redirect(url_for('.show_photo', photo_id=photo_p.id))

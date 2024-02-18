@@ -45,9 +45,9 @@ class ChangeEmailForm(FlaskForm):
     submit = SubmitField()
 
     def validate_email(self, field):
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter_by(email=field.data.lower())
-        ).scalar()
+        )
         if user:
             raise ValidationError('The email is already in use.')
 

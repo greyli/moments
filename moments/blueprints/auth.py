@@ -19,9 +19,9 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter(func.lower(User.email) == form.email.data.lower())
-        ).scalar()
+        )
         if user is not None and user.validate_password(form.password.data):
             if login_user(user, form.remember_me.data):
                 flash('Login success.', 'info')
@@ -111,9 +111,9 @@ def forget_password():
 
     form = ForgetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter(func.lower(User.email) == form.email.data.lower())
-        ).scalar()
+        )
         if user:
             token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
             send_reset_password_email(user=user, token=token)
@@ -131,9 +131,9 @@ def reset_password(token):
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).filter(func.lower(User.email) == form.email.data.lower())
-        ).scalar()
+        )
         if user is None:
             return redirect(url_for('main.index'))
         if parse_token(user=user, token=token, operation=Operations.RESET_PASSWORD):

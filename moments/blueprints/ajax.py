@@ -14,9 +14,9 @@ def notifications_count():
     if not current_user.is_authenticated:
         return jsonify(message='Login required.'), 403
 
-    count = db.session.execute(
+    count = db.session.scalar(
         select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False)
-    ).scalars().one()
+    )
     return jsonify(count=count)
 
 
@@ -30,18 +30,18 @@ def get_profile(user_id):
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
     user = db.get_or_404(User, user_id)
-    count = db.session.execute(
+    count = db.session.scalar(
         select(func.count(Follow.follower_id)).filter_by(followed_id=user.id)
-    ).scalars().one()
+    )
     return jsonify(count=count - 1)  # minus user self
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
     photo = db.get_or_404(Photo, photo_id)
-    count = db.session.execute(
+    count = db.session.scalar(
         select(func.count(Collect.collector_id)).filter_by(collected_id=photo.id)
-    ).scalars().one()
+    )
     return jsonify(count=count)
 
 

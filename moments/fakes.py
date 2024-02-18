@@ -47,12 +47,12 @@ def fake_user(count=10):
 
 def fake_follow(count=30):
     for _ in range(count):
-        user = db.session.execute(
+        user = db.session.scalar(
             select(User).order_by(func.random()).limit(1)
-        ).scalar()
-        user2 = db.session.execute(
+        )
+        user2 = db.session.scalar(
             select(User).order_by(func.random()).limit(1)
-        ).scalar()
+        )
         user.follow(user2)
     db.session.commit()
 
@@ -79,7 +79,7 @@ def fake_photo(count=30):
         img = Image.new(mode='RGB', size=(800, 800), color=(r(), r(), r()))
         img.save(os.path.join(upload_path, filename))
 
-        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user_count = db.session.scalar(select(func.count(User.id)))
         user = db.session.get(User, random.randint(1, user_count))
         photo = Photo(
             description=fake.text(),
@@ -92,7 +92,7 @@ def fake_photo(count=30):
 
         # tags
         for _ in range(random.randint(1, 5)):
-            tag_count = db.session.execute(select(func.count(Tag.id))).scalars().one()
+            tag_count = db.session.scalar(select(func.count(Tag.id)))
             tag = db.session.get(Tag, random.randint(1, tag_count))
             if tag not in photo.tags:
                 photo.tags.append(tag)
@@ -103,9 +103,9 @@ def fake_photo(count=30):
 
 def fake_collect(count=50):
     for _ in range(count):
-        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user_count = db.session.scalar(select(func.count(User.id)))
         user = db.session.get(User, random.randint(1, user_count))
-        photo_count = db.session.execute(select(func.count(Photo.id))).scalars().one()
+        photo_count = db.session.scalar(select(func.count(Photo.id)))
         photo = db.session.get(Photo, random.randint(1, photo_count))
         user.collect(photo)
     db.session.commit()
@@ -113,9 +113,9 @@ def fake_collect(count=50):
 
 def fake_comment(count=100):
     for _ in range(count):
-        user_count = db.session.execute(select(func.count(User.id))).scalars().one()
+        user_count = db.session.scalar(select(func.count(User.id)))
         user = db.session.get(User, random.randint(1, user_count))
-        photo_count = db.session.execute(select(func.count(Photo.id))).scalars().one()
+        photo_count = db.session.scalar(select(func.count(Photo.id)))
         photo = db.session.get(Photo, random.randint(1, photo_count))
         comment = Comment(
             author=user,
