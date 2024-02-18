@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import current_app
 from flask_avatars import Identicon
@@ -62,7 +62,7 @@ class Follow(db.Model):
                             primary_key=True)
     followed_id = Column(Integer, ForeignKey('user.id'),
                             primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
 
     follower = db.relationship('User', foreign_keys=[follower_id], back_populates='following', lazy='joined')
     followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers', lazy='joined')
@@ -74,7 +74,7 @@ class Collect(db.Model):
                              primary_key=True)
     collected_id = Column(Integer, ForeignKey('photo.id'),
                              primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
 
     collector = db.relationship('User', back_populates='collections', lazy='joined')
     collected = db.relationship('Photo', back_populates='collectors', lazy='joined')
@@ -90,7 +90,7 @@ class User(db.Model, UserMixin):
     website = Column(String(255))
     bio = Column(String(120))
     location = Column(String(50))
-    member_since = Column(DateTime, default=datetime.utcnow)
+    member_since = Column(DateTime, default=datetime.now(timezone.utc))
     avatar_s = Column(String(64))
     avatar_m = Column(String(64))
     avatar_l = Column(String(64))
@@ -262,7 +262,7 @@ class Photo(db.Model):
     filename = Column(String(64))
     filename_s = Column(String(64))
     filename_m = Column(String(64))
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc), index=True)
     can_comment = Column(Boolean, default=True)
     flag = Column(Integer, default=0)
     author_id = Column(Integer, ForeignKey('user.id'))
@@ -284,7 +284,7 @@ class Tag(db.Model):
 class Comment(db.Model):
     id = Column(Integer, primary_key=True)
     body = Column(Text)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc), index=True)
     flag = Column(Integer, default=0)
 
     replied_id = Column(Integer, ForeignKey('comment.id'))
@@ -301,7 +301,7 @@ class Notification(db.Model):
     id = Column(Integer, primary_key=True)
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc), index=True)
 
     receiver_id = Column(Integer, ForeignKey('user.id'))
 

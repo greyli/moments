@@ -81,7 +81,7 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Notification archived.', data)
 
-        self.assertTrue(Notification.query.get(1).is_read)
+        self.assertTrue(db.session.get(Notification, 1).is_read)
 
     def test_read_all_notification(self):
         user = db.session.get(User, 2)
@@ -96,8 +96,8 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('All notifications archived.', data)
 
-        self.assertTrue(Notification.query.get(1).is_read)
-        self.assertTrue(Notification.query.get(2).is_read)
+        self.assertTrue(db.session.get(Notification, 1).is_read)
+        self.assertTrue(db.session.get(Notification, 2).is_read)
 
     def test_show_photo(self):
         response = self.client.get('/photo/1', follow_redirects=True)

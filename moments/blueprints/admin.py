@@ -129,7 +129,7 @@ def unlock_user(user_id):
 @login_required
 @permission_required('MODERATE')
 def delete_tag(tag_id):
-    tag = Tag.query.get_or_404(tag_id)
+    tag = db.get_or_404(Tag, tag_id)
     db.session.delete(tag)
     db.session.commit()
     flash('Tag deleted.', 'info')
