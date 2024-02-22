@@ -5,25 +5,25 @@
 {% block title %}{{ user.name }}'s followers{% endblock %}
 
 {% block content %}
-    {% include 'user/_header.html' %}
-    <div class="row">
-        <div class="col-md-12">
-            {% if followers|length != 1 %}
-                {% for follower in followers %}
-                    {% if follower != user %}
-                        {{ user_card(user=follower) }}
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <div class="tip">
-                    <h3>No followers.</h3>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-    {% if follows|length != 1 %}
-        <div class="page-footer">
-            {{ render_pagination(pagination) }}
-        </div>
+{% include 'user/_header.html' %}
+<div class="row">
+  <div class="col-md-12">
+    {% if followers|length != 1 %}
+    {% for follower in followers %}
+    {% if follower != user %}
+    {{ user_card(user=follower) }}
     {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="tip">
+      <h3>No followers.</h3>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% if follows|length != 1 %}
+<div class="page-footer">
+  {{ render_pagination(pagination) }}
+</div>
+{% endif %}
 {% endblock %}
