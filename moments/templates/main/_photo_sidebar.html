@@ -116,7 +116,7 @@
             </form>
         {% endif %}
         {% if photo.collectors %}
-            <a href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors|length }}
+            <a href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors_count }}
                 collectors</a>
         {% endif %}
     </div>

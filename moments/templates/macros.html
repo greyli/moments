@@ -4,8 +4,8 @@
             <img class="card-img-top portrait" src="{{ url_for('main.get_image', filename=photo.filename_s) }}">
         </a>
         <div class="card-body">
-            <span class="oi oi-star"></span> {{ photo.collectors|length }}
-            <span class="oi oi-comment-square"></span> {{ photo.comments|length }}
+            <span class="oi oi-star"></span> {{ photo.collectors_count }}
+            <span class="oi oi-comment-square"></span> {{ photo.comments_count }}
         </div>
     </div>
 {% endmacro %}

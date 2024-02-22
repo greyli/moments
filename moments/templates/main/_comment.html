@@ -1,5 +1,5 @@
 <div class="comments" id="comments">
-    <h3>{{ photo.comments|length }} Comments
+    <h3>{{ photo.comments_count }} Comments
         <small>
             <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">latest</a>
         </small>

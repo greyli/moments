@@ -72,9 +72,9 @@
 </div>
 <div class="user-nav">
     <ul class="nav nav-tabs">
-        {{ render_nav_item('user.index', 'Photo', user.photos|length, username=user.username) }}
-        {{ render_nav_item('user.show_collections', 'Collections', user.collections|length, username=user.username) }}
-        {{ render_nav_item('user.show_following', 'Following', user.following.count() - 1, username=user.username) }}
-        {{ render_nav_item('user.show_followers', 'Follower', user.followers.count() - 1, username=user.username) }}
+        {{ render_nav_item('user.index', 'Photo', user.photos_count, username=user.username) }}
+        {{ render_nav_item('user.show_collections', 'Collections', user.collections_count, username=user.username) }}
+        {{ render_nav_item('user.show_following', 'Following', user.following_count, username=user.username) }}
+        {{ render_nav_item('user.show_followers', 'Follower', user.followers_count, username=user.username) }}
     </ul>
 </div>

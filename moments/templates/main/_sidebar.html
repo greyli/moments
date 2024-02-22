@@ -25,7 +25,7 @@
     <div class="list-group">
         {% for tag in tags %}
             <a class="list-group-item" href="{{ url_for('.show_tag', tag_id=tag.id) }}">{{ tag.name }}
-                <span class="badge badge-pill">{{ tag.photos|length }}</span>
+                <span class="badge badge-pill">{{ tag.photos_count }}</span>
             </a>
         {% endfor %}
     </div>

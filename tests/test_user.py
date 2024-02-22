@@ -56,7 +56,7 @@ class UserTestCase(BaseTestCase):
         self.assertIn('Already followed.', data)
 
         user = db.session.get(User, 1)
-        self.assertEqual(len(user.notifications), 1)
+        self.assertEqual(user.notifications_count, 1)
 
     def test_unfollow(self):
         response = self.client.post('/user/follow/admin', follow_redirects=True)
@@ -182,7 +182,7 @@ class UserTestCase(BaseTestCase):
         self.client.post('/user/follow/normal')
         self.client.post('/2/comment/new', data=dict(body='test comment from admin user.'))
         self.client.post('/collect/2')
-        self.assertEqual(len(user.notifications), 0)
+        self.assertEqual(user.notifications_count, 0)
 
     def test_privacy_setting(self):
         self.login()

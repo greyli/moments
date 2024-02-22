@@ -85,7 +85,7 @@ class AdminTestCase(BaseTestCase):
         self.assertEqual(user.role.name, 'User')
 
     def test_delete_tag(self):
-        tag = Tag()
+        tag = Tag(name='test')
         db.session.add(tag)
         db.session.commit()
         self.assertIsNotNone(db.session.get(Tag, 1))

@@ -170,14 +170,16 @@ class MainTestCase(BaseTestCase):
                       description='Photo 3', author=db.session.get(User, 2))
         db.session.add(photo)
         db.session.commit()
-        self.assertEqual(db.session.get(Photo, 3).collectors, [])
+        photo = db.session.get(Photo, 3)
+        collects = db.session.scalars(photo.collectors.select()).all()
+        self.assertEqual(collects, [])
 
         self.login()
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo collected.', data)
-
-        self.assertEqual(db.session.get(Photo, 3).collectors[0].collector.name, 'Normal User')
+        collects = db.session.scalars(photo.collectors.select()).all()
+        self.assertEqual(collects[0].collector.name, 'Normal User')
 
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -239,7 +241,9 @@ class MainTestCase(BaseTestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment published.', data)
-        self.assertEqual(db.session.get(Photo, 1).comments[1].body, 'test comment from normal user.')
+        photo = db.session.get(Photo, 1)
+        comments = db.session.scalars(photo.comments.select()).all()
+        self.assertEqual(comments[1].body, 'test comment from normal user.')
 
     def test_new_tag(self):
         self.login(email='admin@helloflask.com', password='123')
@@ -307,11 +311,12 @@ class MainTestCase(BaseTestCase):
         tag = Tag(name='test')
         photo.tags.append(tag)
         db.session.commit()
+        tag_id = tag.id
 
         self.login()
-        response = self.client.post('/delete/tag/2/2', follow_redirects=True)
+        response = self.client.post(f'/delete/tag/2/{tag_id}', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Tag deleted.', data)
 
         self.assertEqual(photo.tags, [])
-        self.assertIsNone(db.session.get(Tag, 2))
+        self.assertIsNone(db.session.get(Tag, tag_id))

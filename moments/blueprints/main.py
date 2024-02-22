@@ -101,7 +101,8 @@ def read_notification(notification_id):
 @main_bp.route('/notifications/read/all', methods=['POST'])
 @login_required
 def read_all_notification():
-    for notification in current_user.notifications:
+    notifications = db.session.scalars(current_user.notifications.select()).all()
+    for notification in notifications:
         notification.is_read = True
     db.session.commit()
     flash('All notifications archived.', 'success')
@@ -408,7 +409,7 @@ def show_tag(tag_id, order):
     photos = pagination.items
 
     if order == 'by_collects':
-        photos.sort(key=lambda x: len(x.collectors), reverse=True)
+        photos.sort(key=lambda x: x.collectors_count, reverse=True)
         order_rule = 'collects'
     return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
 
@@ -416,14 +417,15 @@ def show_tag(tag_id, order):
 @main_bp.route('/delete/tag/<int:photo_id>/<int:tag_id>', methods=['POST'])
 @login_required
 def delete_tag(photo_id, tag_id):
-    tag = db.get_or_404(Tag, tag_id)
     photo = db.get_or_404(Photo, photo_id)
+    tag = db.get_or_404(Tag, tag_id)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
     photo.tags.remove(tag)
     db.session.commit()
 
-    if not tag.photos:
+    tag_photos = db.session.scalars(tag.photos.select()).all()
+    if not tag_photos:
         db.session.delete(tag)
         db.session.commit()
 

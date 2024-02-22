@@ -89,6 +89,7 @@ def fake_photo(count=30):
             author=user,
             timestamp=fake.date_time_this_year()
         )
+        db.session.add(photo)
 
         # tags
         for _ in range(random.randint(1, 5)):
@@ -96,8 +97,6 @@ def fake_photo(count=30):
             tag = db.session.get(Tag, random.randint(1, tag_count))
             if tag not in photo.tags:
                 photo.tags.append(tag)
-
-        db.session.add(photo)
     db.session.commit()
 
 

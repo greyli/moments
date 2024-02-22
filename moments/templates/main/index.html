@@ -38,9 +38,9 @@
                             <span class="oi oi-star"></span>
                             <span id="collectors-count-{{ photo.id }}"
                                   data-href="{{ url_for('ajax.collectors_count', photo_id=photo.id) }}">
-                                {{ photo.collectors|length }}
+                                {{ photo.collectors_count }}
                             </span>
-                            <span class="oi oi-comment-square"></span> {{ photo.comments|length }}
+                            <span class="oi oi-comment-square"></span> {{ photo.comments_count }}
                             <div class="float-right">
                                 {% if current_user.is_authenticated %}
                                     <button class="{% if not current_user.is_collecting(photo) %}hide{% endif %}

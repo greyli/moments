@@ -22,7 +22,6 @@ def notifications_count():
 
 @ajax_bp.route('/profile/<int:user_id>')
 def get_profile(user_id):
-
     user = db.get_or_404(User, user_id)
     return render_template('main/profile_popup.html', user=user)
 
@@ -30,19 +29,13 @@ def get_profile(user_id):
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
     user = db.get_or_404(User, user_id)
-    count = db.session.scalar(
-        select(func.count(Follow.follower_id)).filter_by(followed_id=user.id)
-    )
-    return jsonify(count=count - 1)  # minus user self
+    return jsonify(count=user.followers_count)
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
     photo = db.get_or_404(Photo, photo_id)
-    count = db.session.scalar(
-        select(func.count(Collect.collector_id)).filter_by(collected_id=photo.id)
-    )
-    return jsonify(count=count)
+    return jsonify(count=photo.collectors_count)
 
 
 @ajax_bp.route('/collect/<int:photo_id>', methods=['POST'])

@@ -16,12 +16,12 @@
     </div>
     <p class="card-text">
         <a href="{{ url_for('user.index', username=user.username) }}">
-            <strong>{{ user.photos|length }}</strong> Photos
+            <strong>{{ user.photos_count }}</strong> Photos
         </a>&nbsp;
         <a href="{{ url_for('user.show_followers', username=user.username) }}">
             <strong id="followers-count-{{ user.id }}"
                     data-href="{{ url_for('ajax.followers_count', user_id=user.id) }}">
-                {{ user.followers.count() - 1 }}
+                {{ user.followers_count }}
             </strong> Followers
         </a>
     </p>

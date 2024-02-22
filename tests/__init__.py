@@ -17,22 +17,15 @@ class BaseTestCase(unittest.TestCase):
         db.create_all()
         Role.init_role()
 
-        admin_user = User(email='admin@helloflask.com', name='Admin', username='admin', confirmed=True)
-        admin_user.password = '123'
-        normal_user = User(email='normal@helloflask.com', name='Normal User', username='normal', confirmed=True)
-        normal_user.password = '123'
-        unconfirmed_user = User(email='unconfirmed@helloflask.com', name='Unconfirmed', username='unconfirmed',
+        admin_user = User(email='admin@helloflask.com', name='Admin', username='admin', password='123', confirmed=True)
+        normal_user = User(email='normal@helloflask.com', name='Normal User', username='normal', password='123', confirmed=True)
+        unconfirmed_user = User(email='unconfirmed@helloflask.com', name='Unconfirmed', username='unconfirmed', password='123',
                                 confirmed=False)
-        unconfirmed_user.password = '123'
-        locked_user = User(email='locked@helloflask.com', name='Locked User', username='locked',
+        locked_user = User(email='locked@helloflask.com', name='Locked User', username='locked', password='123',
                            confirmed=True, locked=True)
-        locked_user.password = '123'
         locked_user.lock()
-
-        blocked_user = User(email='blocked@helloflask.com', name='Blocked User', username='blocked',
+        blocked_user = User(email='blocked@helloflask.com', name='Blocked User', username='blocked', password='123',
                             confirmed=True, active=False)
-        blocked_user.password = '123'
-
         photo = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
                       description='Photo 1', author=admin_user)
         photo2 = Photo(filename='test2.jpg', filename_s='test_s2.jpg', filename_m='test_m2.jpg',
