@@ -52,7 +52,7 @@
       <a href="{{ url_for('main.show_photo', photo_id=comment.photo.id) }}">Photo {{ comment.photo.id }}</a>
     </td>
     <td>{{ comment.flag }}</td>
-    <td>{{ moment(comment.timestamp).format('LL') }}</td>
+    <td>{{ moment(comment.created_at).format('LL') }}</td>
     <td>
       <form class="inline" method="post"
         action="{{ url_for('main.delete_comment', comment_id=comment.id, next=request.full_path) }}">

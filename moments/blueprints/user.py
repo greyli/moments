@@ -27,7 +27,7 @@ def index(username):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
     pagination = db.paginate(
-        select(Photo).filter_by(author_id=user.id).order_by(Photo.timestamp.desc()),
+        select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc()),
         page=page, per_page=per_page
     )
     photos = pagination.items
@@ -43,7 +43,7 @@ def show_collections(username):
         select(Photo)
         .join(Collect, Collect.collected_id == Photo.id)
         .filter_by(collector_id=user.id)
-        .order_by(Collect.timestamp.desc()),
+        .order_by(Collect.created_at.desc()),
         page=page,
         per_page=per_page
     )

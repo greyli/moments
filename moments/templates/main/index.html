@@ -21,8 +21,8 @@
           data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
           href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
         <span class="float-right">
-          <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ photo.timestamp }}" data-delay="500">
-            {{ moment(photo.timestamp).fromNow(refresh=True) }}</small></span>
+          <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ photo.created_at }}" data-delay="500">
+            {{ moment(photo.created_at).fromNow(refresh=True) }}</small></span>
       </div>
       <div class="card-body">
         <div class="" align="center">

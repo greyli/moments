@@ -69,7 +69,7 @@
       <a href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
     </td>
     <td>{{ photo.flag }}</td>
-    <td>{{ moment(photo.timestamp).format('LL') }}</td>
+    <td>{{ moment(photo.created_at).format('LL') }}</td>
     <td>
       <form class="inline" method="post"
         action="{{ url_for('main.delete_photo', photo_id=photo.id, next=request.full_path) }}">

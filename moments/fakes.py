@@ -87,7 +87,7 @@ def fake_photo(count=30):
             filename_m=filename,
             filename_s=filename,
             author=user,
-            timestamp=fake.date_time_this_year()
+            created_at=fake.date_time_this_year()
         )
         db.session.add(photo)
 
@@ -119,7 +119,7 @@ def fake_comment(count=100):
         comment = Comment(
             author=user,
             body=fake.sentence(),
-            timestamp=fake.date_time_this_year(),
+            created_at=fake.date_time_this_year(),
             photo=photo
         )
         db.session.add(comment)

@@ -32,8 +32,8 @@
         {% if comment.author == photo.author %}
         <span class="badge badge-light">Author</span>
         {% endif %}
-        <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.timestamp }}" data-delay="500">
-          {{ moment(comment.timestamp).fromNow(refresh=True) }}
+        <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.created_at }}" data-delay="500">
+          {{ moment(comment.created_at).fromNow(refresh=True) }}
         </small>
         {% if current_user.is_authenticated %}
         <span class="float-right">

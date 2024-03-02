@@ -171,7 +171,7 @@ def manage_photo(order):
     per_page = current_app.config['MOMENTS_MANAGE_PHOTO_PER_PAGE']
     order_rule = 'flag'
     if order == 'by_time':
-        pagination = db.paginate(select(Photo).order_by(Photo.timestamp.desc()), page=page, per_page=per_page)
+        pagination = db.paginate(select(Photo).order_by(Photo.created_at.desc()), page=page, per_page=per_page)
         order_rule = 'time'
     else:
         pagination = db.paginate(select(Photo).order_by(Photo.flag.desc()), page=page, per_page=per_page)
@@ -200,7 +200,7 @@ def manage_comment(order):
     order_rule = 'flag'
     if order == 'by_time':
         pagination = db.paginate(
-            select(Comment).order_by(Comment.timestamp.desc()
+            select(Comment).order_by(Comment.created_at.desc()
         ), page=page, per_page=per_page)
         order_rule = 'time'
     else:

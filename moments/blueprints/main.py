@@ -24,7 +24,7 @@ def index():
             select(Photo)
             .join(Follow, Follow.followed_id == Photo.author_id)
             .filter(Follow.follower_id == current_user.id)
-            .order_by(Photo.timestamp.desc()),
+            .order_by(Photo.created_at.desc()),
             page=page, per_page=per_page
         )
         photos = pagination.items
@@ -77,7 +77,7 @@ def show_notifications():
         notifications = notifications.filter_by(is_read=False)
 
     pagination = db.paginate(
-        notifications.order_by(Notification.timestamp.desc()),
+        notifications.order_by(Notification.created_at.desc()),
         page=page,
         per_page=per_page
     )
@@ -147,7 +147,7 @@ def show_photo(photo_id):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_COMMENT_PER_PAGE']
     pagination = db.paginate(
-        select(Comment).filter_by(photo_id=photo.id).order_by(Comment.timestamp.asc()),
+        select(Comment).filter_by(photo_id=photo.id).order_by(Comment.created_at.asc()),
         page=page,
         per_page=per_page
     )
@@ -402,7 +402,7 @@ def show_tag(tag_id, order):
         select(Photo)
         .join(Photo.tags)
         .filter(Tag.id == tag.id)
-        .order_by(Photo.timestamp.desc()),
+        .order_by(Photo.created_at.desc()),
         page=page,
         per_page=per_page
     )

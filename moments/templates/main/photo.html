@@ -24,7 +24,7 @@
     </form>
     {% endif %}
     <p class="text-muted float-right small">
-      <span class="oi oi-clock"></span> Upload at {{ moment(photo.timestamp).format('LL') }}
+      <span class="oi oi-clock"></span> Upload at {{ moment(photo.created_at).format('LL') }}
     </p>
     {% include 'main/_comment.html' %}
   </div>

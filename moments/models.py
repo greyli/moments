@@ -72,7 +72,7 @@ class Role(db.Model):
 class Follow(db.Model):
     follower_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
     followed_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
-    timestamp: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
 
     follower: Mapped['User'] = relationship(foreign_keys=[follower_id], back_populates='following', lazy='joined')
     followed: Mapped['User'] = relationship(foreign_keys=[followed_id], back_populates='followers', lazy='joined')
@@ -82,7 +82,7 @@ class Follow(db.Model):
 class Collect(db.Model):
     collector_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
     collected_id: Mapped[int] = mapped_column(ForeignKey('photo.id'), primary_key=True)
-    timestamp: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
 
     collector: Mapped['User'] = relationship(back_populates='collections', lazy='joined')
     collected: Mapped['Photo'] = relationship(back_populates='collectors', lazy='joined')
@@ -230,10 +230,7 @@ class User(db.Model, UserMixin):
 
     def generate_avatar(self):
         avatar = Identicon()
-        filenames = avatar.generate(text=self.username)
-        self.avatar_s = filenames[0]
-        self.avatar_m = filenames[1]
-        self.avatar_l = filenames[2]
+        self.avatar_s, self.avatar_m, self.avatar_m = avatar.generate(text=self.username)
         db.session.commit()
 
     @property
@@ -296,7 +293,7 @@ class Photo(db.Model):
     filename: Mapped[str] = mapped_column(String(64))
     filename_s: Mapped[str] = mapped_column(String(64))
     filename_m: Mapped[str] = mapped_column(String(64))
-    timestamp: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
     can_comment: Mapped[bool] = mapped_column(default=True)
     flag: Mapped[int] = mapped_column(default=0)
 
@@ -337,7 +334,7 @@ class Tag(db.Model):
 class Comment(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     body: Mapped[str] = mapped_column(Text)
-    timestamp: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
     flag: Mapped[int] = mapped_column(default=0)
 
     replied_id: Mapped[Optional[int]] = mapped_column(ForeignKey('comment.id'))
@@ -354,7 +351,7 @@ class Notification(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     is_read: Mapped[bool] = mapped_column(default=False)
-    timestamp: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
 
     receiver_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
 

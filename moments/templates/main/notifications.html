@@ -42,7 +42,7 @@
           <li class="list-group-item">
             {{ notification.message|safe }}
             <span class="float-right">
-              {{ moment(notification.timestamp).fromNow(refresh=True) }}
+              {{ moment(notification.created_at).fromNow(refresh=True) }}
               {% if notification.is_read == False %}
               <form class="inline" action="{{ url_for('.read_notification', notification_id=notification.id) }}"
                 method="post">
