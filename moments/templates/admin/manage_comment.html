@@ -1,5 +1,5 @@
 {% extends 'admin/index.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 
 {% block title %}Manage Comments{% endblock %}
 
@@ -14,9 +14,9 @@
   <h1>Comments
     <small class="text-muted">{{ pagination.total }}</small>
     <span class="dropdown">
-      <button class="btn btn-secondary btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+      <button class="btn btn-secondary btn-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
         aria-haspopup="true" aria-expanded="false">
-        Order by {{ order_rule }} <span class="oi oi-elevator"></span>
+        Order by {{ order_rule }} {{ render_icon('chevron-expand') }}
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         {% if order_rule == 'flag' %}
@@ -46,10 +46,10 @@
   <tr>
     <td>{{ comment.body }}</td>
     <td>
-      <a href="{{ url_for('user.index', username=comment.author.username) }}">{{ comment.author.name }}</a>
+      <a class="text-decoration-none" href="{{ url_for('user.index', username=comment.author.username) }}">{{ comment.author.name }}</a>
     </td>
     <td>
-      <a href="{{ url_for('main.show_photo', photo_id=comment.photo.id) }}">Photo {{ comment.photo.id }}</a>
+      <a class="text-decoration-none" href="{{ url_for('main.show_photo', photo_id=comment.photo.id) }}">Photo {{ comment.photo.id }}</a>
     </td>
     <td>{{ comment.flag }}</td>
     <td>{{ moment(comment.created_at).format('LL') }}</td>

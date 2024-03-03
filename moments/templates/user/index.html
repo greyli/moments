@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 {% from 'macros.html' import photo_card %}
 
 {% block title %}{{ user.name }}{% endblock %}
@@ -16,9 +16,9 @@
     <div class="tip text-center">
       <h3>No photos.</h3>
       {% if user == current_user %}
-      <a class="btn btn-link" href="{{ url_for('main.upload') }}">Upload</a>
+      <a class="btn btn-light" href="{{ url_for('main.upload') }}">Upload</a>
       {% else %}
-      <a class="btn btn-link" href="{{ url_for('main.explore') }}">Explore</a>
+      <a class="btn btn-light" href="{{ url_for('main.explore') }}">Explore</a>
       {% endif %}
     </div>
     {% endif %}

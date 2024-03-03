@@ -1,29 +1,29 @@
 {% from 'macros.html' import follow_area with context %}
-{% from 'bootstrap4/nav.html' import render_nav_item %}
+{% from 'bootstrap5/nav.html' import render_nav_item %}
 
 
 <div class="row">
-  <div class="col-md-3">
+  <div class="col-md-2">
     <a href="{% if current_user == user %}{{ url_for('.change_avatar') }}{% else %}#{% endif %}" title="Change avatar">
       <img class="img-fluid rounded" src="{{ url_for('main.get_avatar', filename=user.avatar_l) }}">
     </a>
   </div>
-  <div class="col-md-9">
+  <div class="col-md-10">
     <h1>{{ user.name }}
       <small class="text-muted">{{ user.username }}</small>
     </h1>
     {% if user.bio %}<p>{{ user.bio }}</p>{% endif %}
     <p>
       {% if user.website %}
-      <span class="oi oi-link-intact"></span>
-      <a href="{{ user.website }}" target="_blank">{{ user.website|truncate(30) }}</a>&nbsp;&nbsp;
+      {{ render_icon('link-45deg') }}
+      <a class="text-decoration-none text-dark" href="{{ user.website }}" target="_blank">{{ user.website|truncate(30) }}</a>&nbsp;&nbsp;
       {% endif %}
       {% if user.location %}
-      <span class="oi oi-map-marker"></span>
-      <a href="https://www.google.com/maps?q={{ user.location }}" target="_blank">{{ user.location|truncate(30)
+      {{ render_icon('pin-map') }}
+      <a class="text-decoration-none text-dark" href="https://www.google.com/maps?q={{ user.location }}" target="_blank">{{ user.location|truncate(30)
         }}</a>&nbsp;&nbsp;
       {% endif %}
-      <span class="oi oi-calendar"></span>
+      {{ render_icon('calendar') }}
       Joined {{ moment(user.member_since).format('LL') }}
     </p>
     <div>
@@ -59,7 +59,7 @@
         profile</a>
       {% endif %}
       {% endif %}
-      <div class="float-right">
+      <div class="float-end">
         {{ follow_area(user) }}
         {% if current_user.is_authenticated and user == current_user %}
         <a class="btn btn-outline-primary btn-sm" href="{{ url_for('.edit_profile') }}">Edit profile</a>

@@ -1,5 +1,5 @@
 {% extends 'admin/index.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 
 {% block title %}Manage Users{% endblock %}
 
@@ -63,7 +63,7 @@
     <td>{{ user.location }}</td>
     <td>{{ moment(user.member_since).format('LL') }}</td>
     <td>
-      <a href="{{ url_for('user.index', username=user.username) }}">{{ user.photos_count }}</a>
+      <a class="text-decoration-none" href="{{ url_for('user.index', username=user.username) }}">{{ user.photos_count }}</a>
     </td>
     <td>
       {% if user.role.name not in ['Administrator', 'Moderator'] %}

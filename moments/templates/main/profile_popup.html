@@ -6,19 +6,19 @@
       {% if current_user.is_authenticated %}
       {% if current_user != user and current_user.is_followed_by(user) %}
       {% if user.is_followed_by(current_user) %}
-      <span class="badge badge-light">Follow each other</span>
+      <span class="badge text-bg-light rounded-pill">Follow each other</span>
       {% else %}
-      <span class="badge badge-light">Follows you</span>
+      <span class="badge text-bg-light rounded-pill">Follows you</span>
       {% endif %}
       {% endif %}
       {% endif %}
     </p>
   </div>
   <p class="card-text">
-    <a href="{{ url_for('user.index', username=user.username) }}">
+    <a class="text-decoration-none" href="{{ url_for('user.index', username=user.username) }}">
       <strong>{{ user.photos_count }}</strong> Photos
     </a>&nbsp;
-    <a href="{{ url_for('user.show_followers', username=user.username) }}">
+    <a class="text-decoration-none" href="{{ url_for('user.show_followers', username=user.username) }}">
       <strong id="followers-count-{{ user.id }}" data-href="{{ url_for('ajax.followers_count', user_id=user.id) }}">
         {{ user.followers_count }}
       </strong> Followers

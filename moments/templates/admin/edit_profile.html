@@ -1,6 +1,6 @@
 {% extends 'admin/index.html' %}
-{% from 'bootstrap4/form.html' import render_form %}
-{% from 'bootstrap4/nav.html' import render_breadcrumb_item %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% from 'bootstrap5/nav.html' import render_breadcrumb_item %}
 
 {% block title %}Edit profile{% endblock %}
 
@@ -14,7 +14,7 @@
 </nav>
 <div class="page-header">
   <h1>Edit profile
-    <a class="float-right btn btn-light" href="{{ url_for('user.index', username=user.username) }}">Return
+    <a class="float-end btn btn-light" href="{{ url_for('user.index', username=user.username) }}">Return
       {{ user.username }}'s homepage</a>
   </h1>
 </div>

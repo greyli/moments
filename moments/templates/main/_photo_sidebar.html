@@ -3,23 +3,26 @@
 <nav aria-label="Page navigation">
   <ul class="pagination">
     <li class="page-item">
-      <a class="page-link" href="{{ url_for('.photo_previous', photo_id=photo.id) }}">&larr;Previous</a>
+      <a class="page-link" href="{{ url_for('.photo_previous', photo_id=photo.id) }}">&larr; Previous</a>
     </li>
     <li class="page-item">
-      <a class="page-link" href="{{ url_for('.photo_next', photo_id=photo.id) }}">Next&rarr;</a>
+      <a class="page-link" href="{{ url_for('.photo_next', photo_id=photo.id) }}">Next &rarr;</a>
     </li>
   </ul>
 </nav>
-<div class="card bg-light mb-3 w-100 sidebar-card">
+<div class="card bg-light mb-3 sidebar-card">
   <div class="card-body">
     <div class="row">
-      <a href="{{ url_for('user.index', username=photo.author.username) }}">
-        <img class="sidebar-avatar rounded avatar-m"
-          src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
-      </a>
-      <div class="sidebar-profile">
+      <div class="col-md-4 me-0">
+        <a href="{{ url_for('user.index', username=photo.author.username) }}">
+          <img class="sidebar-avatar rounded avatar-m"
+            src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
+        </a>
+      </div>
+
+      <div class="col-md-8 ms-0">
         <h6 class="card-title">
-          <a href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
+          <a class="text-decoration-none" href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
         </h6>
         <p class="card-subtitle mb-2 text-muted">{{ photo.author.username }}</p>
         {{ follow_area(photo.author) }}
@@ -27,7 +30,7 @@
     </div>
   </div>
 </div>
-<div class="card bg-light mb-3 w-100">
+<div class="card bg-light mb-3">
   <div class="card-body">
     <div id="description">
       <p>
@@ -36,7 +39,7 @@
         {% endif %}
         {% if current_user == photo.author %}
         <a id="description-btn" href="#!">
-          <small><span class="oi oi-pencil"></span> edit description</small>
+          <small>{{ render_icon('pencil-fill') }}</small>
         </a>
         {% endif %}
       </p>
@@ -55,13 +58,14 @@
       <p>
         {% if photo.tags %}
         {% for tag in photo.tags %}
-        <a class="badge badge-light" href="{{ url_for('.show_tag', tag_id=tag.id) }}" target="_blank"><span
-            class="oi oi-tag"></span> {{ tag.name }}</a>
+        <a class="badge text-bg-secondary rounded-pill text-decoration-none" href="{{ url_for('.show_tag', tag_id=tag.id) }}" target="_blank">
+          {{ render_icon('tag-fill') }} {{ tag.name }}
+        </a>
         {% endfor %}
         {% endif %}
         {% if current_user == photo.author %}
         <a id="tag-btn" href="#!">
-          <small><span class="oi oi-pencil"></span> edit tag</small>
+          <small>{{ render_icon('pencil-fill') }}</small>
         </a>
         {% endif %}
       </p>
@@ -78,9 +82,9 @@
       <hr>
       {% for tag in photo.tags %}
       <a class="dead-link" href="#!" data-href="{{ url_for('.delete_tag', photo_id=photo.id, tag_id=tag.id) }}"
-        data-toggle="modal" data-target="#confirm-delete" title="Delete tag">
-        <span class="badge badge-danger">
-          {{ tag.name }} <span class="oi oi-trash" aria-hidden="true"></span>
+        data-bs-toggle="modal" data-bs-target="#confirm-delete" title="Delete tag">
+        <span class="badge text-bg-danger rounded-pill">
+          {{ tag.name }} {{ render_icon('trash-fill') }}</span>
         </span>
       </a>
       {% endfor %}
@@ -92,14 +96,14 @@
     <form class="inline" method="post" action="{{ url_for('main.uncollect', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-outline-secondary btn-sm">
-        <span class="oi oi-x"></span> Uncollect
+        {{ render_icon('suit-heart-fill') }} Uncollect
       </button>
     </form>
     {% else %}
     <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-outline-primary btn-sm">
-        <span class="oi oi-star"></span> Collect
+        {{ render_icon('suit-heart') }} Collect
       </button>
     </form>
     {% endif %}
@@ -107,12 +111,12 @@
     <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-primary btn-sm">
-        <span class="oi oi-star"></span> Collect
+        {{ render_icon('suit-heart') }} Collect
       </button>
     </form>
     {% endif %}
     {% if photo.collectors %}
-    <a href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors_count }}
+    <a class="text-decoration-none" href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors_count }}
       collectors</a>
     {% endif %}
   </div>

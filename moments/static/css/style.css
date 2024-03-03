@@ -181,8 +181,10 @@ footer {
 
 /* photo page */
 .photo {
-  padding: 10px 0;
+  padding: 10px 5px;
   text-align: center;
+  border-bottom: 1px dashed #ddd;
+  margin-bottom: 15px;
 }
 
 .sidebar-nav {
@@ -197,10 +199,6 @@ footer {
   min-height: 150px;
 }
 
-.sidebar-profile {
-  padding-left: 120px;
-}
-
 .sidebar-avatar {
   position: absolute;
   margin-left: 10px;
@@ -211,7 +209,7 @@ footer {
 }
 
 .popup-card {
-  padding: 10px 20px;
+  padding: 5px 10px;
 }
 
 .popup-profile {

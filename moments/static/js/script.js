@@ -225,6 +225,9 @@ $(function () {
     setInterval(update_notifications_count, 30000);
   }
 
-  $("[data-toggle='tooltip']").tooltip({ title: moment($(this).data('timestamp')).format('lll') })
-
+  // $("[data-bs-toggle='tooltip']").tooltip({ title: moment($(this).data('timestamp')).format('lll') })
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
 });

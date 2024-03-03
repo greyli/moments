@@ -1,11 +1,13 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% macro photo_card(photo) %}
 <div class="photo-card card">
   <a class="card-thumbnail" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
     <img class="card-img-top portrait" src="{{ url_for('main.get_image', filename=photo.filename_s) }}">
   </a>
   <div class="card-body">
-    <span class="oi oi-star"></span> {{ photo.collectors_count }}
-    <span class="oi oi-comment-square"></span> {{ photo.comments_count }}
+    {{ render_icon('suit-heart-fill') }} {{ photo.collectors_count }}
+    {{ render_icon('chat-left-fill') }} {{ photo.comments_count }}
   </div>
 </div>
 {% endmacro %}
@@ -16,7 +18,7 @@
     <img class="rounded avatar-m" src="{{ url_for('main.get_avatar', filename=user.avatar_m) }}">
   </a>
   <h6>
-    <a href="{{ url_for('user.index', username=user.username) }}">{{ user.name }}</a>
+    <a class="text-decoration-none" href="{{ url_for('user.index', username=user.username) }}">{{ user.name }}</a>
   </h6>
   {{ follow_area(user) }}
 </div>
@@ -31,7 +33,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-dark btn-sm">Unfollow</button>
       {% if current_user.is_followed_by(user) %}
-      <p class="badge badge-light">Follow each other</p>
+      <p class="badge text-bg-light rounded-pill">Follow each other</p>
       {% endif %}
     </form>
     {% else %}
@@ -40,7 +42,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-primary btn-sm">Follow</button>
       {% if current_user.is_followed_by(user) %}
-      <p class="badge badge-light">Follows you</p>
+      <p class="badge text-bg-light rounded-pill">Follows you</p>
       {% endif %}
     </form>
     {% endif %}

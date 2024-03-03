@@ -1,5 +1,5 @@
 {% extends 'admin/index.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 
 {% block title %}Manage Tags{% endblock %}
 
@@ -29,7 +29,7 @@
   <tr>
     <td>{{ tag.id }}</td>
     <td>{{ tag.name }}</td>
-    <td><a href="{{ url_for('main.show_tag', tag_id=tag.id) }}">{{ tag.photos_count }}</a></td>
+    <td><a class="text-decoration-none" href="{{ url_for('main.show_tag', tag_id=tag.id) }}">{{ tag.photos_count }}</a></td>
     <td>
       <form class="inline" action="{{ url_for('admin.delete_tag', tag_id=tag.id) }}" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

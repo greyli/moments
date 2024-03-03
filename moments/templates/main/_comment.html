@@ -1,12 +1,12 @@
 <div class="comments" id="comments">
   <h3>{{ photo.comments_count }} Comments
     <small>
-      <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">latest</a>
+      <a class="text-decoration-none" href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">latest</a>
     </small>
     {% if current_user == photo.author %}
     <form class="inline" method="post" action="{{ url_for('.set_comment', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-xs btn-link float-right">
+      <button type="submit" class="btn btn-xs btn-light float-end">
         {% if photo.can_comment %}Disable{% else %}Enable{% endif %} comment
       </button>
     </form>
@@ -25,40 +25,40 @@
     </div>
     <div class="comment-body">
       <h6>
-        <a class="profile-popover" data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
+        <a class="profile-popover text-decoration-none" data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
           href="{{ url_for('user.index', username=comment.author.username) }}">
           {{ comment.author.name }}
         </a>
         {% if comment.author == photo.author %}
-        <span class="badge badge-light">Author</span>
+        <span class="badge text-bg-light rounded-pill">Author</span>
         {% endif %}
-        <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.created_at }}" data-delay="500">
+        <small data-bs-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.created_at }}" data-delay="500">
           {{ moment(comment.created_at).fromNow(refresh=True) }}
         </small>
         {% if current_user.is_authenticated %}
-        <span class="float-right">
+        <span class="float-end">
           <span class="dropdown">
-            <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+            <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
               aria-haspopup="true" aria-expanded="false">
-              <span class="oi oi-ellipses"></span>
+              {{ render_icon('three-dots') }}
             </button>
             <span class="dropdown-menu" aria-labelledby="dropdownMenuButton">
               {% if current_user != comment.author %}
               <a class="dropdown-item btn" href="{{ url_for('.reply_comment', comment_id=comment.id) }}">
-                <span class="oi oi-comment-square"></span> Reply
+                {{ render_icon('chat-left-fill') }} Reply
               </a>
               {% endif %}
               {% if current_user == comment.author or current_user == photo.author or current_user.can('MODERATE') %}
-              <a class="dropdown-item" data-toggle="modal" href="#!"
-                data-href="{{ url_for('.delete_comment', comment_id=comment.id) }}" data-target="#confirm-delete">
-                <span class="oi oi-trash" aria-hidden="true"></span> Delete
+              <a class="dropdown-item" data-bs-toggle="modal" href="#!"
+                data-href="{{ url_for('.delete_comment', comment_id=comment.id) }}" data-bs-target="#confirm-delete">
+                {{ render_icon('trash-fill') }} Delete
               </a>
               {% endif %}
               {% if current_user != comment.author %}
               <form class="inline" method="post" action="{{ url_for('.report_comment', comment_id=comment.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="dropdown-item">
-                  <span class="oi oi-warning" aria-hidden="true"></span> Report
+                  {{ render_icon('flag-fill') }} Report
                 </button>
               </form>
               {% endif %}
@@ -92,7 +92,7 @@
   {% if request.args.get('reply') %}
   <div class="alert alert-dark">
     Reply to {{ request.args.get('author') }}:
-    <a class="float-right" href="{{ url_for('.show_photo', photo_id=photo.id) }}">Cancel</a>
+    <a class="float-end" href="{{ url_for('.show_photo', photo_id=photo.id) }}">Cancel</a>
   </div>
   {% endif %}
   <div class="comment-form-area">

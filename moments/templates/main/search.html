@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 {% from 'macros.html' import photo_card, user_card with context %}
 
 {% block title %}Search: {{ q }}{% endblock %}
@@ -28,7 +28,7 @@
     {% elif category == 'user' %}
     {{ user_card(item) }}
     {% else %}
-    <a class="badge badge-light" href="{{ url_for('.show_tag', tag_id=item.id) }}">
+    <a class="badge text-bg-light rounded-pill" href="{{ url_for('.show_tag', tag_id=item.id) }}">
       {{ item.name }} {{ item.photos|length }}
     </a>
     {% endif %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 {% from 'macros.html' import user_card with context %}
 
 {% block title %}Collectors{% endblock %}
@@ -8,8 +8,8 @@
 <div class="page-header">
   <div class="row">
     <div class="col-md-12">
-      <a class="btn btn-default btn-sm" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
-        <span class="oi oi-arrow-left" aria-hidden="true"></span> Return
+      <a class="btn btn-light btn-sm" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
+        {{ render_icon('arrow-left') }} Return
       </a>
     </div>
   </div>

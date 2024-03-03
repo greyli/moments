@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 {% from 'macros.html' import photo_card with context %}
 
 {% block title %}Home{% endblock %}
@@ -10,51 +10,51 @@
   <div class="col-md-8">
     {% if photos %}
     {% for photo in photos %}
-    <div class="card mb-3 w-100 bg-light">
+    <div class="card mb-3 bg-light">
       <div class="card-header">
         <a class="dead-link" href="{{ url_for('user.index', username=photo.author.username) }}">
           <img class="rounded img-fluid avatar-s profile-popover"
             data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
             src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
         </a>
-        <a class="profile-popover trend-card-avatar"
+        <a class="profile-popover trend-card-avatar text-decoration-none"
           data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
           href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
-        <span class="float-right">
-          <small data-toggle="tooltip" data-placement="top" data-timestamp="{{ photo.created_at }}" data-delay="500">
+        <span class="float-end">
+          <small data-bs-toggle="tooltip" data-placement="top" data-timestamp="{{ photo.created_at }}" data-delay="500">
             {{ moment(photo.created_at).fromNow(refresh=True) }}</small></span>
       </div>
       <div class="card-body">
-        <div class="" align="center">
+        <div class="text-center">
           <a class="thumbnail" href="{{ url_for('.show_photo', photo_id=photo.id) }}" target="_blank">
             <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}">
           </a>
         </div>
       </div>
       <div class="card-footer">
-        <span class="oi oi-star"></span>
+        {{ render_icon('suit-heart-fill') }}
         <span id="collectors-count-{{ photo.id }}"
           data-href="{{ url_for('ajax.collectors_count', photo_id=photo.id) }}">
           {{ photo.collectors_count }}
         </span>
-        <span class="oi oi-comment-square"></span> {{ photo.comments_count }}
-        <div class="float-right">
+        {{ render_icon('chat-left-fill') }} {{ photo.comments_count }}
+        <div class="float-end">
           {% if current_user.is_authenticated %}
           <button class="{% if not current_user.is_collecting(photo) %}hide{% endif %}
                                      btn btn-outline-secondary btn-sm uncollect-btn"
             data-href="{{ url_for('ajax.uncollect', photo_id=photo.id) }}" data-id="{{ photo.id }}">
-            <span class="oi oi-x"></span> Uncollect
+            {{ render_icon('suit-heart-fill') }} Uncollect
           </button>
           <button class="{% if current_user.is_collecting(photo) %}hide{% endif %}
                                      btn btn-outline-primary btn-sm collect-btn"
             data-href="{{ url_for('ajax.collect', photo_id=photo.id) }}" data-id="{{ photo.id }}">
-            <span class="oi oi-star"></span> Collect
+            {{ render_icon('suit-heart') }} Collect
           </button>
           {% else %}
           <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-primary btn-sm">
-              <span class="oi oi-star"></span> Collect
+              {{ render_icon('suit-heart') }} Collect
             </button>
           </form>
           {% endif %}

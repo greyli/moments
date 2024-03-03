@@ -1,4 +1,5 @@
-{% from 'bootstrap4/nav.html' import render_nav_item %}
+{% from 'bootstrap5/nav.html' import render_nav_item %}
+{% from 'bootstrap5/utils.html' import render_icon, render_messages %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +12,6 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='open-iconic/font/css/open-iconic-bootstrap.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% endblock styles %}
   {% endblock head %}
@@ -24,55 +24,72 @@
       <a class="navbar-brand" href="{{ url_for('main.index') }}">
         <img src="{{ url_for('static', filename='favicon.ico') }}" alt="Moments">
       </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01"
-        aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
+        aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarColor01">
-        <div class="navbar-nav mr-auto">
+      <div class="collapse navbar-collapse" id="navbar">
+        <div class="navbar-nav me-auto">
           {{ render_nav_item('main.index', 'Home') }}
           {{ render_nav_item('main.explore', 'Explore') }}
-          <form class="form-inline my-2 my-lg-0" action="{{ url_for('main.search') }}">
-            <input type="text" name="q" class="form-control mr-sm-1" placeholder="Photo, tag or user" required>
+          <form class="d-flex" role="search" action="{{ url_for('main.search') }}">
+            <input class="form-control me-2" type="search" placeholder="Photo, tag or user" aria-label="Search" required>
             <button class="btn btn-light my-2 my-sm-0" type="submit">
-              <span class="oi oi-magnifying-glass"></span>
+              {{ render_icon('search') }}
             </button>
           </form>
         </div>
-        <div class="navbar-nav ml-auto">
+        <div class="navbar-nav ms-auto">
           {% if current_user.is_authenticated %}
           <a class="nav-item nav-link" href="{{ url_for('main.show_notifications', filter='unread') }}">
-            <span class="oi oi-bell"></span>
-            <span id="notification-badge"
-              class="{% if notification_count == 0 %}hide{% endif %} badge badge-danger badge-notification"
-              data-href="{{ url_for('ajax.notifications_count') }}">{{ notification_count }}</span>
+            <span class="position-relative">
+              {{ render_icon('bell-fill') }}
+              {% if notification_count != 0 %}
+              <span
+                id="notification-badge"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger
+                data-href="{{ url_for('ajax.notifications_count') }}"
+              >
+                {{ notification_count }}
+                <span class="visually-hidden">unread messages</span>
+              </span>
+              {% endif %}
+            </span>
           </a>
           <a class="nav-item nav-link" href="{{ url_for('main.upload') }}" title="Upload">
-            <span class="oi oi-cloud-upload"></span>&nbsp;&nbsp;
+            {{ render_icon('plus-circle-fill') }}
           </a>
           <div class="dropdown nav-item">
-            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">
               <img class="avatar-xs" src="{{ url_for('main.get_avatar', filename=current_user.avatar_s) }}">
               <span class="caret"></span>
             </a>
-            <div class="dropdown-menu dropdown-menu-right" role="menu">
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               <h6 class="dropdown-header">Logged in as {{ current_user.username }}</h6>
-              <a class="dropdown-item" href="{{ url_for('user.index', username=current_user.username) }}">
-                <span class="oi oi-person"></span> My Home
-              </a>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('user.index', username=current_user.username) }}">
+                {{ render_icon('person-fill') }} My Home
+                </a>
+              </li>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="{{ url_for('user.edit_profile') }}">
-                <span class="oi oi-cog"></span> Settings
-              </a>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('user.edit_profile') }}">
+                {{ render_icon('gear-fill') }} Settings
+                </a>
+              </li>
               {% if current_user.can('MODERATE') %}
-              <a class="dropdown-item" href="{{ url_for('admin.index') }}">
-                <span class="oi oi-dashboard"></span> Dashboard
-              </a>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('admin.index') }}">
+                {{ render_icon('speedometer') }} Dashboard
+                </a>
+            </li>
               {% endif %}
-              <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                <span class="oi oi-power-standby"></span> Logout
-              </a>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                {{ render_icon('power') }} Logout
+                </a>
+              </li>
             </div>
           </div>
           {% else %}
@@ -87,23 +104,18 @@
 
   <main>
     <div class="container">
-      {% for message in get_flashed_messages(with_categories=True) %}
-      <div class="alert alert-{{ message[0] }}">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        {{ message[1] }}
-      </div>
-      {% endfor %}
+      {{ render_messages(dismissible=True, dismiss_animate=True) }}
       {% block content %}{% endblock %}
       {% block footer %}
       <footer>
-        <p class="float-left">
-          <small>&copy; 2018
-            <a href="http://greyli.com" title="Written by Grey Li">Grey Li</a> -
+        <p class="float-start">
+          <small>&copy; 2024 Moments -
+            <a href="https://greyli.com" title="Written by Grey Li">Grey Li</a> -
             <a href="https://github.com/greyli/moments" title="Fork me on GitHub">GitHub</a> -
-            <a href="http://helloflask.com" title="A HelloFlask project">HelloFlask</a>
+            <a href="https://helloflask.com" title="A HelloFlask project">HelloFlask</a>
           </small>
         </p>
-        <p class="float-right">
+        <p class="float-end">
           <small>Capture and share every wonderful moment.</small>
         </p>
       </footer>
@@ -114,8 +126,7 @@
 
   {% block scripts %}
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
   {{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script type="text/javascript">

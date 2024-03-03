@@ -15,7 +15,7 @@
 <div class="row">
   <div class="col-md-12">
     {{ dropzone.create(action='main.upload') }}
-    <a class="btn btn-light float-right" href="{{ url_for('user.index', username=current_user.username) }}">
+    <a class="btn btn-light float-end" href="{{ url_for('user.index', username=current_user.username) }}">
       Done
     </a>
   </div>

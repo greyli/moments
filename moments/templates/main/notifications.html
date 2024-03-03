@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/pagination.html' import render_pagination %}
+{% from 'bootstrap5/pagination.html' import render_pagination %}
 
 {% block title %}Notifications{% endblock %}
 
@@ -23,14 +23,14 @@
   <div class="col-md-9">
     <div class="card bg-light w-100">
       <div class="card-header">{{ notification_count }} unread notifications
-        <div class="float-right">
+        <div class="float-end">
           <a class="btn btn-light btn-sm" href="{{ url_for('user.notification_setting') }}">
-            <span class="oi oi-cog" aria-hidden="true"></span> Settings
+            {{ render_icon('gear-fill') }} Settings
           </a>
           <form class="inline" method="post" action="{{ url_for('.read_all_notification') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-light btn-sm">
-              <span class="oi oi-check" aria-hidden="true"></span> Read all
+              {{ render_icon('check-all') }} Read all
             </button>
           </form>
         </div>
@@ -41,14 +41,14 @@
           {% for notification in notifications %}
           <li class="list-group-item">
             {{ notification.message|safe }}
-            <span class="float-right">
+            <span class="float-end">
               {{ moment(notification.created_at).fromNow(refresh=True) }}
               {% if notification.is_read == False %}
               <form class="inline" action="{{ url_for('.read_notification', notification_id=notification.id) }}"
                 method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-light btn-sm">
-                  <span class="oi oi-check" aria-hidden="true"></span>
+                  {{ render_icon('check-lg') }}
                 </button>
               </form>
               {% endif %}

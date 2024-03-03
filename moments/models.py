@@ -230,7 +230,7 @@ class User(db.Model, UserMixin):
 
     def generate_avatar(self):
         avatar = Identicon()
-        self.avatar_s, self.avatar_m, self.avatar_m = avatar.generate(text=self.username)
+        self.avatar_s, self.avatar_m, self.avatar_l = avatar.generate(text=self.username)
         db.session.commit()
 
     @property
