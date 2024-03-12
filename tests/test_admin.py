@@ -136,12 +136,12 @@ class AdminTestCase(BaseTestCase):
         response = self.client.get('/admin/manage/photo')
         data = response.get_data(as_text=True)
         self.assertIn('Manage Photos', data)
-        self.assertIn('Order by flag {{ render_icon('chevron-expand') }}', data)
+        self.assertIn('Order by flag', data)
 
         response = self.client.get('/admin/manage/photo/by_time')
         data = response.get_data(as_text=True)
         self.assertIn('Manage Photos', data)
-        self.assertIn('Order by time {{ render_icon('chevron-expand') }}', data)
+        self.assertIn('Order by time', data)
 
     def test_manage_tag_page(self):
         response = self.client.get('/admin/manage/tag')
@@ -152,9 +152,9 @@ class AdminTestCase(BaseTestCase):
         response = self.client.get('/admin/manage/comment')
         data = response.get_data(as_text=True)
         self.assertIn('Manage Comments', data)
-        self.assertIn('Order by flag {{ render_icon('chevron-expand') }}', data)
+        self.assertIn('Order by flag', data)
 
         response = self.client.get('/admin/manage/comment/by_time')
         data = response.get_data(as_text=True)
         self.assertIn('Manage Comments', data)
-        self.assertIn('Order by time {{ render_icon('chevron-expand') }}', data)
+        self.assertIn('Order by time', data)

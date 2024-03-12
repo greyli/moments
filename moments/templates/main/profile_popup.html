@@ -27,19 +27,16 @@
   <a href="{{ url_for('user.index', username=user.username) }}" class="btn btn-light btn-sm">Homepage</a>
   {% if current_user.is_authenticated %}
   {% if user != current_user %}
-  <button data-id="{{ user.id }}" data-href="{{ url_for('ajax.unfollow', username=user.username) }}"
-    class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-dark btn-sm unfollow-btn">
+  <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.unfollow', username=user.username) }}"
+    class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-secondary btn-sm unfollow-btn">
     Unfollow
-  </button>
-  <button data-id="{{ user.id }}" data-href="{{ url_for('ajax.follow', username=user.username) }}"
+  </a>
+  <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.follow', username=user.username) }}"
     class="{% if current_user.is_following(user) %}hide{% endif %} btn btn-primary btn-sm follow-btn">
     Follow
-  </button>
+  </a>
   {% endif %}
   {% else %}
-  <form class="inline" method="post" action="{{ url_for('user.follow', username=user.username) }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-primary btn-sm">Follow</button>
-  </form>
+  <a href="{{ url_for('auth.login', next='/user/' + user.username) }}" class="btn btn-primary btn-sm">Follow</a>
   {% endif %}
 </div>

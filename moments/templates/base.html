@@ -48,7 +48,7 @@
               {% if notification_count != 0 %}
               <span
                 id="notification-badge"
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                 data-href="{{ url_for('ajax.notifications_count') }}"
               >
                 {{ notification_count }}
@@ -125,16 +125,15 @@
   <div id="toast"></div>
 
   {% block scripts %}
-  <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
   {{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script type="text/javascript">
-    var csrf_token = "{{ csrf_token() }}";
+    var csrfToken = "{{ csrf_token() }}";
     {% if current_user.is_authenticated %}
-    var is_authenticated = true;
+    var isAuthenticated = true;
     {% else %}
-    var is_authenticated = false;
+    var isAuthenticated = false;
     {% endif %}
   </script>
   {% endblock %}
