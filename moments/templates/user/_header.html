@@ -2,13 +2,13 @@
 {% from 'bootstrap5/nav.html' import render_nav_item %}
 
 
-<div class="row">
-  <div class="col-md-2">
+<div class="row row-cols-auto">
+  <div class="col">
     <a href="{% if current_user == user %}{{ url_for('.change_avatar') }}{% else %}#{% endif %}" title="Change avatar">
-      <img class="img-fluid rounded" src="{{ url_for('main.get_avatar', filename=user.avatar_l) }}">
+      <img class="rounded avatar-l" src="{{ url_for('main.get_avatar', filename=user.avatar_l) }}">
     </a>
   </div>
-  <div class="col-md-10">
+  <div class="col">
     <h1>{{ user.name }}
       <small class="text-muted">{{ user.username }}</small>
     </h1>

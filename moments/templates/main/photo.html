@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-md-8">
+  <div class="col-lg-8">
     <div class="photo">
       <a href="{{ url_for('.get_image', filename=photo.filename) }}" target="_blank">
         <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}">
@@ -29,7 +29,7 @@
     </p>
     {% include 'main/_comment.html' %}
   </div>
-  <div class="col-md-4">
+  <div class="col-lg-4">
     {% include 'main/_photo_sidebar.html' %}
   </div>
 </div>

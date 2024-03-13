@@ -7,7 +7,7 @@
 {% block content %}
 {% if current_user.is_authenticated %}
 <div class="row justify-content-md-center">
-  <div class="col-md-8">
+  <div class="col-lg-8">
     {% if photos %}
     {% for photo in photos %}
     <div class="card mb-3 bg-light">
@@ -72,7 +72,7 @@
     </div>
     {% endif %}
   </div>
-  <div class="col-md-3">
+  <div class="col-lg-3">
     {% include 'main/_sidebar.html' %}
   </div>
 </div>

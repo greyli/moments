@@ -12,15 +12,15 @@
 </nav>
 <div class="card bg-light mb-3 sidebar-card">
   <div class="card-body">
-    <div class="row">
-      <div class="col-md-4 me-0">
+    <div class="row row-cols-auto">
+      <div class="col">
         <a href="{{ url_for('user.index', username=photo.author.username) }}">
-          <img class="sidebar-avatar rounded avatar-m"
+          <img class="rounded avatar-m"
             src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
         </a>
       </div>
 
-      <div class="col-md-8 ms-0">
+      <div class="col]">
         <h6 class="card-title">
           <a class="text-decoration-none" href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
         </h6>
