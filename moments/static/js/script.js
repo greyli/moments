@@ -198,7 +198,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function collect(e) {
-    var el = e.target.dataset.href ? e.target : e.target.parentElement.querySelector('.collect-btn');
+    var el = e.target;
+    while (el && !el.classList.contains('collect-btn')) {
+      el = el.parentElement;
+    }
     var id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
@@ -225,7 +228,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function uncollect(e) {
-    var el = e.target.dataset.href ? e.target : e.target.parentElement.querySelector('.uncollect-btn');
+    var el = e.target;
+    while (el && !el.classList.contains('uncollect-btn')) {
+      el = el.parentElement;
+    }
     var id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
@@ -251,17 +257,29 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('follow-btn')) {
-      follow(e);
-    } else if (e.target.classList.contains('unfollow-btn')) {
-      unfollow(e);
-    } else if (e.target.classList.contains('collect-btn')) {
-      collect(e);
-    } else if (e.target.classList.contains('uncollect-btn')) {
-      uncollect(e);
-    }
-  });
+  if (document.getElementsByClassName('follow-btn')) {
+    document.querySelectorAll('.follow-btn').forEach(function (el) {
+      el.addEventListener('click', follow);
+    });
+  }
+
+  if (document.getElementsByClassName('unfollow-btn')) {
+    document.querySelectorAll('.unfollow-btn').forEach(function (el) {
+      el.addEventListener('click', unfollow);
+    });
+  }
+
+  if (document.getElementsByClassName('collect-btn')) {
+    document.querySelectorAll('.collect-btn').forEach(function (el) {
+      el.addEventListener('click', collect);
+    });
+  }
+
+  if (document.getElementsByClassName('uncollect-btn')) {
+    document.querySelectorAll('.uncollect-btn').forEach(function (el) {
+      el.addEventListener('click', uncollect);
+    });
+  }
 
   if (document.getElementById('tag-btn')) {
     document.getElementById('tag-btn').addEventListener('click', function () {

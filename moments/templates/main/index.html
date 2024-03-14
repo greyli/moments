@@ -40,21 +40,20 @@
         {{ render_icon('chat-left-fill') }} {{ photo.comments_count }}
         <div class="float-end">
           {% if current_user.is_authenticated %}
-          <button class="{% if not current_user.is_collecting(photo) %}hide{% endif %}
-                                     btn btn-outline-secondary btn-sm uncollect-btn"
-            data-href="{{ url_for('ajax.uncollect', photo_id=photo.id) }}" data-id="{{ photo.id }}">
-            {{ render_icon('suit-heart-fill') }} Uncollect
+          <button class="{% if not current_user.is_collecting(photo) %}hide{% endif %} btn btn-danger btn-sm uncollect-btn"
+            data-href="{{ url_for('ajax.uncollect', photo_id=photo.id) }}" data-id="{{ photo.id }}" title="Uncollect">
+            {{ render_icon('suit-heart-fill') }}
           </button>
-          <button class="{% if current_user.is_collecting(photo) %}hide{% endif %}
-                                     btn btn-outline-primary btn-sm collect-btn"
-            data-href="{{ url_for('ajax.collect', photo_id=photo.id) }}" data-id="{{ photo.id }}">
-            {{ render_icon('suit-heart') }} Collect
+          <button
+            class="{% if current_user.is_collecting(photo) %}hide{% endif %} btn btn-light btn-sm collect-btn"
+            data-href="{{ url_for('ajax.collect', photo_id=photo.id) }}" data-id="{{ photo.id }}" title="Collect">
+            {{ render_icon('suit-heart', color='red') }}
           </button>
           {% else %}
           <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-primary btn-sm">
-              {{ render_icon('suit-heart') }} Collect
+            <button type="submit" class="btn btn-danger btn-sm">
+              {{ render_icon('suit-heart') }}
             </button>
           </form>
           {% endif %}

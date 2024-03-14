@@ -1,8 +1,5 @@
 <div class="comments" id="comments">
   <h3>{{ photo.comments_count }} Comments
-    <small>
-      <a class="text-decoration-none" href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">latest</a>
-    </small>
     {% if current_user == photo.author %}
     <form class="inline" method="post" action="{{ url_for('.set_comment', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

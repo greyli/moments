@@ -19,8 +19,7 @@
             src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
         </a>
       </div>
-
-      <div class="col]">
+      <div class="col">
         <h6 class="card-title">
           <a class="text-decoration-none" href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
         </h6>
@@ -90,30 +89,6 @@
       {% endfor %}
       {% endif %}
     </div>
-    {% endif %}
-    {% if current_user.is_authenticated %}
-    {% if current_user.is_collecting(photo) %}
-    <form class="inline" method="post" action="{{ url_for('main.uncollect', photo_id=photo.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-outline-secondary btn-sm">
-        {{ render_icon('suit-heart-fill') }} Uncollect
-      </button>
-    </form>
-    {% else %}
-    <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-outline-primary btn-sm">
-        {{ render_icon('suit-heart') }} Collect
-      </button>
-    </form>
-    {% endif %}
-    {% else %}
-    <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-primary btn-sm">
-        {{ render_icon('suit-heart') }} Collect
-      </button>
-    </form>
     {% endif %}
     {% if photo.collectors %}
     <a class="text-decoration-none" href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors_count }}

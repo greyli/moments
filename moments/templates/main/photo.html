@@ -13,15 +13,39 @@
       </a>
       <span class="photo-bottom"></span>
     </div>
-    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#share-modal">Share</a>
+    {% if current_user.is_authenticated %}
+    {% if current_user.is_collecting(photo) %}
+    <form class="inline" method="post" action="{{ url_for('main.uncollect', photo_id=photo.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm" title="Uncollect">
+        {{ render_icon('suit-heart-fill') }}
+      </button>
+    </form>
+    {% else %}
+    <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-light btn-sm" title="Collect">
+        {{ render_icon('suit-heart', color='red') }}
+      </button>
+    </form>
+    {% endif %}
+    {% else %}
+    <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary btn-sm" title="Collect">
+        {{ render_icon('suit-heart') }}
+      </button>
+    </form>
+    {% endif %}
+    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#share-modal">{{ render_icon('share-fill') }}</a>
     {% if current_user == photo.author or current_user.can('MODERATE') %}
     <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete"
-      data-href="{{ url_for('.delete_photo', photo_id=photo.id) }}">Delete</a>
+      data-href="{{ url_for('.delete_photo', photo_id=photo.id) }}">{{ render_icon('trash-fill') }}</a>
     {% endif %}
     {% if current_user.is_authenticated and current_user != photo.author %}
     <form class="inline" method="post" action="{{ url_for('.report_photo', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-light btn-sm">Report</button>
+      <button type="submit" class="btn btn-light btn-sm">{{ render_icon('flag-fill') }}</button>
     </form>
     {% endif %}
     <p class="text-muted float-end small">
