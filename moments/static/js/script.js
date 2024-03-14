@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   var defaultErrorMessage = 'Server error, please try again later.';
   var hoverTimer = null;
-  var flash = null;
 
   function handleFetchError(error) {
     var message = defaultErrorMessage;
@@ -12,18 +11,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function toast(body, category) {
-    clearTimeout(flash);
-    var toast = document.getElementById('toast');
+    const toastEl = document.getElementById('mainToast')
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
+    toastEl.querySelector('.toast-body').textContent = body
+
     if (category === 'error') {
-      toast.style.backgroundColor = 'red';
+      toastEl.classList.replace('text-bg-secondary', 'text-bg-danger')
     } else {
-      toast.style.backgroundColor = '#333';
+      toastEl.classList.replace('text-bg-danger', 'text-bg-secondary')
     }
-    toast.textContent = body;
-    toast.style.display = 'block';
-    flash = setTimeout(function () {
-      toast.style.display = 'none';
-    }, 3000);
+    toast.show()
   }
 
   function showProfilePopover(e) {
@@ -257,17 +254,13 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  if (document.getElementsByClassName('follow-btn')) {
-    document.querySelectorAll('.follow-btn').forEach(function (el) {
-      el.addEventListener('click', follow);
-    });
-  }
-
-  if (document.getElementsByClassName('unfollow-btn')) {
-    document.querySelectorAll('.unfollow-btn').forEach(function (el) {
-      el.addEventListener('click', unfollow);
-    });
-  }
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('follow-btn')) {
+      follow(e);
+    } else if (e.target.classList.contains('unfollow-btn')) {
+      unfollow(e);
+    }
+  });
 
   if (document.getElementsByClassName('collect-btn')) {
     document.querySelectorAll('.collect-btn').forEach(function (el) {
