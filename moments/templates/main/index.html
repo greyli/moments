@@ -21,8 +21,11 @@
           data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
           href="{{ url_for('user.index', username=photo.author.username) }}">{{ photo.author.name }}</a>
         <span class="float-end">
-          <small data-bs-toggle="tooltip" data-placement="top" data-timestamp="{{ photo.created_at }}" data-delay="500">
-            {{ moment(photo.created_at).fromNow(refresh=True) }}</small></span>
+          <small class="dayjs-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-delay="500" data-timestamp="{{ photo.created_at }}">
+            <span class="dayjs-from-now" data-format="LL">{{ photo.created_at }}</span>
+          </small>
+        </span>
       </div>
       <div class="card-body">
         <div class="text-center">

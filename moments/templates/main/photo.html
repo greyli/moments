@@ -49,7 +49,7 @@
     </form>
     {% endif %}
     <p class="text-muted float-end small">
-      {{ render_icon('clock-fill') }} Upload at {{ moment(photo.created_at).format('LL') }}
+      {{ render_icon('clock-fill') }} Upload at <span class="dayjs" data-format="LL">{{ photo.created_at }}</span>
     </p>
     {% include 'main/_comment.html' %}
   </div>

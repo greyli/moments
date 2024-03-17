@@ -10,7 +10,7 @@ from moments.blueprints.ajax import ajax_bp
 from moments.blueprints.auth import auth_bp
 from moments.blueprints.main import main_bp
 from moments.blueprints.user import user_bp
-from moments.core.extensions import bootstrap, db, login_manager, mail, dropzone, moment, whooshee, avatars, csrf
+from moments.core.extensions import bootstrap, db, login_manager, mail, dropzone, whooshee, avatars, csrf
 from moments.models import User, Photo, Tag, Follow, Notification, Comment, Collect
 from moments.settings import config
 from moments.core.commands import register_commands
@@ -22,7 +22,7 @@ from moments.core.errors import register_error_handlers
 
 def create_app(config_name):
     app = Flask('moments')
-    
+
     app.config.from_object(config[config_name])
 
     bootstrap.init_app(app)
@@ -30,7 +30,6 @@ def create_app(config_name):
     login_manager.init_app(app)
     mail.init_app(app)
     dropzone.init_app(app)
-    moment.init_app(app)
     whooshee.init_app(app)
     avatars.init_app(app)
     csrf.init_app(app)

@@ -61,7 +61,7 @@
     <td>{{ user.role.name }}</td>
     <td>{{ user.bio }}</td>
     <td>{{ user.location }}</td>
-    <td>{{ moment(user.member_since).format('LL') }}</td>
+    <td><span class="dayjs" data-format="LL">{{ user.member_since }}</span></td>
     <td>
       <a class="text-decoration-none" href="{{ url_for('user.index', username=user.username) }}">{{ user.photos_count }}</a>
     </td>

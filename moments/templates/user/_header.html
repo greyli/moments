@@ -23,7 +23,7 @@
         }}</a>&nbsp;&nbsp;
       {% endif %}
       {{ render_icon('calendar') }}
-      Joined {{ moment(user.member_since).format('LL') }}
+      Joined <span class="dayjs" data-format="LL">{{ user.member_since }}</span>
     </p>
     <div>
       {% if current_user != user %}

@@ -10,7 +10,6 @@ dependencies = [
     "flask-login>=0.6.3",
     "flask-dropzone>=1.6.0",
     "flask-mail>=0.9.1",
-    "flask-moment>=1.0.5",
     "flask-wtf>=1.2.1",
     "python-dotenv>=1.0.1",
     "pillow>=10.2.0",

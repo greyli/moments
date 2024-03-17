@@ -30,8 +30,9 @@
         {% if comment.author == photo.author %}
         <span class="badge text-bg-light rounded-pill">Author</span>
         {% endif %}
-        <small data-bs-toggle="tooltip" data-placement="top" data-timestamp="{{ comment.created_at }}" data-delay="500">
-          {{ moment(comment.created_at).fromNow(refresh=True) }}
+        <small class="dayjs-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+          data-bs-delay="500" data-timestamp="{{ comment.created_at }}">
+          <span class="dayjs-from-now" data-format="LL">{{ comment.created_at }}</span>
         </small>
         {% if current_user.is_authenticated %}
         <span class="float-end">
