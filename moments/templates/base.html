@@ -134,7 +134,7 @@
   {% block scripts %}
   <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
   {{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script type="text/javascript">
     var csrfToken = "{{ csrf_token() }}";
     {% if current_user.is_authenticated %}
