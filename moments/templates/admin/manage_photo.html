@@ -53,16 +53,16 @@
     <td>{{ photo.description }}</td>
     <td>
       {% if photo.tags %}
-      {% for tag in photo.tags %}
-      <form class="inline" method="post"
-        action="{{ url_for('admin.delete_tag', tag_id=tag.id, next=request.full_path) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <button type="submit" class="btn badge text-bg-danger rounded-pill mb-1" onclick="return confirm('Are you sure?');">
-          {{ tag.name }} {{ render_icon('trash-fill') }}
-          </span>
-        </button>
-      </form>
-      {% endfor %}
+        {% for tag in photo.tags %}
+        <form class="inline" method="post"
+          action="{{ url_for('admin.delete_tag', tag_id=tag.id, next=request.full_path) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn badge text-bg-danger rounded-pill mb-1" onclick="return confirm('Are you sure?');">
+            {{ tag.name }} {{ render_icon('trash-fill') }}
+            </span>
+          </button>
+        </form>
+        {% endfor %}
       {% endif %}
     </td>
     <td>

@@ -3,14 +3,12 @@
   <div class="popup-profile">
     <h6>{{ user.name }}</h6>
     <p class="text-muted">{{ user.username }}
-      {% if current_user.is_authenticated %}
-      {% if current_user != user and current_user.is_followed_by(user) %}
-      {% if user.is_followed_by(current_user) %}
-      <span class="badge text-bg-light rounded-pill">Follow each other</span>
-      {% else %}
-      <span class="badge text-bg-light rounded-pill">Follows you</span>
-      {% endif %}
-      {% endif %}
+      {% if current_user.is_authenticated and current_user != user and current_user.is_followed_by(user) %}
+        {% if user.is_followed_by(current_user) %}
+        <span class="badge text-bg-light rounded-pill">Follow each other</span>
+        {% else %}
+        <span class="badge text-bg-light rounded-pill">Follows you</span>
+        {% endif %}
       {% endif %}
     </p>
   </div>
@@ -26,16 +24,16 @@
   </p>
   <a href="{{ url_for('user.index', username=user.username) }}" class="btn btn-light btn-sm">Homepage</a>
   {% if current_user.is_authenticated %}
-  {% if user != current_user %}
-  <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.unfollow', username=user.username) }}"
-    class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-secondary btn-sm unfollow-btn">
-    Unfollow
-  </a>
-  <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.follow', username=user.username) }}"
-    class="{% if current_user.is_following(user) %}hide{% endif %} btn btn-primary btn-sm follow-btn">
-    Follow
-  </a>
-  {% endif %}
+    {% if user != current_user %}
+    <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.unfollow', username=user.username) }}"
+      class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-secondary btn-sm unfollow-btn">
+      Unfollow
+    </a>
+    <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.follow', username=user.username) }}"
+      class="{% if current_user.is_following(user) %}hide{% endif %} btn btn-primary btn-sm follow-btn">
+      Follow
+    </a>
+    {% endif %}
   {% else %}
   <a href="{{ url_for('auth.login', next='/user/' + user.username) }}" class="btn btn-primary btn-sm">Follow</a>
   {% endif %}

@@ -34,7 +34,7 @@
           {{ render_nav_item('main.index', 'Home') }}
           {{ render_nav_item('main.explore', 'Explore') }}
           <form class="d-flex" role="search" action="{{ url_for('main.search') }}">
-            <input class="form-control me-2" type="search" placeholder="Photo, tag or user" aria-label="Search" required>
+            <input class="form-control me-2" name="q" type="search" placeholder="Photo, tag or user" aria-label="Search" required>
             <button class="btn btn-light my-2 my-sm-0" type="submit">
               {{ render_icon('search') }}
             </button>
@@ -83,7 +83,7 @@
                 <a class="dropdown-item" href="{{ url_for('admin.index') }}">
                 {{ render_icon('speedometer') }} Dashboard
                 </a>
-            </li>
+              </li>
               {% endif %}
               <li>
                 <a class="dropdown-item" href="{{ url_for('auth.logout') }}">

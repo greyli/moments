@@ -9,11 +9,11 @@
 <div class="row">
   <div class="col-md-12">
     {% if following|length != 1 %}
-    {% for following in following %}
-    {% if following != user %}
-    {{ user_card(user=following) }}
-    {% endif %}
-    {% endfor %}
+      {% for following in following %}
+        {% if following != user %}
+        {{ user_card(user=following) }}
+        {% endif %}
+      {% endfor %}
     {% else %}
     <div class="tip">
       <h3>No following.</h3>
@@ -21,7 +21,7 @@
     {% endif %}
   </div>
 </div>
-{% if follows|length != 1 %}
+{% if followers|length != 1 %}
 <div class="page-footer">
   {{ render_pagination(pagination) }}
 </div>

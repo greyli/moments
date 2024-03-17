@@ -9,9 +9,9 @@
 <div class="row">
   <div class="col-md-12">
     {% if photos %}
-    {% for photo in photos %}
-    {{ photo_card(photo) }}
-    {% endfor %}
+      {% for photo in photos %}
+      {{ photo_card(photo) }}
+      {% endfor %}
     {% else %}
     <div class="tip text-center">
       <h3>No photos.</h3>

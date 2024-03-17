@@ -14,21 +14,21 @@
       <span class="photo-bottom"></span>
     </div>
     {% if current_user.is_authenticated %}
-    {% if current_user.is_collecting(photo) %}
-    <form class="inline" method="post" action="{{ url_for('main.uncollect', photo_id=photo.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-danger btn-sm" title="Uncollect">
-        {{ render_icon('suit-heart-fill') }}
-      </button>
-    </form>
-    {% else %}
-    <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-light btn-sm" title="Collect">
-        {{ render_icon('suit-heart', color='red') }}
-      </button>
-    </form>
-    {% endif %}
+      {% if current_user.is_collecting(photo) %}
+      <form class="inline" method="post" action="{{ url_for('main.uncollect', photo_id=photo.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger btn-sm" title="Uncollect">
+          {{ render_icon('suit-heart-fill') }}
+        </button>
+      </form>
+      {% else %}
+      <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-light btn-sm" title="Collect">
+          {{ render_icon('suit-heart', color='red') }}
+        </button>
+      </form>
+      {% endif %}
     {% else %}
     <form class="inline" method="post" action="{{ url_for('main.collect', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

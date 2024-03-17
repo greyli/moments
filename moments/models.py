@@ -114,12 +114,24 @@ class User(db.Model, UserMixin):
     role_id: Mapped[Optional[int]] = mapped_column(ForeignKey('role.id'))
 
     role: Mapped['Role'] = relationship(back_populates='users')
-    photos: WriteOnlyMapped[list['Photo']] = relationship(back_populates='author', cascade='all', passive_deletes=True)
-    comments: WriteOnlyMapped[list['Comment']] = relationship(back_populates='author', cascade='all', passive_deletes=True)
-    notifications: WriteOnlyMapped[list['Notification']] = relationship(back_populates='receiver', cascade='all', passive_deletes=True)
-    collections: WriteOnlyMapped[list['Collect']] = relationship(back_populates='collector', cascade='all', passive_deletes=True)
-    following: WriteOnlyMapped[list['Follow']] = relationship(foreign_keys=[Follow.follower_id], back_populates='follower', cascade='all', passive_deletes=True)
-    followers: WriteOnlyMapped[list['Follow']] = relationship(foreign_keys=[Follow.followed_id], back_populates='followed', cascade='all', passive_deletes=True)
+    photos: WriteOnlyMapped[list['Photo']] = relationship(
+        back_populates='author', cascade='all', passive_deletes=True
+    )
+    comments: WriteOnlyMapped[list['Comment']] = relationship(
+        back_populates='author', cascade='all', passive_deletes=True
+    )
+    notifications: WriteOnlyMapped[list['Notification']] = relationship(
+        back_populates='receiver', cascade='all', passive_deletes=True
+    )
+    collections: WriteOnlyMapped[list['Collect']] = relationship(
+        back_populates='collector', cascade='all', passive_deletes=True
+    )
+    following: WriteOnlyMapped[list['Follow']] = relationship(
+        foreign_keys=[Follow.follower_id], back_populates='follower', cascade='all', passive_deletes=True
+    )
+    followers: WriteOnlyMapped[list['Follow']] = relationship(
+        foreign_keys=[Follow.followed_id], back_populates='followed', cascade='all', passive_deletes=True
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -300,8 +312,12 @@ class Photo(db.Model):
     author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
 
     author: Mapped['User'] = relationship(back_populates='photos')
-    comments: WriteOnlyMapped[list['Comment']] = relationship(back_populates='photo', cascade='all', passive_deletes=True)
-    collectors: WriteOnlyMapped[list['Collect']] = relationship(back_populates='collected', cascade='all', passive_deletes=True)
+    comments: WriteOnlyMapped[list['Comment']] = relationship(
+        back_populates='photo', cascade='all', passive_deletes=True
+    )
+    collectors: WriteOnlyMapped[list['Collect']] = relationship(
+        back_populates='collected', cascade='all', passive_deletes=True
+    )
     tags: Mapped[list['Tag']] = relationship(secondary=tagging, back_populates='photos')
 
     @property
@@ -322,7 +338,9 @@ class Tag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
-    photos: WriteOnlyMapped['Photo'] = relationship(secondary=tagging, back_populates='tags', passive_deletes=True)
+    photos: WriteOnlyMapped['Photo'] = relationship(
+        secondary=tagging, back_populates='tags', passive_deletes=True
+    )
 
     @property
     def photos_count(self):
@@ -343,7 +361,9 @@ class Comment(db.Model):
 
     photo: Mapped['Photo'] = relationship(back_populates='comments')
     author: Mapped['User'] = relationship(back_populates='comments')
-    replies: WriteOnlyMapped[list['Comment']] = relationship(back_populates='replied', cascade='all', passive_deletes=True)
+    replies: WriteOnlyMapped[list['Comment']] = relationship(
+        back_populates='replied', cascade='all', passive_deletes=True
+    )
     replied: Mapped['Comment'] = relationship(back_populates='replies', remote_side=[id])
 
 

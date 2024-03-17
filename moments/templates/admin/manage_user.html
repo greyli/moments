@@ -67,29 +67,29 @@
     </td>
     <td>
       {% if user.role.name not in ['Administrator', 'Moderator'] %}
-      {% if user.locked %}
-      <form class="inline" action="{{ url_for('admin.unlock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-secondary btn-sm" value="Unlock">
-      </form>
-      {% else %}
-      <form class="inline" action="{{ url_for('admin.lock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-warning btn-sm" value="Lock">
-      </form>
-      {% endif %}
-      {% if user.active %}
-      <form class="inline" action="{{ url_for('admin.block_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-warning btn-sm" value="Block">
-      </form>
-      {% else %}
-      <form class="inline" action="{{ url_for('admin.unblock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-secondary btn-sm"
-          value="Unblock">
-      </form>
-      {% endif %}
+        {% if user.locked %}
+        <form class="inline" action="{{ url_for('admin.unlock_user', user_id=user.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-secondary btn-sm" value="Unlock">
+        </form>
+        {% else %}
+        <form class="inline" action="{{ url_for('admin.lock_user', user_id=user.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-warning btn-sm" value="Lock">
+        </form>
+        {% endif %}
+        {% if user.active %}
+        <form class="inline" action="{{ url_for('admin.block_user', user_id=user.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-warning btn-sm" value="Block">
+        </form>
+        {% else %}
+        <form class="inline" action="{{ url_for('admin.unblock_user', user_id=user.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="submit" onclick="return confirm('Are you sure?');" class="btn btn-secondary btn-sm"
+            value="Unblock">
+        </form>
+        {% endif %}
       {% endif %}
       <a class="btn btn-light btn-sm" href="mailto:{{ user.email }}">Email</a>
       {% if current_user.is_admin %}

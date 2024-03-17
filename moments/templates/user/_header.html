@@ -1,7 +1,6 @@
 {% from 'macros.html' import follow_area with context %}
 {% from 'bootstrap5/nav.html' import render_nav_item %}
 
-
 <div class="row row-cols-auto">
   <div class="col">
     <a href="{% if current_user == user %}{{ url_for('.change_avatar') }}{% else %}#{% endif %}" title="Change avatar">
@@ -28,36 +27,35 @@
     </p>
     <div>
       {% if current_user != user %}
-      {% if current_user.can('MODERATE') %}
-      {% if user.locked %}
-      <form class="inline" action="{{ url_for('admin.unlock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" class="btn btn-secondary btn-sm" value="Unlock">
-      </form>
-      {% else %}
-      <form class="inline" action="{{ url_for('admin.lock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" class="btn btn-warning btn-sm" value="Lock">
-      </form>
-      {% endif %}
-      {% if user.active %}
-      <form class="inline" action="{{ url_for('admin.block_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" class="btn btn-warning btn-sm" value="Block">
-      </form>
-      {% else %}
-      <form class="inline" action="{{ url_for('admin.unblock_user', user_id=user.id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="submit" class="btn btn-secondary btn-sm" value="Unblock">
-      </form>
-      {% endif %}
-      <a class="btn btn-light btn-sm" href="mailto:{{ user.email }}">Email</a>
-      {% endif %}
-
-      {% if current_user.is_admin %}
-      <a class="btn btn-warning btn-sm" href="{{ url_for('admin.edit_profile_admin', user_id=user.id) }}">Edit
-        profile</a>
-      {% endif %}
+        {% if current_user.can('MODERATE') %}
+          {% if user.locked %}
+          <form class="inline" action="{{ url_for('admin.unlock_user', user_id=user.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Unlock">
+          </form>
+          {% else %}
+          <form class="inline" action="{{ url_for('admin.lock_user', user_id=user.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="submit" class="btn btn-warning btn-sm" value="Lock">
+          </form>
+          {% endif %}
+          {% if user.active %}
+          <form class="inline" action="{{ url_for('admin.block_user', user_id=user.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="submit" class="btn btn-warning btn-sm" value="Block">
+          </form>
+          {% else %}
+          <form class="inline" action="{{ url_for('admin.unblock_user', user_id=user.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Unblock">
+          </form>
+          {% endif %}
+          <a class="btn btn-light btn-sm" href="mailto:{{ user.email }}">Email</a>
+        {% endif %}
+        {% if current_user.is_admin %}
+        <a class="btn btn-warning btn-sm" href="{{ url_for('admin.edit_profile_admin', user_id=user.id) }}">Edit
+          profile</a>
+        {% endif %}
       {% endif %}
       {{ follow_area(user) }}
       {% if current_user.is_authenticated and user == current_user %}
@@ -68,9 +66,9 @@
 </div>
 <div class="user-nav">
   <ul class="nav nav-tabs">
-    {{ render_nav_item('user.index', 'Photo', user.photos_count, username=user.username) }}
-    {{ render_nav_item('user.show_collections', 'Collections', user.collections_count, username=user.username) }}
-    {{ render_nav_item('user.show_following', 'Following', user.following_count, username=user.username) }}
-    {{ render_nav_item('user.show_followers', 'Follower', user.followers_count, username=user.username) }}
+    {{ render_nav_item('user.index', 'Photo', _badge=user.photos_count, username=user.username) }}
+    {{ render_nav_item('user.show_collections', 'Collections', _badge=user.collections_count, username=user.username) }}
+    {{ render_nav_item('user.show_following', 'Following', _badge=user.following_count, username=user.username) }}
+    {{ render_nav_item('user.show_followers', 'Follower', _badge=user.followers_count, username=user.username) }}
   </ul>
 </div>

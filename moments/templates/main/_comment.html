@@ -1,5 +1,5 @@
 <div class="comments" id="comments">
-  <h3>{{ photo.comments_count }} Comments
+  <h4>{{ photo.comments_count }} Comments
     {% if current_user == photo.author %}
     <form class="inline" method="post" action="{{ url_for('.set_comment', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -8,7 +8,7 @@
       </button>
     </form>
     {% endif %}
-  </h3>
+  </h4>
   <hr>
   {% if comments %}
   {% for comment in comments %}
@@ -22,7 +22,8 @@
     </div>
     <div class="comment-body">
       <h6>
-        <a class="profile-popover text-decoration-none" data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
+        <a class="profile-popover text-decoration-none"
+          data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
           href="{{ url_for('user.index', username=comment.author.username) }}">
           {{ comment.author.name }}
         </a>
@@ -84,36 +85,36 @@
   {% endif %}
 
   {% if photo.can_comment %}
-  {% if current_user.is_authenticated %}
-  {% if current_user.can('COMMENT') %}
-  {% if request.args.get('reply') %}
-  <div class="alert alert-dark">
-    Reply to {{ request.args.get('author') }}:
-    <a class="float-end" href="{{ url_for('.show_photo', photo_id=photo.id) }}">Cancel</a>
-  </div>
-  {% endif %}
-  <div class="comment-form-area">
-    <div class="comment-form-thumbnail">
-      <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
-    </div>
-    <div class="comment-form" id="comment-form">
-      {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, page=pagination.pages or 1,
-      reply=request.args.get('reply')),
-      extra_classes="text-right") }}
-    </div>
-  </div>
-  {% else %}
-  <p class="tip">
-    No permission.
-  </p>
-  {% endif %}
-  {% else %}
-  <p class="tip">
-    <a href="{{ url_for('auth.login') }}">Login</a>
-    or
-    <a href="{{ url_for('auth.register') }}">Register</a> to leave a comment.
-  </p>
-  {% endif %}
+    {% if current_user.is_authenticated %}
+      {% if current_user.can('COMMENT') %}
+        {% if request.args.get('reply') %}
+        <div class="alert alert-dark">
+          Reply to {{ request.args.get('author') }}:
+          <a class="float-end" href="{{ url_for('.show_photo', photo_id=photo.id) }}">Cancel</a>
+        </div>
+        {% endif %}
+        <div class="comment-form-area">
+          <div class="comment-form-thumbnail">
+            <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
+          </div>
+          <div class="comment-form" id="comment-form">
+            {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, page=pagination.pages or 1,
+            reply=request.args.get('reply')),
+            extra_classes="text-right") }}
+          </div>
+        </div>
+      {% else %}
+      <p class="tip">
+        No permission.
+      </p>
+      {% endif %}
+    {% else %}
+    <p class="tip">
+      <a href="{{ url_for('auth.login') }}">Login</a>
+      or
+      <a href="{{ url_for('auth.register') }}">Register</a> to leave a comment.
+    </p>
+    {% endif %}
   {% else %}
   <p class="tip">
     Comment disabled.

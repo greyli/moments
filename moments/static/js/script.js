@@ -1,19 +1,20 @@
 document.addEventListener('DOMContentLoaded', function () {
-  var defaultErrorMessage = 'Server error, please try again later.';
-  var hoverTimer = null;
+  const defaultErrorMessage = 'Server error, please try again later.';
+  let hoverTimer = null;
 
   function handleFetchError(error) {
-    var message = defaultErrorMessage;
+    console.error('Fetch error:', error);
+    let message = defaultErrorMessage;
     if (error.response && error.response.hasOwnProperty('message')) {
       message = error.response.message;
     }
     toast(message, 'error');
   }
 
-  function toast(body, category) {
+  function toast(message, category) {
     const toastEl = document.getElementById('mainToast')
     const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
-    toastEl.querySelector('.toast-body').textContent = body
+    toastEl.querySelector('.toast-body').textContent = message
 
     if (category === 'error') {
       toastEl.classList.replace('text-bg-secondary', 'text-bg-danger')
@@ -24,25 +25,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function showProfilePopover(e) {
-    var el = e.target;
+    const el = e.target;
 
     hoverTimer = setTimeout(function () {
       hoverTimer = null;
       fetch(el.dataset.href)
-        .then(function (response) {
-          if (response.ok) {
-            return response.text();
-          } else {
-            throw new Error('Response was not ok.');
-          }
-        })
+        .then((response) => response.text())
         .then(function (data) {
-          el.setAttribute('data-bs-toggle', 'popover');
-          el.setAttribute('data-bs-html', 'true');
-          el.setAttribute('data-bs-content', data);
-          el.setAttribute('data-bs-trigger', 'manual');
-          el.setAttribute('data-bs-animation', 'false');
-          const popover = bootstrap.Popover.getOrCreateInstance(el, { 'sanitize': false });
+          const popover = bootstrap.Popover.getOrCreateInstance(el, {
+              content: data,
+              html: true,
+              sanitize: false,
+              trigger: 'manual'
+            });
+          popover.setContent({
+            '.popover-body': data
+          })
           popover.show();
           document.querySelector('.popover').addEventListener('mouseleave', function () {
             setTimeout(function () {
@@ -57,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function hideProfilePopover(e) {
-    var el = e.target;
+    const el = e.target;
 
     if (hoverTimer) {
       clearTimeout(hoverTimer);
@@ -68,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const popover = bootstrap.Popover.getInstance(el);
           popover.hide();
         }
-      }, 500);
+      }, 200);
     }
   }
 
@@ -79,15 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   function updateFollowersCount(id) {
-    var el = document.getElementById('followers-count-' + id);
+    const el = document.getElementById('followers-count-' + id);
     fetch(el.dataset.href)
-      .then(function (response) {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
         el.textContent = data.count;
       })
@@ -97,15 +89,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateCollectorsCount(id) {
-    var el = document.getElementById('collectors-count-' + id);
+    const el = document.getElementById('collectors-count-' + id);
     fetch(el.dataset.href)
-      .then(function (response) {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
         el.textContent = data.count;
       })
@@ -115,18 +101,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateNotificationsCount() {
-    var el = document.getElementById('notification-badge');
+    const el = document.getElementById('notification-badge');
     if (!el) {
       return;
     }
     fetch(el.dataset.href)
-      .then(function (response) {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
         if (data.count === 0) {
           el.style.display = 'none';
@@ -141,25 +121,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function follow(e) {
-    var el = e.target;
-    var id = el.dataset.id;
+    const el = e.target;
+    const id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then(function (response) {
-        if (response.ok) {
-          el.previousElementSibling.style.display = 'inline-block';
-          el.style.display = 'none';
-          updateFollowersCount(id);
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
+        el.previousElementSibling.style.display = 'inline-block';
+        el.style.display = 'none';
+        updateFollowersCount(id);
         toast(data.message);
       })
       .catch(function (error) {
@@ -168,25 +142,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function unfollow(e) {
-    var el = e.target;
-    var id = el.dataset.id;
+    const el = e.target;
+    const id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then(function (response) {
-        if (response.ok) {
+      .then((response) => response.json())
+      .then(function (data) {
           el.nextElementSibling.style.display = 'inline-block';
           el.style.display = 'none';
           updateFollowersCount(id);
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
-      .then(function (data) {
         toast(data.message);
       })
       .catch(function (error) {
@@ -195,28 +163,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function collect(e) {
-    var el = e.target;
+    let el = e.target;
     while (el && !el.classList.contains('collect-btn')) {
       el = el.parentElement;
     }
-    var id = el.dataset.id;
+    const id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then(function (response) {
-        if (response.ok) {
-          el.previousElementSibling.style.display = 'block';
-          el.style.display = 'none';
-          updateCollectorsCount(id);
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
+        el.previousElementSibling.style.display = 'block';
+        el.style.display = 'none';
+        updateCollectorsCount(id);
         toast(data.message);
       })
       .catch(function (error) {
@@ -225,28 +187,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function uncollect(e) {
-    var el = e.target;
+    let el = e.target;
     while (el && !el.classList.contains('uncollect-btn')) {
       el = el.parentElement;
     }
-    var id = el.dataset.id;
+    const id = el.dataset.id;
     fetch(el.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then(function (response) {
-        if (response.ok) {
-          el.nextElementSibling.style.display = 'block';
-          el.style.display = 'none';
-          updateCollectorsCount(id);
-          return response.json();
-        } else {
-          throw new Error('Response was not ok.');
-        }
-      })
+      .then((response) => response.json())
       .then(function (data) {
+        el.nextElementSibling.style.display = 'block';
+        el.style.display = 'none';
+        updateCollectorsCount(id);
         toast(data.message);
       })
       .catch(function (error) {
@@ -312,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateNotificationsCount, 30000);
   }
 
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl)
   });
 });
