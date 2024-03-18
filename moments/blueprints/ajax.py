@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, Blueprint
+from flask import render_template, Blueprint
 from flask_login import current_user
 from sqlalchemy import select, func
 
@@ -12,12 +12,12 @@ ajax_bp = Blueprint('ajax', __name__)
 @ajax_bp.route('/notifications-count')
 def notifications_count():
     if not current_user.is_authenticated:
-        return jsonify(message='Login required.'), 403
+        return {'message': 'Login required.'}, 403
 
     count = db.session.scalar(
         select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False)
     )
-    return jsonify(count=count)
+    return {'count': count}
 
 
 @ajax_bp.route('/profile/<int:user_id>')
@@ -29,74 +29,74 @@ def get_profile(user_id):
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
     user = db.get_or_404(User, user_id)
-    return jsonify(count=user.followers_count)
+    return {'count': user.followers_count}
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
     photo = db.get_or_404(Photo, photo_id)
-    return jsonify(count=photo.collectors_count)
+    return {'count': photo.collectors_count}
 
 
 @ajax_bp.route('/collect/<int:photo_id>', methods=['POST'])
 def collect(photo_id):
     if not current_user.is_authenticated:
-        return jsonify(message='Login required.'), 403
+        return {'message': 'Login required.'}, 403
     if not current_user.confirmed:
-        return jsonify(message='Confirm account required.'), 400
+        return {'message': 'Confirm account required.'}, 400
     if not current_user.can('COLLECT'):
-        return jsonify(message='No permission.'), 403
+        return {'message': 'No permission.'}, 403
 
     photo = db.get_or_404(Photo, photo_id)
     if current_user.is_collecting(photo):
-        return jsonify(message='Already collected.'), 400
+        return {'message': 'Already collected.'}, 400
 
     current_user.collect(photo)
     if current_user != photo.author and photo.author.receive_collect_notification:
         push_collect_notification(collector=current_user, photo_id=photo_id, receiver=photo.author)
-    return jsonify(message='Photo collected.')
+    return {'message': 'Photo collected.'}
 
 
 @ajax_bp.route('/uncollect/<int:photo_id>', methods=['POST'])
 def uncollect(photo_id):
     if not current_user.is_authenticated:
-        return jsonify(message='Login required.'), 403
+        return {'message': 'Login required.'}, 403
 
     photo = db.get_or_404(Photo, photo_id)
     if not current_user.is_collecting(photo):
-        return jsonify(message='Not collect yet.'), 400
+        return {'message': 'Not collect yet.'}, 400
 
     current_user.uncollect(photo)
-    return jsonify(message='Collect canceled.')
+    return {'message': 'Collect canceled.'}
 
 
 @ajax_bp.route('/follow/<username>', methods=['POST'])
 def follow(username):
     if not current_user.is_authenticated:
-        return jsonify(message='Login required.'), 403
+        return {'message': 'Login required.'}, 403
     if not current_user.confirmed:
-        return jsonify(message='Confirm account required.'), 400
+        return {'message': 'Confirm account required.'}, 400
     if not current_user.can('FOLLOW'):
-        return jsonify(message='No permission.'), 403
+        return {'message': 'No permission.'}, 403
 
     user = db.first_or_404(select(User).filter_by(username=username))
     if current_user.is_following(user):
-        return jsonify(message='Already followed.'), 400
+        return {'message': 'Already followed.'}, 400
 
     current_user.follow(user)
     if user.receive_collect_notification:
         push_follow_notification(follower=current_user, receiver=user)
-    return jsonify(message='User followed.')
+    return {'message': 'User followed.'}
 
 
 @ajax_bp.route('/unfollow/<username>', methods=['POST'])
 def unfollow(username):
     if not current_user.is_authenticated:
-        return jsonify(message='Login required.'), 403
+        return {'message': 'Login required.'}, 403
 
     user = db.first_or_404(select(User).filter_by(username=username))
     if not current_user.is_following(user):
-        return jsonify(message='Not follow yet.'), 400
+        return {'message': 'Not follow yet.'}, 400
 
     current_user.unfollow(user)
-    return jsonify(message='Follow canceled.')
+    return {'message': 'Follow canceled.'}

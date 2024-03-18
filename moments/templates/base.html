@@ -139,11 +139,11 @@
   <script src="{{ url_for('static', filename='js/dayjs/plugin/localizedFormat.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script type="text/javascript">
-    var csrfToken = "{{ csrf_token() }}";
+    const csrfToken = "{{ csrf_token() }}";
     {% if current_user.is_authenticated %}
-    var isAuthenticated = true;
+    const isAuthenticated = true;
     {% else %}
-    var isAuthenticated = false;
+    const isAuthenticated = false;
     {% endif %}
   </script>
   {% endblock %}
