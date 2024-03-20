@@ -45,16 +45,14 @@
           <a class="nav-item nav-link" href="{{ url_for('main.show_notifications', filter='unread') }}">
             <span class="position-relative">
               {{ render_icon('bell-fill') }}
-              {% if notification_count != 0 %}
               <span
                 id="notification-badge"
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                class="{% if notification_count == 0 %}hide{% endif %} position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                 data-href="{{ url_for('ajax.notifications_count') }}"
               >
                 {{ notification_count }}
                 <span class="visually-hidden">unread messages</span>
               </span>
-              {% endif %}
             </span>
           </a>
           <a class="nav-item nav-link" href="{{ url_for('main.upload') }}" title="Upload">
@@ -140,11 +138,7 @@
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script type="text/javascript">
     const csrfToken = "{{ csrf_token() }}";
-    {% if current_user.is_authenticated %}
-    const isAuthenticated = true;
-    {% else %}
-    const isAuthenticated = false;
-    {% endif %}
+    const isAuthenticated = {{ current_user.is_authenticated|tojson }};
   </script>
   {% endblock %}
 </body>

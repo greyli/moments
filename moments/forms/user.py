@@ -20,7 +20,10 @@ class EditProfileForm(FlaskForm):
     submit = SubmitField()
 
     def validate_username(self, field):
-        if field.data != current_user.username and User.query.filter_by(username=field.data).first():
+        user = db.session.scalar(
+            select(User).filter_by(username=field.data)
+        )
+        if field.data != current_user.username and user:
             raise ValidationError('The username is already in use.')
 
 
