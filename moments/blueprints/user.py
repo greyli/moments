@@ -253,8 +253,7 @@ def privacy_setting():
 def delete_account():
     form = DeleteAccountForm()
     if form.validate_on_submit():
-        user = db.session.get(User, current_user.id)
-        db.session.delete(user)
+        db.session.delete(current_user._get_current_object())
         db.session.commit()
         logout_user()
         flash('Your are free, goodbye!', 'success')
