@@ -286,8 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  if (document.getElementById('confirm-delete')) {
-    document.getElementById('confirm-delete').addEventListener('show.bs.modal', function (e) {
+  if (document.getElementById('delete-modal')) {
+    document.getElementById('delete-modal').addEventListener('show.bs.modal', function (e) {
       document.querySelector('.delete-form').setAttribute('action', e.relatedTarget.dataset.href);
     });
   }

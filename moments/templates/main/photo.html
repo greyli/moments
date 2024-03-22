@@ -37,15 +37,15 @@
       </button>
     </form>
     {% endif %}
-    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#share-modal">{{ render_icon('share-fill') }}</a>
+    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#share-modal" title="Share">{{ render_icon('share-fill') }}</a>
     {% if current_user == photo.author or current_user.can('MODERATE') %}
-    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#confirm-delete"
-      data-href="{{ url_for('.delete_photo', photo_id=photo.id) }}">{{ render_icon('trash-fill') }}</a>
+    <a class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#delete-modal"
+      data-href="{{ url_for('.delete_photo', photo_id=photo.id) }}" title="Delete">{{ render_icon('trash-fill') }}</a>
     {% endif %}
     {% if current_user.is_authenticated and current_user != photo.author %}
     <form class="inline" method="post" action="{{ url_for('.report_photo', photo_id=photo.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-light btn-sm">{{ render_icon('flag-fill') }}</button>
+      <button type="submit" class="btn btn-light btn-sm" title="Report">{{ render_icon('flag-fill') }}</button>
     </form>
     {% endif %}
     <p class="text-muted float-end small">
@@ -73,7 +73,7 @@
 </div>
 <!-- delete confirm modal -->
 {% if current_user.is_authenticated %}
-<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+<div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
   aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
