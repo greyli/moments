@@ -49,7 +49,7 @@
         {{ description_form.csrf_token }}
         {{ render_field(description_form.description) }}
         <a class="btn btn-light btn-sm" id="cancel-description">Cancel</a>
-        {{ render_field(description_form.submit, class='btn btn-success btn-sm') }}
+        {{ render_field(description_form.submit, class='btn-success btn-sm description-submit-btn') }}
       </form>
     </div>
     {% endif %}
@@ -61,6 +61,8 @@
           {{ render_icon('tag-fill') }} {{ tag.name }}
         </a>
         {% endfor %}
+        {% else %}
+        <small class="text-muted">No tags</small>
         {% endif %}
         {% if current_user == photo.author %}
         <a id="tag-btn" href="#!">
@@ -81,7 +83,7 @@
       <hr>
       {% for tag in photo.tags %}
       <a class="dead-link" href="#!" data-href="{{ url_for('.delete_tag', photo_id=photo.id, tag_id=tag.id) }}"
-        data-bs-toggle="modal" data-bs-target="#confirm-delete" title="Delete tag">
+        data-bs-toggle="modal" data-bs-target="#delete-modal" title="Delete tag">
         <span class="badge text-bg-danger rounded-pill">
           {{ tag.name }} {{ render_icon('trash-fill') }}</span>
         </span>

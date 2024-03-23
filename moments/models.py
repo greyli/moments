@@ -187,15 +187,6 @@ class User(db.Model, UserMixin):
         )
         return follow is not None
 
-    @property
-    def followed_photos(self):
-        photos = db.session.scalars(
-            select(Photo)
-            .join(Follow, Follow.followed_id == Photo.author_id)
-            .filter(Follow.follower_id == self.id)
-        ).all()
-        return photos
-
     def collect(self, photo):
         if not self.is_collecting(photo):
             collect = Collect(collector=self, collected=photo)
