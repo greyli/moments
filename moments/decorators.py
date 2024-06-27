@@ -1,8 +1,8 @@
 from functools import wraps
 
-from flask import flash, url_for, redirect, abort
-from markupsafe import Markup
+from flask import abort, flash, redirect, url_for
 from flask_login import current_user
+from markupsafe import Markup
 
 
 def confirm_required(func):
@@ -13,10 +13,12 @@ def confirm_required(func):
             message = Markup(
                 'Please confirm your account first.'
                 'Not receive the email?'
-                f'<a class="alert-link" href="{resend_url}">Resend Confirm Email</a>')
+                f'<a class="alert-link" href="{resend_url}">Resend Confirm Email</a>'
+            )
             flash(message, 'warning')
             return redirect(url_for('main.index'))
         return func(*args, **kwargs)
+
     return decorated_function
 
 
@@ -27,7 +29,9 @@ def permission_required(permission_name):
             if not current_user.can(permission_name):
                 abort(403)
             return func(*args, **kwargs)
+
         return decorated_function
+
     return decorator
 
 

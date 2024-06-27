@@ -5,9 +5,9 @@ from typing import Optional
 from flask import current_app
 from flask_avatars import Identicon
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Table, Column, String, Text, Integer, ForeignKey, func, event, select
-from sqlalchemy.orm import relationship, mapped_column, Mapped, WriteOnlyMapped
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Text, event, func, select
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from moments.core.extensions import db, whooshee
 
@@ -16,7 +16,7 @@ roles_permissions = Table(
     'roles_permissions',
     db.Model.metadata,
     Column('role_id', Integer, ForeignKey('role.id')),
-    Column('permission_id', Integer, ForeignKey('permission.id'))
+    Column('permission_id', Integer, ForeignKey('permission.id')),
 )
 
 
@@ -24,10 +24,7 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[list['Role']] = relationship(
-        secondary=roles_permissions,
-        back_populates='permissions'
-    )
+    roles: Mapped[list['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
 
 
 class Role(db.Model):
@@ -35,10 +32,7 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role', passive_deletes=True)
-    permissions: Mapped[list['Permission']] = relationship(
-        secondary=roles_permissions,
-        back_populates='roles'
-    )
+    permissions: Mapped[list['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
 
     @staticmethod
     def init_role():
@@ -46,21 +40,17 @@ class Role(db.Model):
             'Locked': ['FOLLOW', 'COLLECT'],
             'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
             'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
-            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER']
+            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
         }
 
         for role_name in roles_permissions_map:
-            role = db.session.scalar(
-                select(Role).filter_by(name=role_name)
-            )
+            role = db.session.scalar(select(Role).filter_by(name=role_name))
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
             for permission_name in roles_permissions_map[role_name]:
-                permission = db.session.scalar(
-                    select(Permission).filter_by(name=permission_name)
-                )
+                permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
                 if permission is None:
                     permission = Permission(name=permission_name)
                     db.session.add(permission)
@@ -114,9 +104,7 @@ class User(db.Model, UserMixin):
     role_id: Mapped[Optional[int]] = mapped_column(ForeignKey('role.id'))
 
     role: Mapped['Role'] = relationship(back_populates='users')
-    photos: WriteOnlyMapped[list['Photo']] = relationship(
-        back_populates='author', cascade='all', passive_deletes=True
-    )
+    photos: WriteOnlyMapped[list['Photo']] = relationship(back_populates='author', cascade='all', passive_deletes=True)
     comments: WriteOnlyMapped[list['Comment']] = relationship(
         back_populates='author', cascade='all', passive_deletes=True
     )
@@ -149,13 +137,8 @@ class User(db.Model, UserMixin):
 
     def set_role(self):
         if self.role is None:
-            if self.email == current_app.config['MOMENTS_ADMIN_EMAIL']:
-                role_name = 'Administrator'
-            else:
-                role_name = 'User'
-            self.role = db.session.scalar(
-                select(Role).filter_by(name=role_name)
-            )
+            role_name = 'Administrator' if self.email == current_app.config['MOMENTS_ADMIN_EMAIL'] else 'User'
+            self.role = db.session.scalar(select(Role).filter_by(name=role_name))
             db.session.commit()
 
     def validate_password(self, password):
@@ -168,23 +151,17 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
         if follow:
             db.session.delete(follow)
             db.session.commit()
 
     def is_following(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
         return follow is not None
 
     def is_followed_by(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=user.id, followed_id=self.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=user.id, followed_id=self.id))
         return follow is not None
 
     def collect(self, photo):
@@ -194,32 +171,24 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def uncollect(self, photo):
-        collect = db.session.scalar(
-            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        )
+        collect = db.session.scalar(select(Collect).filter_by(collector_id=self.id, collected_id=photo.id))
         if collect:
             db.session.delete(collect)
             db.session.commit()
 
     def is_collecting(self, photo):
-        collect = db.session.scalar(
-            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        )
+        collect = db.session.scalar(select(Collect).filter_by(collector_id=self.id, collected_id=photo.id))
         return collect is not None
 
     def lock(self):
         self.locked = True
-        locked_role = db.session.scalar(
-            select(Role).filter_by(name='Locked')
-        )
+        locked_role = db.session.scalar(select(Role).filter_by(name='Locked'))
         self.role = locked_role
         db.session.commit()
 
     def unlock(self):
         self.locked = False
-        user_role = db.session.scalar(
-            select(Role).filter_by(name='User')
-        )
+        user_role = db.session.scalar(select(Role).filter_by(name='User'))
         self.role = user_role
         db.session.commit()
 
@@ -245,47 +214,39 @@ class User(db.Model, UserMixin):
         return self.active
 
     def can(self, permission_name):
-        permission = db.session.scalar(
-            select(Permission).filter_by(name=permission_name)
-        )
+        permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
         return permission is not None and self.role is not None and permission in self.role.permissions
 
     @property
     def followers_count(self):
-        return db.session.scalar(
-            select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)
-        ) - 1  # minus user self
+        return (
+            db.session.scalar(select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)) - 1
+        )  # minus user self
 
     @property
     def following_count(self):
-        return db.session.scalar(
-            select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)
-        ) - 1  # minus user self
+        return (
+            db.session.scalar(select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)) - 1
+        )  # minus user self
 
     @property
     def photos_count(self):
-        return db.session.scalar(
-            select(func.count(Photo.id)).filter_by(author_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Photo.id)).filter_by(author_id=self.id))
 
     @property
     def collections_count(self):
-        return db.session.scalar(
-            select(func.count(Collect.collector_id)).filter_by(collected_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Collect.collector_id)).filter_by(collected_id=self.id))
 
     @property
     def notifications_count(self):
-        return db.session.scalar(
-            select(func.count(Notification.id)).filter_by(receiver_id=self.id, is_read=False)
-        )
+        return db.session.scalar(select(func.count(Notification.id)).filter_by(receiver_id=self.id, is_read=False))
 
 
 tagging = Table(
     'tagging',
     db.Model.metadata,
     Column('photo_id', Integer, ForeignKey('photo.id')),
-    Column('tag_id', Integer, ForeignKey('tag.id'))
+    Column('tag_id', Integer, ForeignKey('tag.id')),
 )
 
 
@@ -313,15 +274,11 @@ class Photo(db.Model):
 
     @property
     def collectors_count(self):
-        return db.session.scalar(
-            select(func.count(Collect.collector_id)).filter_by(collected_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Collect.collector_id)).filter_by(collected_id=self.id))
 
     @property
     def comments_count(self):
-        return db.session.scalar(
-            select(func.count(Comment.id)).filter_by(photo_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Comment.id)).filter_by(photo_id=self.id))
 
 
 @whooshee.register_model('name')
@@ -329,15 +286,11 @@ class Tag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
-    photos: WriteOnlyMapped['Photo'] = relationship(
-        secondary=tagging, back_populates='tags', passive_deletes=True
-    )
+    photos: WriteOnlyMapped['Photo'] = relationship(secondary=tagging, back_populates='tags', passive_deletes=True)
 
     @property
     def photos_count(self):
-        return db.session.scalar(
-            select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id)
-        )
+        return db.session.scalar(select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id))
 
 
 class Comment(db.Model):

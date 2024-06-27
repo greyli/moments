@@ -1,14 +1,13 @@
 import io
 
-from moments.models import User, Photo
+from moments.core.extensions import db
+from moments.models import Photo, User
 from moments.settings import Operations
 from moments.utils import generate_token
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class UserTestCase(BaseTestCase):
-
     def test_index_page(self):
         response = self.client.get('/user/normal')
         data = response.get_data(as_text=True)
@@ -79,7 +78,7 @@ class UserTestCase(BaseTestCase):
     def test_show_followers(self):
         response = self.client.get('/user/normal/followers')
         data = response.get_data(as_text=True)
-        self.assertIn('Normal User\'s followers', data)
+        self.assertIn("Normal User's followers", data)
         self.assertIn('No followers.', data)
 
         user = db.session.get(User, 1)
@@ -93,7 +92,7 @@ class UserTestCase(BaseTestCase):
     def test_show_following(self):
         response = self.client.get('/user/normal/following')
         data = response.get_data(as_text=True)
-        self.assertIn('Normal User\'s following', data)
+        self.assertIn("Normal User's following", data)
         self.assertIn('No following.', data)
 
         user = db.session.get(User, 2)
@@ -106,10 +105,14 @@ class UserTestCase(BaseTestCase):
 
     def test_edit_profile(self):
         self.login()
-        response = self.client.post('/user/settings/profile', data=dict(
-            username='newname',
-            name='New Name',
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/user/settings/profile',
+            data=dict(
+                username='newname',
+                name='New Name',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Profile updated.', data)
         user = db.session.get(User, 2)
@@ -125,9 +128,10 @@ class UserTestCase(BaseTestCase):
 
     def test_upload_avatar(self):
         self.login()
-        data = {'image': (io.BytesIO(b"abcdef"), 'test.jpg')}
-        response = self.client.post('/user/settings/avatar/upload', data=data, follow_redirects=True,
-                                    content_type='multipart/form-data')
+        data = {'image': (io.BytesIO(b'abcdef'), 'test.jpg')}
+        response = self.client.post(
+            '/user/settings/avatar/upload', data=data, follow_redirects=True, content_type='multipart/form-data'
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Image uploaded, please crop.', data)
 
@@ -136,11 +140,15 @@ class UserTestCase(BaseTestCase):
         self.assertTrue(user.validate_password('123'))
 
         self.login()
-        response = self.client.post('/user/settings/change-password', data=dict(
-            old_password='123',
-            password='new-password',
-            password2='new-password',
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/user/settings/change-password',
+            data=dict(
+                old_password='123',
+                password='new-password',
+                password2='new-password',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Password updated.', data)
         self.assertTrue(user.validate_password('new-password'))
@@ -163,11 +171,11 @@ class UserTestCase(BaseTestCase):
 
     def test_notification_setting(self):
         self.login()
-        response = self.client.post('/user/settings/notification', data=dict(
-            receive_collect_notification='',
-            receive_comment_notification='',
-            receive_follow_notification=''
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/user/settings/notification',
+            data=dict(receive_collect_notification='', receive_comment_notification='', receive_follow_notification=''),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Notification settings updated.', data)
 
@@ -186,9 +194,13 @@ class UserTestCase(BaseTestCase):
 
     def test_privacy_setting(self):
         self.login()
-        response = self.client.post('/user/settings/privacy', data=dict(
-            public_collections='',
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/user/settings/privacy',
+            data=dict(
+                public_collections='',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Privacy settings updated.', data)
 
@@ -199,13 +211,17 @@ class UserTestCase(BaseTestCase):
         response = self.client.get('/user/normal/collections')
         data = response.get_data(as_text=True)
         self.assertIn("Normal User's collection", data)
-        self.assertIn('This user\'s collections was private.', data)
+        self.assertIn("This user's collections was private.", data)
 
     def test_delete_account(self):
         self.login()
-        response = self.client.post('/user/settings/account/delete', data=dict(
-            username='normal',
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/user/settings/account/delete',
+            data=dict(
+                username='normal',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Your are free, goodbye!', data)
         self.assertEqual(db.session.get(User, 2), None)

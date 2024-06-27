@@ -1,11 +1,11 @@
-from flask import render_template, flash, Blueprint, request, current_app
+from flask import Blueprint, current_app, flash, render_template, request
 from flask_login import login_required
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 
-from moments.decorators import admin_required, permission_required
 from moments.core.extensions import db
+from moments.decorators import admin_required, permission_required
 from moments.forms.admin import EditProfileAdminForm
-from moments.models import Role, User, Tag, Photo, Comment
+from moments.models import Comment, Photo, Role, Tag, User
 from moments.utils import redirect_back
 
 admin_bp = Blueprint('admin', __name__)
@@ -15,34 +15,25 @@ admin_bp = Blueprint('admin', __name__)
 @login_required
 @permission_required('MODERATE')
 def index():
-    user_count = db.session.scalar(
-        select(func.count(User.id))
+    user_count = db.session.scalar(select(func.count(User.id)))
+    locked_user_count = db.session.scalar(select(func.count(User.id)).filter_by(locked=True))
+    blocked_user_count = db.session.scalar(select(func.count(User.id)).filter_by(active=False))
+    photo_count = db.session.scalar(select(func.count(Photo.id)))
+    reported_photos_count = db.session.scalar(select(func.count(Photo.id)).filter(Photo.flag > 0))
+    tag_count = db.session.scalar(select(func.count(Tag.id)))
+    comment_count = db.session.scalar(select(func.count(Comment.id)))
+    reported_comments_count = db.session.scalar(select(func.count(Comment.id)).filter(Comment.flag > 0))
+    return render_template(
+        'admin/index.html',
+        user_count=user_count,
+        photo_count=photo_count,
+        tag_count=tag_count,
+        comment_count=comment_count,
+        locked_user_count=locked_user_count,
+        blocked_user_count=blocked_user_count,
+        reported_comments_count=reported_comments_count,
+        reported_photos_count=reported_photos_count,
     )
-    locked_user_count = db.session.scalar(
-        select(func.count(User.id)).filter_by(locked=True)
-    )
-    blocked_user_count = db.session.scalar(
-        select(func.count(User.id)).filter_by(active=False)
-    )
-    photo_count = db.session.scalar(
-        select(func.count(Photo.id))
-    )
-    reported_photos_count = db.session.scalar(
-        select(func.count(Photo.id)).filter(Photo.flag > 0)
-    )
-    tag_count = db.session.scalar(
-        select(func.count(Tag.id))
-    )
-    comment_count = db.session.scalar(
-        select(func.count(Comment.id))
-    )
-    reported_comments_count = db.session.scalar(
-        select(func.count(Comment.id)).filter(Comment.flag > 0)
-    )
-    return render_template('admin/index.html', user_count=user_count, photo_count=photo_count,
-                           tag_count=tag_count, comment_count=comment_count, locked_user_count=locked_user_count,
-                           blocked_user_count=blocked_user_count, reported_comments_count=reported_comments_count,
-                           reported_photos_count=reported_photos_count)
 
 
 @admin_bp.route('/profile/<int:user_id>', methods=['GET', 'POST'])
@@ -199,13 +190,9 @@ def manage_comment(order):
     per_page = current_app.config['MOMENTS_MANAGE_COMMENT_PER_PAGE']
     order_rule = 'flag'
     if order == 'by_time':
-        pagination = db.paginate(
-            select(Comment).order_by(Comment.created_at.desc()
-        ), page=page, per_page=per_page)
+        pagination = db.paginate(select(Comment).order_by(Comment.created_at.desc()), page=page, per_page=per_page)
         order_rule = 'time'
     else:
-        pagination = db.paginate(
-            select(Comment).order_by(Comment.flag.desc()
-        ), page=page, per_page=per_page)
+        pagination = db.paginate(select(Comment).order_by(Comment.flag.desc()), page=page, per_page=per_page)
     comments = pagination.items
     return render_template('admin/manage_comment.html', pagination=pagination, comments=comments, order_rule=order_rule)

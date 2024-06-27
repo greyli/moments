@@ -1,10 +1,9 @@
-from moments.models import User, Photo
-from tests import BaseTestCase
 from moments.core.extensions import db
+from moments.models import Photo, User
+from tests import BaseTestCase
 
 
 class AjaxTestCase(BaseTestCase):
-
     def test_notifications_count(self):
         response = self.client.get('/ajax/notifications-count')
         data = response.get_json()

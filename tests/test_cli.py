@@ -1,11 +1,9 @@
 from moments.core.extensions import db
-from moments.models import Comment, Role, User, Photo, Tag
+from moments.models import Comment, Photo, Role, Tag, User
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class CLITestCase(BaseTestCase):
-
     def setUp(self):
         super().setUp()
         db.drop_all()
@@ -30,9 +28,23 @@ class CLITestCase(BaseTestCase):
         pass  # it will take too long time
 
     def test_fake_command_with_count(self):
-        result = self.cli_runner.invoke(args=['fake', '--user', '5', '--follow', '10',
-                                          '--photo', '10', '--tag', '10', '--collect', '10',
-                                          '--comment', '10'])
+        result = self.cli_runner.invoke(
+            args=[
+                'fake',
+                '--user',
+                '5',
+                '--follow',
+                '10',
+                '--photo',
+                '10',
+                '--tag',
+                '10',
+                '--collect',
+                '10',
+                '--comment',
+                '10',
+            ]
+        )
 
         self.assertIn('Initializing the roles and permissions...', result.output)
 

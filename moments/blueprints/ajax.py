@@ -1,9 +1,9 @@
-from flask import render_template, Blueprint
+from flask import Blueprint, render_template
 from flask_login import current_user
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 
-from moments.models import User, Photo, Notification, Collect, Follow
 from moments.core.extensions import db
+from moments.models import Notification, Photo, User
 from moments.notifications import push_collect_notification, push_follow_notification
 
 ajax_bp = Blueprint('ajax', __name__)
@@ -14,9 +14,7 @@ def notifications_count():
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    count = db.session.scalar(
-        select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False)
-    )
+    count = db.session.scalar(select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False))
     return {'count': count}
 
 

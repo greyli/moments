@@ -1,14 +1,9 @@
 import os
 import sys
+from pathlib import Path
 
-basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-
-# SQLite URI compatible
-WIN = sys.platform.startswith('win')
-if WIN:
-    prefix = 'sqlite:///'
-else:
-    prefix = 'sqlite:////'
+BASE_DIR = Path(__file__).resolve().parent.parent
+SQLITE_PREFIX = 'sqlite:///' if sys.platform.startswith('win') else 'sqlite:////'
 
 
 class Operations:
@@ -29,9 +24,8 @@ class BaseConfig:
     MOMENTS_MANAGE_COMMENT_PER_PAGE = 30
     MOMENTS_SEARCH_RESULT_PER_PAGE = 20
     MOMENTS_MAIL_SUBJECT_PREFIX = '[Moments]'
-    MOMENTS_UPLOAD_PATH = os.path.join(basedir, 'uploads')
-    MOMENTS_PHOTO_SIZE = {'small': 400,
-                         'medium': 800}
+    MOMENTS_UPLOAD_PATH = BASE_DIR / 'uploads'
+    MOMENTS_PHOTO_SIZE = {'small': 400, 'medium': 800}
     MOMENTS_PHOTO_SUFFIX = {
         MOMENTS_PHOTO_SIZE['small']: '_s',  # thumbnail
         MOMENTS_PHOTO_SIZE['medium']: '_m',  # display
@@ -62,10 +56,10 @@ class BaseConfig:
     WHOOSHEE_MIN_STRING_LEN = 1
     MOMENTS_SLOW_QUERY_THRESHOLD = 1
 
+
 class DevelopmentConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = \
-        prefix + os.path.join(basedir, 'data-dev.db')
-    REDIS_URL = "redis://localhost"
+    SQLALCHEMY_DATABASE_URI = SQLITE_PREFIX + str(BASE_DIR / 'data-dev.db')
+    REDIS_URL = 'redis://localhost'
 
 
 class TestingConfig(BaseConfig):
@@ -75,8 +69,7 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL',
-                                        prefix + os.path.join(basedir, 'data.db'))
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', SQLITE_PREFIX + str(BASE_DIR / 'data.db'))
 
 
 config = {

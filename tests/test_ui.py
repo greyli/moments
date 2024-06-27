@@ -2,11 +2,11 @@ import time
 import unittest
 
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
 
 class UserInterfaceTestCase(unittest.TestCase):
-
     def setUp(self):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless=new')
@@ -17,7 +17,7 @@ class UserInterfaceTestCase(unittest.TestCase):
             self.skipTest('Web browser not available.')
         try:
             self.browser.get('http://localhost:5000/')
-        except:
+        except WebDriverException:
             self.skipTest('Server not running. Run the app first with "flask --app tests/app.py run".')
 
         self.login()
@@ -77,7 +77,9 @@ class UserInterfaceTestCase(unittest.TestCase):
         popover.find_element(By.XPATH, '//a[@title="Follow"]').click()
         time.sleep(1)
         self.assertEqual(popover.find_element(By.CLASS_NAME, 'follow-btn').value_of_css_property('display'), 'none')
-        self.assertEqual(popover.find_element(By.CLASS_NAME, 'unfollow-btn').value_of_css_property('display'), 'inline-block')
+        self.assertEqual(
+            popover.find_element(By.CLASS_NAME, 'unfollow-btn').value_of_css_property('display'), 'inline-block'
+        )
         self.assertIn('User followed', self.browser.page_source)
         new_follower_count = self.browser.find_element(By.ID, 'followers-count-2').text
         self.assertEqual(int(new_follower_count), int(origin_follower_count) + 1)
@@ -87,7 +89,9 @@ class UserInterfaceTestCase(unittest.TestCase):
         time.sleep(1)
         self.assertIn('Follow canceled', self.browser.page_source)
         self.assertEqual(popover.find_element(By.CLASS_NAME, 'unfollow-btn').value_of_css_property('display'), 'none')
-        self.assertEqual(popover.find_element(By.CLASS_NAME, 'follow-btn').value_of_css_property('display'), 'inline-block')
+        self.assertEqual(
+            popover.find_element(By.CLASS_NAME, 'follow-btn').value_of_css_property('display'), 'inline-block'
+        )
         new_follower_count = self.browser.find_element(By.ID, 'followers-count-2').text
         self.assertEqual(int(new_follower_count), int(origin_follower_count) - 1)
 
