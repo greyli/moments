@@ -8,29 +8,29 @@ class CLITestCase(BaseTestCase):
         super().setUp()
         db.drop_all()
 
-    def test_initdb_command(self):
-        result = self.cli_runner.invoke(args=['initdb'])
+    def test_init_db_command(self):
+        result = self.cli_runner.invoke(args=['init-db'])
         self.assertIn('Initialized database.', result.output)
 
-    def test_initdb_command_with_drop(self):
-        result = self.cli_runner.invoke(args=['initdb', '--drop'], input='y\n')
+    def test_init_db_command_with_drop(self):
+        result = self.cli_runner.invoke(args=['init-db', '--drop'], input='y\n')
         self.assertIn('This operation will delete the database, do you want to continue?', result.output)
         self.assertIn('Drop tables.', result.output)
 
-    def test_init_command(self):
-        result = self.cli_runner.invoke(args=['init'])
+    def test_init_app_command(self):
+        result = self.cli_runner.invoke(args=['init-app'])
         self.assertIn('Initializing the database...', result.output)
         self.assertIn('Initializing the roles and permissions...', result.output)
         self.assertIn('Done.', result.output)
         self.assertEqual(Role.query.count(), 4)
 
-    def test_fake_command(self):
+    def test_lorem_command(self):
         pass  # it will take too long time
 
-    def test_fake_command_with_count(self):
+    def test_lorem_command_with_count(self):
         result = self.cli_runner.invoke(
             args=[
-                'fake',
+                'lorem',
                 '--user',
                 '5',
                 '--follow',

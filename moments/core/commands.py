@@ -5,9 +5,9 @@ from moments.models import Role
 
 
 def register_commands(app):
-    @app.cli.command()
+    @app.cli.command('init-db')
     @click.option('--drop', is_flag=True, help='Create after drop.')
-    def initdb(drop):
+    def init_db_command(drop):
         """Initialize the database."""
         if drop:
             click.confirm('This operation will delete the database, do you want to continue?', abort=True)
@@ -16,8 +16,8 @@ def register_commands(app):
         db.create_all()
         click.echo('Initialized database.')
 
-    @app.cli.command()
-    def init():
+    @app.cli.command('init-app')
+    def init_app_command():
         """Initialize Moments."""
         click.echo('Initializing the database...')
         db.create_all()
@@ -27,14 +27,14 @@ def register_commands(app):
 
         click.echo('Done.')
 
-    @app.cli.command()
+    @app.cli.command('lorem')
     @click.option('--user', default=10, help='Quantity of users, default is 10.')
     @click.option('--follow', default=30, help='Quantity of follows, default is 30.')
     @click.option('--photo', default=30, help='Quantity of photos, default is 30.')
     @click.option('--tag', default=20, help='Quantity of tags, default is 20.')
     @click.option('--collect', default=50, help='Quantity of collects, default is 50.')
     @click.option('--comment', default=100, help='Quantity of comments, default is 100.')
-    def fake(user, follow, photo, tag, collect, comment):
+    def lorem_command(user, follow, photo, tag, collect, comment):
         """Generate fake data."""
 
         from moments.fakes import fake_admin, fake_collect, fake_comment, fake_follow, fake_photo, fake_tag, fake_user

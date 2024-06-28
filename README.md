@@ -26,7 +26,7 @@ $ pdm install
 Generate fake data then run:
 
 ```
-$ pdm run flask fake
+$ pdm run flask lorem
 $ pdm run flask run
 * Running on http://127.0.0.1:5000/
 ```

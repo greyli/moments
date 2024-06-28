@@ -18,7 +18,7 @@ def register_logging(app):
         '[%(asctime)s] %(remote_addr)s requested %(url)s\n' '%(levelname)s in %(module)s: %(message)s'
     )
 
-    logging_path = app.config['GREYBOOK_LOGGING_PATH']
+    logging_path = app.config['MOMENTS_LOGGING_PATH']
     if logging_path == 'stream':
         file_handler = logging.StreamHandler(wsgi_errors_stream)
     else:
@@ -29,7 +29,7 @@ def register_logging(app):
     mail_handler = SMTPHandler(
         mailhost=app.config['MAIL_SERVER'],
         fromaddr=app.config['MAIL_USERNAME'],
-        toaddrs=['ADMIN_EMAIL'],
+        toaddrs=['MOMENTS_ADMIN_EMAIL'],
         subject=app.config['MOMENTS_ERROR_EMAIL_SUBJECT'],
         credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']),
     )
