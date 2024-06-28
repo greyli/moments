@@ -14,6 +14,8 @@ class Operations:
 
 class BaseConfig:
     MOMENTS_ADMIN_EMAIL = os.getenv('MOMENTS_ADMIN', 'admin@helloflask.com')
+    MOMENTS_ERROR_EMAIL_SUBJECT = '[Greybook] Application Error'
+    MOMENTS_LOGGING_PATH = os.getenv('MOMENTS_LOGGING_PATH', BASE_DIR / 'logs/moments.log')
     MOMENTS_PHOTO_PER_PAGE = 12
     MOMENTS_COMMENT_PER_PAGE = 15
     MOMENTS_NOTIFICATION_PER_PAGE = 20
@@ -24,7 +26,7 @@ class BaseConfig:
     MOMENTS_MANAGE_COMMENT_PER_PAGE = 30
     MOMENTS_SEARCH_RESULT_PER_PAGE = 20
     MOMENTS_MAIL_SUBJECT_PREFIX = '[Moments]'
-    MOMENTS_UPLOAD_PATH = BASE_DIR / 'uploads'
+    MOMENTS_UPLOAD_PATH = os.getenv('MOMENTS_UPLOAD_PATH', BASE_DIR / 'uploads')
     MOMENTS_PHOTO_SIZE = {'small': 400, 'medium': 800}
     MOMENTS_PHOTO_SUFFIX = {
         MOMENTS_PHOTO_SIZE['small']: '_s',  # thumbnail
