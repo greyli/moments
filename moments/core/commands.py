@@ -37,7 +37,7 @@ def register_commands(app):
     def lorem_command(user, follow, photo, tag, collect, comment):
         """Generate fake data."""
 
-        from moments.fakes import fake_admin, fake_collect, fake_comment, fake_follow, fake_photo, fake_tag, fake_user
+        from moments.lorem import fake_admin, fake_collect, fake_comment, fake_follow, fake_photo, fake_tag, fake_user
 
         db.drop_all()
         db.create_all()

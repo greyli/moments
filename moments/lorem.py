@@ -17,10 +17,10 @@ def fake_admin():
     admin = User(
         name='Grey Li',
         username='greyli',
-        password='helloflask',
+        password='moments',
         email='admin@helloflask.com',
         bio=fake.sentence(),
-        website='http://greyli.com',
+        website='https://greyli.com',
         confirmed=True,
     )
     notification = Notification(message='Hello, welcome to Moments.', receiver=admin)
