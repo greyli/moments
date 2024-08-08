@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from moments.core.extensions import db
 from moments.decorators import confirm_required, permission_required
 from moments.forms.main import CommentForm, DescriptionForm, TagForm
-from moments.models import Collect, Comment, Follow, Notification, Photo, Tag, User
+from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
 from moments.notifications import push_collect_notification, push_comment_notification
 from moments.utils import flash_errors, redirect_back, rename_image, resize_image
 
@@ -34,7 +34,7 @@ def index():
     tags = db.session.scalars(
         select(Tag).join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
     ).all()
-    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collect)
+    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collection)
 
 
 @main_bp.route('/explore')
@@ -196,7 +196,7 @@ def collect(photo_id):
     current_user.collect(photo)
     flash('Photo collected.', 'success')
     if current_user != photo.author and photo.author.receive_collect_notification:
-        push_collect_notification(collector=current_user, photo_id=photo_id, receiver=photo.author)
+        push_collect_notification(user=current_user, photo_id=photo_id, receiver=photo.author)
     return redirect(url_for('.show_photo', photo_id=photo_id))
 
 
@@ -241,7 +241,7 @@ def show_collectors(photo_id):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
     pagination = db.paginate(
-        select(User).join(Collect, Collect.collector_id == User.id).filter(Collect.collected_id == photo.id),
+        select(User).join(Collection, Collection.user_id == User.id).filter(Collection.photo_id == photo.id),
         page=page,
         per_page=per_page,
     )

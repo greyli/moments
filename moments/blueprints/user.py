@@ -15,7 +15,7 @@ from moments.forms.user import (
     PrivacySettingForm,
     UploadAvatarForm,
 )
-from moments.models import Collect, Follow, Photo, User
+from moments.models import Collection, Follow, Photo, User
 from moments.notifications import push_follow_notification
 from moments.settings import Operations
 from moments.utils import flash_errors, generate_token, parse_token, redirect_back
@@ -48,9 +48,9 @@ def show_collections(username):
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
     pagination = db.paginate(
         select(Photo)
-        .join(Collect, Collect.collected_id == Photo.id)
-        .filter_by(collector_id=user.id)
-        .order_by(Collect.created_at.desc()),
+        .join(Collection, Collection.photo_id == Photo.id)
+        .filter_by(user_id=user.id)
+        .order_by(Collection.created_at.desc()),
         page=page,
         per_page=per_page,
     )

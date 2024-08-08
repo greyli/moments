@@ -92,7 +92,7 @@
       {% endif %}
     </div>
     {% endif %}
-    {% if photo.collectors %}
+    {% if photo.collections %}
     <a class="text-decoration-none" href="{{ url_for('main.show_collectors', photo_id=photo.id) }}">{{ photo.collectors_count }}
       collectors</a>
     {% endif %}

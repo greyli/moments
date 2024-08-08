@@ -51,7 +51,7 @@ def collect(photo_id):
 
     current_user.collect(photo)
     if current_user != photo.author and photo.author.receive_collect_notification:
-        push_collect_notification(collector=current_user, photo_id=photo_id, receiver=photo.author)
+        push_collect_notification(user=current_user, photo_id=photo_id, receiver=photo.author)
     return {'message': 'Photo collected.'}
 
 
