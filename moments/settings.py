@@ -1,12 +1,13 @@
 import os
 import sys
 from pathlib import Path
+from enum import Enum
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SQLITE_PREFIX = 'sqlite:///' if sys.platform.startswith('win') else 'sqlite:////'
 
 
-class Operations:
+class Operations(Enum):
     CONFIRM = 'confirm'
     RESET_PASSWORD = 'reset-password'
     CHANGE_EMAIL = 'change-email'

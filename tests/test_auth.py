@@ -62,7 +62,7 @@ class AuthTestCase(BaseTestCase):
     def test_confirm_account(self):
         user = User.query.filter_by(email='unconfirmed@helloflask.com').first()
         self.assertFalse(user.confirmed)
-        token = generate_token(user=user, operation='confirm')
+        token = generate_token(user=user, operation=Operations.CONFIRM)
         self.login(email='unconfirmed@helloflask.com', password='123')
         response = self.client.get(f'/auth/confirm/{token}', follow_redirects=True)
         data = response.get_data(as_text=True)

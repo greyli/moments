@@ -11,7 +11,7 @@ from PIL import Image
 
 
 def generate_token(user, operation, expiration=3600, **kwargs):
-    payload = {'id': user.id, 'operation': operation, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)}
+    payload = {'id': user.id, 'operation': operation.value, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)}
     payload.update(**kwargs)
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -22,7 +22,7 @@ def parse_token(user, token, operation):
     except InvalidTokenError:
         return {}
 
-    if operation != payload.get('operation') or user.id != payload.get('id'):
+    if operation.value != payload.get('operation') or user.id != payload.get('id'):
         return {}
     return payload
 
