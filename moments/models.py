@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 
 from flask import current_app
 from flask_avatars import Identicon
@@ -35,7 +35,7 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[list['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
+    roles: Mapped[List['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
 
     def __repr__(self):
         return f'Permission {self.id}: {self.name}'
@@ -48,7 +48,7 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role')
-    permissions: Mapped[list['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
+    permissions: Mapped[List['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
 
     @staticmethod
     def init_role():
@@ -303,7 +303,7 @@ class Photo(db.Model):
     collections: WriteOnlyMapped['Collection'] = relationship(
         back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[list['Tag']] = relationship(secondary=tagging, back_populates='photos')
+    tags: Mapped[List['Tag']] = relationship(secondary=tagging, back_populates='photos')
 
     @property
     def collectors_count(self):
