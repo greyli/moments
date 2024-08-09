@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import confirm_login, current_user, login_fresh, login_required, login_user, logout_user
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from moments.core.extensions import db
 from moments.emails import send_confirmation_email, send_reset_password_email
@@ -19,7 +19,8 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = db.session.scalar(select(User).filter(func.lower(User.email) == form.email.data.lower()))
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user is not None and user.validate_password(form.password.data):
             if login_user(user, form.remember_me.data):
                 flash('Login success.', 'info')
@@ -109,7 +110,8 @@ def forget_password():
 
     form = ForgetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.scalar(select(User).filter(func.lower(User.email) == form.email.data.lower()))
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user:
             token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
             send_reset_password_email(user=user, token=token)
@@ -127,7 +129,8 @@ def reset_password(token):
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.scalar(select(User).filter(func.lower(User.email) == form.email.data.lower()))
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user is None:
             return redirect(url_for('main.index'))
         if parse_token(user=user, token=token, operation=Operations.RESET_PASSWORD):
