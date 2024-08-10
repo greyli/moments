@@ -1,13 +1,9 @@
-from flask import url_for
-
 from moments.core.extensions import db
-from moments.models import User, Photo, Comment, Notification, Tag
+from moments.models import Comment, Notification, Photo, Tag, User
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class MainTestCase(BaseTestCase):
-
     def test_index_page(self):
         response = self.client.get('/')
         data = response.get_data(as_text=True)
@@ -113,12 +109,15 @@ class MainTestCase(BaseTestCase):
 
     def test_photo_next(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 2', author=user)
-        photo3 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 3', author=user)
-        photo4 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 4', author=user)
+        photo2 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
+        )
+        photo3 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
+        )
+        photo4 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
+        )
         db.session.add_all([photo2, photo3, photo4])
         db.session.commit()
 
@@ -140,12 +139,15 @@ class MainTestCase(BaseTestCase):
 
     def test_photo_prev(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 2', author=user)
-        photo3 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 3', author=user)
-        photo4 = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                       description='Photo 4', author=user)
+        photo2 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
+        )
+        photo3 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
+        )
+        photo4 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
+        )
         db.session.add_all([photo2, photo3, photo4])
         db.session.commit()
 
@@ -166,20 +168,25 @@ class MainTestCase(BaseTestCase):
         self.assertIn('This is already the first one.', data)
 
     def test_collect(self):
-        photo = Photo(filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg',
-                      description='Photo 3', author=db.session.get(User, 2))
+        photo = Photo(
+            filename='test.jpg',
+            filename_s='test_s.jpg',
+            filename_m='test_m.jpg',
+            description='Photo 3',
+            author=db.session.get(User, 2),
+        )
         db.session.add(photo)
         db.session.commit()
         photo = db.session.get(Photo, 3)
-        collects = db.session.scalars(photo.collectors.select()).all()
-        self.assertEqual(collects, [])
+        collections = db.session.scalars(photo.collections.select()).all()
+        self.assertEqual(collections, [])
 
         self.login()
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Photo collected.', data)
-        collects = db.session.scalars(photo.collectors.select()).all()
-        self.assertEqual(collects[0].collector.name, 'Normal User')
+        collections = db.session.scalars(photo.collections.select()).all()
+        self.assertEqual(collections[0].user.name, 'Normal User')
 
         response = self.client.post('/collect/3', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -227,18 +234,18 @@ class MainTestCase(BaseTestCase):
         self.assertEqual(db.session.get(Photo, 2).description, 'Photo 2')
 
         self.login()
-        response = self.client.post('/photo/2/description', data=dict(
-            description='test description.'
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/photo/2/description', data=dict(description='test description.'), follow_redirects=True
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Description updated.', data)
         self.assertEqual(db.session.get(Photo, 2).description, 'test description.')
 
     def test_new_comment(self):
         self.login()
-        response = self.client.post('/photo/1/comment/new', data=dict(
-            body='test comment from normal user.'
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/photo/1/comment/new', data=dict(body='test comment from normal user.'), follow_redirects=True
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Comment published.', data)
         photo = db.session.get(Photo, 1)
@@ -248,9 +255,7 @@ class MainTestCase(BaseTestCase):
     def test_new_tag(self):
         self.login(email='admin@helloflask.com', password='123')
 
-        response = self.client.post('/photo/1/tag/new', data=dict(
-            tag='hello dog pet happy'
-        ), follow_redirects=True)
+        response = self.client.post('/photo/1/tag/new', data=dict(tag='hello dog pet happy'), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Tag added.', data)

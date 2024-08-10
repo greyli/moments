@@ -1,23 +1,18 @@
-import os
-
-import click
-from flask import Flask, render_template
-from flask_login import current_user
-from flask_wtf.csrf import CSRFError
+from flask import Flask
 
 from moments.blueprints.admin import admin_bp
 from moments.blueprints.ajax import ajax_bp
 from moments.blueprints.auth import auth_bp
 from moments.blueprints.main import main_bp
 from moments.blueprints.user import user_bp
-from moments.core.extensions import bootstrap, db, login_manager, mail, dropzone, whooshee, avatars, csrf
-from moments.models import User, Photo, Tag, Follow, Notification, Comment, Collect
-from moments.settings import config
 from moments.core.commands import register_commands
-from moments.core.logging import register_logging
-from moments.core.templating import register_template_handlers
-from moments.core.request import register_request_handlers
 from moments.core.errors import register_error_handlers
+from moments.core.extensions import avatars, bootstrap, csrf, db, dropzone, login_manager, mail, whooshee
+from moments.core.logging import register_logging
+from moments.core.request import register_request_handlers
+from moments.core.templating import register_template_handlers
+from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
+from moments.settings import config
 
 
 def create_app(config_name):
@@ -48,8 +43,15 @@ def create_app(config_name):
 
     @app.shell_context_processor
     def make_shell_context():
-        return dict(db=db, User=User, Photo=Photo, Tag=Tag,
-                    Follow=Follow, Collect=Collect, Comment=Comment,
-                    Notification=Notification)
+        return dict(
+            db=db,
+            User=User,
+            Photo=Photo,
+            Tag=Tag,
+            Follow=Follow,
+            Collect=Collection,
+            Comment=Comment,
+            Notification=Notification,
+        )
 
     return app

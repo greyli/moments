@@ -1,5 +1,5 @@
 from flask_login import current_user
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 
 from moments.core.extensions import db
 from moments.models import Notification
@@ -15,4 +15,3 @@ def register_template_handlers(app):
         else:
             notification_count = None
         return dict(notification_count=notification_count)
-

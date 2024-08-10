@@ -1,22 +1,17 @@
 import os
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from urllib.parse import urljoin, urlparse
 
-from urllib.parse import urlparse, urljoin
-
-import PIL
-from PIL import Image
-from flask import current_app, request, url_for, redirect, flash
 import jwt
+import PIL
+from flask import current_app, flash, redirect, request, url_for
 from jwt.exceptions import InvalidTokenError
+from PIL import Image
 
 
 def generate_token(user, operation, expiration=3600, **kwargs):
-    payload = {
-        'id': user.id,
-        'operation': operation,
-        'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)
-    }
+    payload = {'id': user.id, 'operation': operation.value, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)}
     payload.update(**kwargs)
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -27,7 +22,7 @@ def parse_token(user, token, operation):
     except InvalidTokenError:
         return {}
 
-    if operation != payload.get('operation') or user.id != payload.get('id'):
+    if operation.value != payload.get('operation') or user.id != payload.get('id'):
         return {}
     return payload
 
@@ -43,7 +38,7 @@ def resize_image(image, filename, base_width):
     img = Image.open(image)
     if img.size[0] <= base_width:
         return filename + ext
-    w_percent = (base_width / float(img.size[0]))
+    w_percent = base_width / float(img.size[0])
     h_size = int(float(img.size[1]) * float(w_percent))
     img = img.resize((base_width, h_size), PIL.Image.ANTIALIAS)
 
@@ -55,8 +50,7 @@ def resize_image(image, filename, base_width):
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and \
-           ref_url.netloc == test_url.netloc
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 
 def redirect_back(default='main.index', **kwargs):
@@ -71,7 +65,4 @@ def redirect_back(default='main.index', **kwargs):
 def flash_errors(form):
     for field, errors in form.errors.items():
         for error in errors:
-            flash("Error in the {} field - {}".format(
-                getattr(form, field).label.text,
-                error
-            ))
+            flash(f'Error in the {getattr(form, field).label.text} field - {error}')

@@ -20,10 +20,10 @@ def push_comment_notification(photo_id, receiver, page=1):
     db.session.commit()
 
 
-def push_collect_notification(collector, photo_id, receiver):
-    user_url = url_for('user.index', username=collector.username)
+def push_collect_notification(user, photo_id, receiver):
+    user_url = url_for('user.index', username=user.username)
     photo_url = url_for('main.show_photo', photo_id=photo_id)
-    message = f'User <a href="{user_url}">{collector.username}</a> collected your <a href="{photo_url}">photo</a>'
+    message = f'User <a href="{user_url}">{user.username}</a> collected your <a href="{photo_url}">photo</a>'
     notification = Notification(message=message, receiver=receiver)
     db.session.add(notification)
     db.session.commit()

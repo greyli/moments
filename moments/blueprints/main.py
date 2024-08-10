@@ -1,16 +1,15 @@
 import os
 
-from flask import render_template, flash, redirect, url_for, current_app, \
-    send_from_directory, request, abort, Blueprint
-from flask_login import login_required, current_user
-from sqlalchemy import select, func
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, url_for
+from flask_login import current_user, login_required
+from sqlalchemy import func, select
 
-from moments.decorators import confirm_required, permission_required
 from moments.core.extensions import db
-from moments.forms.main import DescriptionForm, TagForm, CommentForm
-from moments.models import User, Photo, Tag, Follow, Collect, Comment, Notification
-from moments.notifications import push_comment_notification, push_collect_notification
-from moments.utils import rename_image, resize_image, redirect_back, flash_errors
+from moments.decorators import confirm_required, permission_required
+from moments.forms.main import CommentForm, DescriptionForm, TagForm
+from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
+from moments.notifications import push_collect_notification, push_comment_notification
+from moments.utils import flash_errors, redirect_back, rename_image, resize_image
 
 main_bp = Blueprint('main', __name__)
 
@@ -25,7 +24,8 @@ def index():
             .join(Follow, Follow.followed_id == Photo.author_id)
             .filter(Follow.follower_id == current_user.id)
             .order_by(Photo.created_at.desc()),
-            page=page, per_page=per_page
+            page=page,
+            per_page=per_page,
         )
         photos = pagination.items
     else:
@@ -34,14 +34,12 @@ def index():
     tags = db.session.scalars(
         select(Tag).join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
     ).all()
-    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collect)
+    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collection)
 
 
 @main_bp.route('/explore')
 def explore():
-    photos = db.session.scalars(
-        select(Photo).order_by(func.random()).limit(12)
-    ).all()
+    photos = db.session.scalars(select(Photo).order_by(func.random()).limit(12)).all()
     return render_template('main/explore.html', photos=photos)
 
 
@@ -76,11 +74,7 @@ def show_notifications():
     if filter_rule == 'unread':
         notifications = notifications.filter_by(is_read=False)
 
-    pagination = db.paginate(
-        notifications.order_by(Notification.created_at.desc()),
-        page=page,
-        per_page=per_page
-    )
+    pagination = db.paginate(notifications.order_by(Notification.created_at.desc()), page=page, per_page=per_page)
     notifications = pagination.items
     return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
 
@@ -101,9 +95,7 @@ def read_notification(notification_id):
 @main_bp.route('/notifications/read/all', methods=['POST'])
 @login_required
 def read_all_notification():
-    notifications = db.session.scalars(
-        current_user.notifications.select().filter_by(is_read=False)
-    ).all()
+    notifications = db.session.scalars(current_user.notifications.select().filter_by(is_read=False)).all()
     for notification in notifications:
         notification.is_read = True
     db.session.commit()
@@ -133,10 +125,7 @@ def upload():
         filename_s = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZE']['small'])
         filename_m = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZE']['medium'])
         photo = Photo(
-            filename=filename,
-            filename_s=filename_s,
-            filename_m=filename_m,
-            author=current_user._get_current_object()
+            filename=filename, filename_s=filename_s, filename_m=filename_m, author=current_user._get_current_object()
         )
         db.session.add(photo)
         db.session.commit()
@@ -149,9 +138,7 @@ def show_photo(photo_id):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_COMMENT_PER_PAGE']
     pagination = db.paginate(
-        select(Comment).filter_by(photo_id=photo.id).order_by(Comment.created_at.asc()),
-        page=page,
-        per_page=per_page
+        select(Comment).filter_by(photo_id=photo.id).order_by(Comment.created_at.asc()), page=page, per_page=per_page
     )
     comments = pagination.items
 
@@ -160,9 +147,15 @@ def show_photo(photo_id):
     tag_form = TagForm()
 
     description_form.description.data = photo.description
-    return render_template('main/photo.html', photo=photo, comment_form=comment_form,
-                           description_form=description_form, tag_form=tag_form,
-                           pagination=pagination, comments=comments)
+    return render_template(
+        'main/photo.html',
+        photo=photo,
+        comment_form=comment_form,
+        description_form=description_form,
+        tag_form=tag_form,
+        pagination=pagination,
+        comments=comments,
+    )
 
 
 @main_bp.route('/photo/n/<int:photo_id>')
@@ -203,7 +196,7 @@ def collect(photo_id):
     current_user.collect(photo)
     flash('Photo collected.', 'success')
     if current_user != photo.author and photo.author.receive_collect_notification:
-        push_collect_notification(collector=current_user, photo_id=photo_id, receiver=photo.author)
+        push_collect_notification(user=current_user, photo_id=photo_id, receiver=photo.author)
     return redirect(url_for('.show_photo', photo_id=photo_id))
 
 
@@ -248,11 +241,9 @@ def show_collectors(photo_id):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
     pagination = db.paginate(
-        select(User)
-        .join(Collect, Collect.collector_id == User.id)
-        .filter(Collect.collected_id == photo.id),
+        select(User).join(Collection, Collection.user_id == User.id).filter(Collection.photo_id == photo.id),
         page=page,
-        per_page=per_page
+        per_page=per_page,
     )
     collectors = pagination.items
     return render_template('main/collectors.html', collectors=collectors, photo=photo, pagination=pagination)
@@ -313,9 +304,7 @@ def new_tag(photo_id):
     form = TagForm()
     if form.validate_on_submit():
         for name in form.tag.data.split():
-            tag = db.session.scalar(
-                select(Tag).filter_by(name=name)
-            )
+            tag = db.session.scalar(select(Tag).filter_by(name=name))
             if tag is None:
                 tag = Tag(name=name)
                 db.session.add(tag)
@@ -352,8 +341,9 @@ def set_comment(photo_id):
 def reply_comment(comment_id):
     comment = db.get_or_404(Comment, comment_id)
     return redirect(
-        url_for('.show_photo', photo_id=comment.photo_id, reply=comment_id,
-                author=comment.author.name) + '#comment-form')
+        url_for('.show_photo', photo_id=comment.photo_id, reply=comment_id, author=comment.author.name)
+        + '#comment-form'
+    )
 
 
 @main_bp.route('/delete/photo/<int:photo_id>', methods=['POST'])
@@ -384,8 +374,7 @@ def delete_photo(photo_id):
 @login_required
 def delete_comment(comment_id):
     comment = db.get_or_404(Comment, comment_id)
-    if current_user != comment.author and current_user != comment.photo.author \
-            and not current_user.can('MODERATE'):
+    if current_user != comment.author and current_user != comment.photo.author and not current_user.can('MODERATE'):
         abort(403)
     db.session.delete(comment)
     db.session.commit()
@@ -401,12 +390,9 @@ def show_tag(tag_id, order):
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
     order_rule = 'time'
     pagination = db.paginate(
-        select(Photo)
-        .join(Photo.tags)
-        .filter(Tag.id == tag.id)
-        .order_by(Photo.created_at.desc()),
+        select(Photo).join(Photo.tags).filter(Tag.id == tag.id).order_by(Photo.created_at.desc()),
         page=page,
-        per_page=per_page
+        per_page=per_page,
     )
     photos = pagination.items
 

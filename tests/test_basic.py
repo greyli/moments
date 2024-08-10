@@ -1,11 +1,9 @@
 from flask import current_app
 
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class BasicTestCase(BaseTestCase):
-
     def test_app_exist(self):
         self.assertFalse(current_app is None)
 

@@ -21,11 +21,13 @@ dependencies = [
     "email-validator>=2.1.0.post1",
     "selenium>=4.18.1",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
 
 [tool.pdm]
+distribution = false
+
 [[tool.pdm.source]]
 url = "https://pypi.python.org/simple"
 verify_ssl = true
@@ -35,10 +37,39 @@ name = "pypi"
 dev = [
     "faker>=23.2.0",
     "watchdog>=4.0.0",
+    "ruff>=0.4.10",
+    "pre-commit>=3.5.0",
 ]
 test = [
     "pytest>=8.1.1",
 ]
 
-[tool.setuptools]
-packages = ["moments"]
+[[tool.pdm.autoexport]]
+filename = "requirements.txt"
+groups = ["default", "dev"]
+
+[tool.ruff]
+extend-exclude = ["migrations"]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5

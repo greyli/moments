@@ -1,44 +1,54 @@
 import os
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 
 from flask import current_app
 from flask_avatars import Identicon
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Table, Column, String, Text, Integer, ForeignKey, func, event, select
-from sqlalchemy.orm import relationship, mapped_column, Mapped, WriteOnlyMapped
+from sqlalchemy import Column, ForeignKey, String, Text, event, func, select, engine
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from moments.core.extensions import db, whooshee
 
-# relationship table
-roles_permissions = Table(
+
+@event.listens_for(engine.Engine, 'connect')
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    import sqlite3
+
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute('PRAGMA foreign_keys=ON')
+        cursor.close()
+
+
+roles_permissions = db.Table(
     'roles_permissions',
-    db.Model.metadata,
-    Column('role_id', Integer, ForeignKey('role.id')),
-    Column('permission_id', Integer, ForeignKey('permission.id'))
+    Column('role_id', ForeignKey('role.id', ondelete='CASCADE'), primary_key=True),
+    Column('permission_id', ForeignKey('permission.id', ondelete='CASCADE'), primary_key=True),
 )
 
 
 class Permission(db.Model):
+    __tablename__ = 'permission'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[list['Role']] = relationship(
-        secondary=roles_permissions,
-        back_populates='permissions'
-    )
+    roles: Mapped[List['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
+
+    def __repr__(self):
+        return f'Permission {self.id}: {self.name}'
 
 
 class Role(db.Model):
+    __tablename__ = 'role'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    users: WriteOnlyMapped['User'] = relationship(back_populates='role', passive_deletes=True)
-    permissions: Mapped[list['Permission']] = relationship(
-        secondary=roles_permissions,
-        back_populates='roles'
-    )
+    users: WriteOnlyMapped['User'] = relationship(back_populates='role')
+    permissions: Mapped[List['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
 
     @staticmethod
     def init_role():
@@ -46,50 +56,59 @@ class Role(db.Model):
             'Locked': ['FOLLOW', 'COLLECT'],
             'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
             'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
-            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER']
+            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
         }
 
         for role_name in roles_permissions_map:
-            role = db.session.scalar(
-                select(Role).filter_by(name=role_name)
-            )
+            role = db.session.scalar(select(Role).filter_by(name=role_name))
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
             for permission_name in roles_permissions_map[role_name]:
-                permission = db.session.scalar(
-                    select(Permission).filter_by(name=permission_name)
-                )
+                permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
                 if permission is None:
                     permission = Permission(name=permission_name)
                     db.session.add(permission)
                 role.permissions.append(permission)
         db.session.commit()
 
+    def __repr__(self):
+        return f'Role {self.id}: {self.name}'
 
-# relationship object
+
 class Follow(db.Model):
-    follower_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
-    followed_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    __tablename__ = 'follow'
+
+    follower_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
+    followed_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
 
     follower: Mapped['User'] = relationship(foreign_keys=[follower_id], back_populates='following', lazy='joined')
     followed: Mapped['User'] = relationship(foreign_keys=[followed_id], back_populates='followers', lazy='joined')
 
+    def __repr__(self):
+        return f'Follow: follower_id={self.follower_id}, followed_id={self.followed_id}'
 
-# relationship object
-class Collect(db.Model):
-    collector_id: Mapped[int] = mapped_column(ForeignKey('user.id'), primary_key=True)
-    collected_id: Mapped[int] = mapped_column(ForeignKey('photo.id'), primary_key=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
 
-    collector: Mapped['User'] = relationship(back_populates='collections', lazy='joined')
-    collected: Mapped['Photo'] = relationship(back_populates='collectors', lazy='joined')
+class Collection(db.Model):
+    __tablename__ = 'collection'
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
+    photo_id: Mapped[int] = mapped_column(ForeignKey('photo.id', ondelete='CASCADE'), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
+
+    user: Mapped['User'] = relationship(back_populates='collections', lazy='joined')
+    photo: Mapped['Photo'] = relationship(back_populates='collections', lazy='joined')
+
+    def __repr__(self):
+        return f'Collect: user_id={self.user_id}, photo_id={self.photo_id}'
 
 
 @whooshee.register_model('name', 'username')
 class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(254), unique=True, index=True)
@@ -98,7 +117,7 @@ class User(db.Model, UserMixin):
     website: Mapped[Optional[str]] = mapped_column(String(255))
     bio: Mapped[Optional[str]] = mapped_column(String(120))
     location: Mapped[Optional[str]] = mapped_column(String(50))
-    member_since: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    member_since: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     avatar_s: Mapped[Optional[str]] = mapped_column(String(64))
     avatar_m: Mapped[Optional[str]] = mapped_column(String(64))
     avatar_l: Mapped[Optional[str]] = mapped_column(String(64))
@@ -114,23 +133,21 @@ class User(db.Model, UserMixin):
     role_id: Mapped[Optional[int]] = mapped_column(ForeignKey('role.id'))
 
     role: Mapped['Role'] = relationship(back_populates='users')
-    photos: WriteOnlyMapped[list['Photo']] = relationship(
-        back_populates='author', cascade='all', passive_deletes=True
+    photos: WriteOnlyMapped['Photo'] = relationship(back_populates='author', cascade='all, delete-orphan', passive_deletes=True)
+    comments: WriteOnlyMapped['Comment'] = relationship(
+        back_populates='author', cascade='all, delete-orphan', passive_deletes=True
     )
-    comments: WriteOnlyMapped[list['Comment']] = relationship(
-        back_populates='author', cascade='all', passive_deletes=True
+    notifications: WriteOnlyMapped['Notification'] = relationship(
+        back_populates='receiver', cascade='all, delete-orphan', passive_deletes=True
     )
-    notifications: WriteOnlyMapped[list['Notification']] = relationship(
-        back_populates='receiver', cascade='all', passive_deletes=True
+    collections: WriteOnlyMapped['Collection'] = relationship(
+        back_populates='user', cascade='all, delete-orphan', passive_deletes=True
     )
-    collections: WriteOnlyMapped[list['Collect']] = relationship(
-        back_populates='collector', cascade='all', passive_deletes=True
+    following: WriteOnlyMapped['Follow'] = relationship(
+        foreign_keys=[Follow.follower_id], back_populates='follower', cascade='all, delete-orphan', passive_deletes=True
     )
-    following: WriteOnlyMapped[list['Follow']] = relationship(
-        foreign_keys=[Follow.follower_id], back_populates='follower', cascade='all', passive_deletes=True
-    )
-    followers: WriteOnlyMapped[list['Follow']] = relationship(
-        foreign_keys=[Follow.followed_id], back_populates='followed', cascade='all', passive_deletes=True
+    followers: WriteOnlyMapped['Follow'] = relationship(
+        foreign_keys=[Follow.followed_id], back_populates='followed', cascade='all, delete-orphan', passive_deletes=True
     )
 
     def __init__(self, **kwargs):
@@ -149,13 +166,8 @@ class User(db.Model, UserMixin):
 
     def set_role(self):
         if self.role is None:
-            if self.email == current_app.config['MOMENTS_ADMIN_EMAIL']:
-                role_name = 'Administrator'
-            else:
-                role_name = 'User'
-            self.role = db.session.scalar(
-                select(Role).filter_by(name=role_name)
-            )
+            role_name = 'Administrator' if self.email == current_app.config['MOMENTS_ADMIN_EMAIL'] else 'User'
+            self.role = db.session.scalar(select(Role).filter_by(name=role_name))
             db.session.commit()
 
     def validate_password(self, password):
@@ -168,58 +180,44 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
         if follow:
             db.session.delete(follow)
             db.session.commit()
 
     def is_following(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=self.id, followed_id=user.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
         return follow is not None
 
     def is_followed_by(self, user):
-        follow = db.session.scalar(
-            select(Follow).filter_by(follower_id=user.id, followed_id=self.id)
-        )
+        follow = db.session.scalar(select(Follow).filter_by(follower_id=user.id, followed_id=self.id))
         return follow is not None
 
     def collect(self, photo):
         if not self.is_collecting(photo):
-            collect = Collect(collector=self, collected=photo)
-            db.session.add(collect)
+            collection = Collection(user=self, photo=photo)
+            db.session.add(collection)
             db.session.commit()
 
     def uncollect(self, photo):
-        collect = db.session.scalar(
-            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        )
-        if collect:
-            db.session.delete(collect)
+        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        if collection:
+            db.session.delete(collection)
             db.session.commit()
 
     def is_collecting(self, photo):
-        collect = db.session.scalar(
-            select(Collect).filter_by(collector_id=self.id, collected_id=photo.id)
-        )
-        return collect is not None
+        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        return collection is not None
 
     def lock(self):
         self.locked = True
-        locked_role = db.session.scalar(
-            select(Role).filter_by(name='Locked')
-        )
+        locked_role = db.session.scalar(select(Role).filter_by(name='Locked'))
         self.role = locked_role
         db.session.commit()
 
     def unlock(self):
         self.locked = False
-        user_role = db.session.scalar(
-            select(Role).filter_by(name='User')
-        )
+        user_role = db.session.scalar(select(Role).filter_by(name='User'))
         self.role = user_role
         db.session.commit()
 
@@ -245,128 +243,134 @@ class User(db.Model, UserMixin):
         return self.active
 
     def can(self, permission_name):
-        permission = db.session.scalar(
-            select(Permission).filter_by(name=permission_name)
-        )
+        permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
         return permission is not None and self.role is not None and permission in self.role.permissions
 
     @property
     def followers_count(self):
-        return db.session.scalar(
-            select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)
-        ) - 1  # minus user self
+        return (
+            db.session.scalar(select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)) - 1
+        )  # minus user self
 
     @property
     def following_count(self):
-        return db.session.scalar(
-            select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)
-        ) - 1  # minus user self
+        return (
+            db.session.scalar(select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)) - 1
+        )  # minus user self
 
     @property
     def photos_count(self):
-        return db.session.scalar(
-            select(func.count(Photo.id)).filter_by(author_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Photo.id)).filter_by(author_id=self.id))
 
     @property
     def collections_count(self):
-        return db.session.scalar(
-            select(func.count(Collect.collector_id)).filter_by(collected_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Collection.user_id)).filter_by(photo_id=self.id))
 
     @property
     def notifications_count(self):
-        return db.session.scalar(
-            select(func.count(Notification.id)).filter_by(receiver_id=self.id, is_read=False)
-        )
+        return db.session.scalar(select(func.count(Notification.id)).filter_by(receiver_id=self.id, is_read=False))
+
+    def __repr__(self):
+        return f'User {self.id}: {self.username}'
 
 
-tagging = Table(
+tagging = db.Table(
     'tagging',
-    db.Model.metadata,
-    Column('photo_id', Integer, ForeignKey('photo.id')),
-    Column('tag_id', Integer, ForeignKey('tag.id'))
+    Column('photo_id', ForeignKey('photo.id', ondelete='CASCADE'), primary_key=True),
+    Column('tag_id', ForeignKey('tag.id', ondelete='CASCADE'), primary_key=True),
 )
 
 
 @whooshee.register_model('description')
 class Photo(db.Model):
+    __tablename__ = 'photo'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     description: Mapped[Optional[str]] = mapped_column(String(500))
     filename: Mapped[str] = mapped_column(String(64))
     filename_s: Mapped[str] = mapped_column(String(64))
     filename_m: Mapped[str] = mapped_column(String(64))
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
     can_comment: Mapped[bool] = mapped_column(default=True)
     flag: Mapped[int] = mapped_column(default=0)
 
-    author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    author_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
 
     author: Mapped['User'] = relationship(back_populates='photos')
-    comments: WriteOnlyMapped[list['Comment']] = relationship(
-        back_populates='photo', cascade='all', passive_deletes=True
+    comments: WriteOnlyMapped['Comment'] = relationship(
+        back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    collectors: WriteOnlyMapped[list['Collect']] = relationship(
-        back_populates='collected', cascade='all', passive_deletes=True
+    collections: WriteOnlyMapped['Collection'] = relationship(
+        back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[list['Tag']] = relationship(secondary=tagging, back_populates='photos')
+    tags: Mapped[List['Tag']] = relationship(secondary=tagging, back_populates='photos')
 
     @property
     def collectors_count(self):
-        return db.session.scalar(
-            select(func.count(Collect.collector_id)).filter_by(collected_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Collection.user_id)).filter_by(photo_id=self.id))
 
     @property
     def comments_count(self):
-        return db.session.scalar(
-            select(func.count(Comment.id)).filter_by(photo_id=self.id)
-        )
+        return db.session.scalar(select(func.count(Comment.id)).filter_by(photo_id=self.id))
+
+    def __repr__(self):
+        return f'Photo {self.id}: {self.filename}'
 
 
 @whooshee.register_model('name')
 class Tag(db.Model):
+    __tablename__ = 'tag'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
-    photos: WriteOnlyMapped['Photo'] = relationship(
-        secondary=tagging, back_populates='tags', passive_deletes=True
-    )
+    photos: WriteOnlyMapped['Photo'] = relationship(secondary=tagging, back_populates='tags', passive_deletes=True)
 
     @property
     def photos_count(self):
-        return db.session.scalar(
-            select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id)
-        )
+        return db.session.scalar(select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id))
+
+    def __repr__(self):
+        return f'Tag {self.id}: {self.name}'
 
 
 class Comment(db.Model):
+    __tablename__ = 'comment'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     body: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
     flag: Mapped[int] = mapped_column(default=0)
 
-    replied_id: Mapped[Optional[int]] = mapped_column(ForeignKey('comment.id'))
-    author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
-    photo_id: Mapped[int] = mapped_column(ForeignKey('photo.id'))
+    replied_id: Mapped[Optional[int]] = mapped_column(ForeignKey('comment.id', ondelete='CASCADE'))
+    author_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
+    photo_id: Mapped[int] = mapped_column(ForeignKey('photo.id', ondelete='CASCADE'))
 
     photo: Mapped['Photo'] = relationship(back_populates='comments')
     author: Mapped['User'] = relationship(back_populates='comments')
-    replies: WriteOnlyMapped[list['Comment']] = relationship(
-        back_populates='replied', cascade='all', passive_deletes=True
+    replies: WriteOnlyMapped['Comment'] = relationship(
+        back_populates='replied', cascade='all, delete-orphan', passive_deletes=True
     )
     replied: Mapped['Comment'] = relationship(back_populates='replies', remote_side=[id])
 
+    def __repr__(self):
+        return f'Comment {self.id}: {self.body}'
+
 
 class Notification(db.Model):
+    __tablename__ = 'notification'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     is_read: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
 
-    receiver_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    receiver_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
 
     receiver: Mapped['User'] = relationship(back_populates='notifications')
+
+    def __repr__(self):
+        return f'Notification {self.id}: {self.message}'
 
 
 @event.listens_for(User, 'after_delete', named=True)

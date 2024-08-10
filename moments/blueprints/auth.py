@@ -1,10 +1,10 @@
-from flask import render_template, flash, redirect, url_for, Blueprint
-from flask_login import login_user, logout_user, login_required, current_user, login_fresh, confirm_login
-from sqlalchemy import select, func
+from flask import Blueprint, flash, redirect, render_template, url_for
+from flask_login import confirm_login, current_user, login_fresh, login_required, login_user, logout_user
+from sqlalchemy import select
 
-from moments.emails import send_confirmation_email, send_reset_password_email
 from moments.core.extensions import db
-from moments.forms.auth import LoginForm, RegisterForm, ForgetPasswordForm, ResetPasswordForm
+from moments.emails import send_confirmation_email, send_reset_password_email
+from moments.forms.auth import ForgetPasswordForm, LoginForm, RegisterForm, ResetPasswordForm
 from moments.models import User
 from moments.settings import Operations
 from moments.utils import generate_token, parse_token, redirect_back
@@ -19,9 +19,8 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = db.session.scalar(
-            select(User).filter(func.lower(User.email) == form.email.data.lower())
-        )
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user is not None and user.validate_password(form.password.data):
             if login_user(user, form.remember_me.data):
                 flash('Login success.', 'info')
@@ -69,7 +68,7 @@ def register():
         user = User(name=name, email=email, username=username, password=password)
         db.session.add(user)
         db.session.commit()
-        token = generate_token(user=user, operation='confirm')
+        token = generate_token(user=user, operation=Operations.CONFIRM)
         send_confirmation_email(user=user, token=token)
         flash('Confirm email sent, check your inbox.', 'info')
         return redirect(url_for('.login'))
@@ -111,9 +110,8 @@ def forget_password():
 
     form = ForgetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.scalar(
-            select(User).filter(func.lower(User.email) == form.email.data.lower())
-        )
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user:
             token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
             send_reset_password_email(user=user, token=token)
@@ -131,9 +129,8 @@ def reset_password(token):
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user = db.session.scalar(
-            select(User).filter(func.lower(User.email) == form.email.data.lower())
-        )
+        stmt = select(User).filter_by(email=form.email.data.lower())
+        user = db.session.scalar(stmt)
         if user is None:
             return redirect(url_for('main.index'))
         if parse_token(user=user, token=token, operation=Operations.RESET_PASSWORD):

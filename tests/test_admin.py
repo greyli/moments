@@ -1,11 +1,9 @@
 from moments.core.extensions import db
-from moments.models import User, Role, Tag
+from moments.models import Role, Tag, User
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class AdminTestCase(BaseTestCase):
-
     def setUp(self):
         super().setUp()
         self.login(email='admin@helloflask.com', password='123')
@@ -30,14 +28,18 @@ class AdminTestCase(BaseTestCase):
 
     def test_edit_profile_admin(self):
         role_id = Role.query.filter_by(name='Locked').first().id
-        response = self.client.post('/admin/profile/2', data=dict(
-            username='newname',
-            role=role_id,
-            confirmed=True,
-            active=True,
-            name='New Name',
-            email='new@helloflask.com'
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/admin/profile/2',
+            data=dict(
+                username='newname',
+                role=role_id,
+                confirmed=True,
+                active=True,
+                name='New Name',
+                email='new@helloflask.com',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Profile updated.', data)
         user = db.session.get(User, 2)

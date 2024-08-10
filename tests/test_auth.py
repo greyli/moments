@@ -2,11 +2,9 @@ from moments.models import User
 from moments.settings import Operations
 from moments.utils import generate_token
 from tests import BaseTestCase
-from moments.core.extensions import db
 
 
 class AuthTestCase(BaseTestCase):
-
     def test_login_normal_user(self):
         response = self.login()
         data = response.get_data(as_text=True)
@@ -51,20 +49,20 @@ class AuthTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_register_account(self):
-        response = self.client.post('/auth/register', data=dict(
-            name='Grey Li',
-            email='test@helloflask.com',
-            username='test',
-            password='12345678',
-            password2='12345678'
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/auth/register',
+            data=dict(
+                name='Grey Li', email='test@helloflask.com', username='test', password='12345678', password2='12345678'
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Confirm email sent, check your inbox.', data)
 
     def test_confirm_account(self):
         user = User.query.filter_by(email='unconfirmed@helloflask.com').first()
         self.assertFalse(user.confirmed)
-        token = generate_token(user=user, operation='confirm')
+        token = generate_token(user=user, operation=Operations.CONFIRM)
         self.login(email='unconfirmed@helloflask.com', password='123')
         response = self.client.get(f'/auth/confirm/{token}', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -73,37 +71,41 @@ class AuthTestCase(BaseTestCase):
 
     def test_bad_confirm_token(self):
         self.login(email='unconfirmed@helloflask.com', password='123')
-        response = self.client.get(f'/auth/confirm/bad-token', follow_redirects=True)
+        response = self.client.get('/auth/confirm/bad-token', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Invalid or expired token.', data)
         self.assertNotIn('Account confirmed.', data)
 
     def test_reset_password(self):
-        response = self.client.post('/auth/forget-password', data=dict(
-            email='normal@helloflask.com',
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/auth/forget-password',
+            data=dict(
+                email='normal@helloflask.com',
+            ),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Password reset email sent, check your inbox.', data)
         user = User.query.filter_by(email='normal@helloflask.com').first()
         self.assertTrue(user.validate_password('123'))
 
         token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
-        response = self.client.post(f'/auth/reset-password/{token}', data=dict(
-            email='normal@helloflask.com',
-            password='new-password',
-            password2='new-password'
-        ), follow_redirects=True)
+        response = self.client.post(
+            f'/auth/reset-password/{token}',
+            data=dict(email='normal@helloflask.com', password='new-password', password2='new-password'),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Password updated.', data)
         self.assertTrue(user.validate_password('new-password'))
         self.assertFalse(user.validate_password('123'))
 
         # bad token
-        response = self.client.post('/auth/reset-password/bad-token', data=dict(
-            email='normal@helloflask.com',
-            password='new-password',
-            password2='new-password'
-        ), follow_redirects=True)
+        response = self.client.post(
+            '/auth/reset-password/bad-token',
+            data=dict(email='normal@helloflask.com', password='new-password', password2='new-password'),
+            follow_redirects=True,
+        )
         data = response.get_data(as_text=True)
         self.assertIn('Invalid or expired link.', data)
         self.assertNotIn('Password updated.', data)
