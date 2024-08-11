@@ -1,3 +1,5 @@
+import io
+
 from moments.core.extensions import db
 from moments.models import Comment, Notification, Photo, Tag, User
 from tests import BaseTestCase
@@ -325,3 +327,16 @@ class MainTestCase(BaseTestCase):
 
         self.assertEqual(photo.tags, [])
         self.assertIsNone(db.session.get(Tag, tag_id))
+
+    def test_upload_image(self):
+        self.login()
+        # test no image
+        response = self.client.post('/upload', follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('No image.', data)
+        # test invalid image type
+        response = self.client.post('/upload', follow_redirects=True, data=dict(file=(io.BytesIO(b'test'), 'test.pdf')))
+        data = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Invalid image.', data)

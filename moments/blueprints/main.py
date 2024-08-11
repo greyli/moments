@@ -9,7 +9,7 @@ from moments.decorators import confirm_required, permission_required
 from moments.forms.main import CommentForm, DescriptionForm, TagForm
 from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
 from moments.notifications import push_collect_notification, push_comment_notification
-from moments.utils import flash_errors, redirect_back, rename_image, resize_image
+from moments.utils import flash_errors, redirect_back, rename_image, resize_image, validate_image
 
 main_bp = Blueprint('main', __name__)
 
@@ -103,7 +103,7 @@ def read_all_notification():
     return redirect(url_for('.show_notifications'))
 
 
-@main_bp.route('/uploads/<path:filename>')
+@main_bp.route('/images/<path:filename>')
 def get_image(filename):
     return send_from_directory(current_app.config['MOMENTS_UPLOAD_PATH'], filename)
 
@@ -118,12 +118,16 @@ def get_avatar(filename):
 @confirm_required
 @permission_required('UPLOAD')
 def upload():
-    if request.method == 'POST' and 'file' in request.files:
+    if request.method == 'POST':
+        if not 'file' in request.files:
+            return 'No image.', 400
         f = request.files.get('file')
+        if not validate_image(f.filename):
+            return 'Invalid image.', 400
         filename = rename_image(f.filename)
-        f.save(os.path.join(current_app.config['MOMENTS_UPLOAD_PATH'], filename))
-        filename_s = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZE']['small'])
-        filename_m = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZE']['medium'])
+        f.save(current_app.config['MOMENTS_UPLOAD_PATH'] / filename)
+        filename_s = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['small'])
+        filename_m = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['medium'])
         photo = Photo(
             filename=filename, filename_s=filename_s, filename_m=filename_m, author=current_user._get_current_object()
         )
