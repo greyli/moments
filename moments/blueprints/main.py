@@ -119,7 +119,7 @@ def get_avatar(filename):
 @permission_required('UPLOAD')
 def upload():
     if request.method == 'POST':
-        if not 'file' in request.files:
+        if 'file' not in request.files:
             return 'No image.', 400
         f = request.files.get('file')
         if not validate_image(f.filename):
