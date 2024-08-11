@@ -12,6 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from moments.core.extensions import db, whooshee
 
 
+# enbale foreign key support for SQLite
 @event.listens_for(engine.Engine, 'connect')
 def set_sqlite_pragma(dbapi_connection, connection_record):
     import sqlite3
@@ -52,20 +53,20 @@ class Role(db.Model):
 
     @staticmethod
     def init_role():
-        roles_permissions_map = {
+        permissions_by_role  = {
             'Locked': ['FOLLOW', 'COLLECT'],
             'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
             'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
-            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
+            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMIN'],
         }
 
-        for role_name in roles_permissions_map:
+        for role_name in permissions_by_role:
             role = db.session.scalar(select(Role).filter_by(name=role_name))
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
-            for permission_name in roles_permissions_map[role_name]:
+            for permission_name in permissions_by_role[role_name]:
                 permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
                 if permission is None:
                     permission = Permission(name=permission_name)
@@ -165,8 +166,9 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def set_role(self):
+        admin_email = current_app.config['MOMENTS_ADMIN_EMAIL']
         if self.role is None:
-            role_name = 'Administrator' if self.email == current_app.config['MOMENTS_ADMIN_EMAIL'] else 'User'
+            role_name = 'Administrator' if self.email == admin_email else 'User'
             self.role = db.session.scalar(select(Role).filter_by(name=role_name))
             db.session.commit()
 
