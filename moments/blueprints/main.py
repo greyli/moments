@@ -82,7 +82,7 @@ def show_notifications():
 @main_bp.route('/notifications/read/<int:notification_id>', methods=['POST'])
 @login_required
 def read_notification(notification_id):
-    notification = db.get_or_404(Notification, notification_id)
+    notification = db.session.get(Notification, notification_id) or abort(404)
     if current_user != notification.receiver:
         abort(403)
 
@@ -138,7 +138,7 @@ def upload():
 
 @main_bp.route('/photo/<int:photo_id>')
 def show_photo(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_COMMENT_PER_PAGE']
     pagination = db.paginate(
@@ -164,7 +164,7 @@ def show_photo(photo_id):
 
 @main_bp.route('/photo/n/<int:photo_id>')
 def photo_next(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     photo_n = db.session.scalar(
         select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
     )
@@ -177,7 +177,7 @@ def photo_next(photo_id):
 
 @main_bp.route('/photo/p/<int:photo_id>')
 def photo_previous(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     photo_p = db.session.scalar(
         select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
     )
@@ -192,7 +192,7 @@ def photo_previous(photo_id):
 @confirm_required
 @permission_required('COLLECT')
 def collect(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user.is_collecting(photo):
         flash('Already collected.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -207,7 +207,7 @@ def collect(photo_id):
 @main_bp.route('/uncollect/<int:photo_id>', methods=['POST'])
 @login_required
 def uncollect(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if not current_user.is_collecting(photo):
         flash('Not collect yet.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
@@ -221,7 +221,7 @@ def uncollect(photo_id):
 @login_required
 @confirm_required
 def report_comment(comment_id):
-    comment = db.get_or_404(Comment, comment_id)
+    comment = db.session.get(Comment, comment_id) or abort(404)
     comment.flag += 1
     db.session.commit()
     flash('Comment reported.', 'success')
@@ -232,7 +232,7 @@ def report_comment(comment_id):
 @login_required
 @confirm_required
 def report_photo(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     photo.flag += 1
     db.session.commit()
     flash('Photo reported.', 'success')
@@ -241,7 +241,7 @@ def report_photo(photo_id):
 
 @main_bp.route('/photo/<int:photo_id>/collectors')
 def show_collectors(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
     pagination = db.paginate(
@@ -256,7 +256,7 @@ def show_collectors(photo_id):
 @main_bp.route('/photo/<int:photo_id>/description', methods=['POST'])
 @login_required
 def edit_description(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
@@ -274,7 +274,7 @@ def edit_description(photo_id):
 @login_required
 @permission_required('COMMENT')
 def new_comment(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     page = request.args.get('page', 1, type=int)
     form = CommentForm()
     if form.validate_on_submit():
@@ -284,7 +284,7 @@ def new_comment(photo_id):
 
         replied_id = request.args.get('reply')
         if replied_id:
-            comment.replied = db.get_or_404(Comment, replied_id)
+            comment.replied = db.session.get(Comment, replied_id) or abort(404)
             if comment.replied.author.receive_comment_notification:
                 push_comment_notification(photo_id=photo.id, receiver=comment.replied.author)
         db.session.add(comment)
@@ -301,7 +301,7 @@ def new_comment(photo_id):
 @main_bp.route('/photo/<int:photo_id>/tag/new', methods=['POST'])
 @login_required
 def new_tag(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
@@ -325,7 +325,7 @@ def new_tag(photo_id):
 @main_bp.route('/set-comment/<int:photo_id>', methods=['POST'])
 @login_required
 def set_comment(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user != photo.author:
         abort(403)
 
@@ -343,7 +343,7 @@ def set_comment(photo_id):
 @login_required
 @permission_required('COMMENT')
 def reply_comment(comment_id):
-    comment = db.get_or_404(Comment, comment_id)
+    comment = db.session.get(Comment, comment_id) or abort(404)
     return redirect(
         url_for('.show_photo', photo_id=comment.photo_id, reply=comment_id, author=comment.author.name)
         + '#comment-form'
@@ -353,7 +353,7 @@ def reply_comment(comment_id):
 @main_bp.route('/delete/photo/<int:photo_id>', methods=['POST'])
 @login_required
 def delete_photo(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
@@ -377,7 +377,7 @@ def delete_photo(photo_id):
 @main_bp.route('/delete/comment/<int:comment_id>', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
-    comment = db.get_or_404(Comment, comment_id)
+    comment = db.session.get(Comment, comment_id) or abort(404)
     if current_user != comment.author and current_user != comment.photo.author and not current_user.can('MODERATE'):
         abort(403)
     db.session.delete(comment)
@@ -389,7 +389,7 @@ def delete_comment(comment_id):
 @main_bp.route('/tag/<int:tag_id>', defaults={'order': 'by_time'})
 @main_bp.route('/tag/<int:tag_id>/<order>')
 def show_tag(tag_id, order):
-    tag = db.get_or_404(Tag, tag_id)
+    tag = db.session.get(Tag, tag_id) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
     order_rule = 'time'
@@ -409,8 +409,8 @@ def show_tag(tag_id, order):
 @main_bp.route('/delete/tag/<int:photo_id>/<int:tag_id>', methods=['POST'])
 @login_required
 def delete_tag(photo_id, tag_id):
-    photo = db.get_or_404(Photo, photo_id)
-    tag = db.get_or_404(Tag, tag_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
+    tag = db.session.get(Tag, tag_id) or abort(404)
     if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
     photo.tags.remove(tag)

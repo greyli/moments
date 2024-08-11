@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, abort
 from flask_login import current_user
 from sqlalchemy import func, select
 
@@ -20,19 +20,19 @@ def notifications_count():
 
 @ajax_bp.route('/profile/<int:user_id>')
 def get_profile(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     return render_template('main/profile_popup.html', user=user)
 
 
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     return {'count': user.followers_count}
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     return {'count': photo.collectors_count}
 
 
@@ -45,7 +45,7 @@ def collect(photo_id):
     if not current_user.can('COLLECT'):
         return {'message': 'No permission.'}, 403
 
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user.is_collecting(photo):
         return {'message': 'Already collected.'}, 400
 
@@ -60,7 +60,7 @@ def uncollect(photo_id):
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if not current_user.is_collecting(photo):
         return {'message': 'Not collect yet.'}, 400
 
