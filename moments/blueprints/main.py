@@ -163,28 +163,26 @@ def show_photo(photo_id):
 
 
 @main_bp.route('/photo/n/<int:photo_id>')
-def photo_next(photo_id):
+def get_next_photo(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
-    photo_n = db.session.scalar(
-        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
-    )
+    stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
+    next_photo = db.session.scalar(stmt)
 
-    if photo_n is None:
+    if next_photo is None:
         flash('This is already the last one.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
-    return redirect(url_for('.show_photo', photo_id=photo_n.id))
+    return redirect(url_for('.show_photo', photo_id=next_photo.id))
 
 
 @main_bp.route('/photo/p/<int:photo_id>')
-def photo_previous(photo_id):
+def get_previous_photo(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
-    photo_p = db.session.scalar(
-        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
-    )
-    if photo_p is None:
+    stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
+    previous_photo = db.session.scalar(stmt)
+    if previous_photo is None:
         flash('This is already the first one.', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
-    return redirect(url_for('.show_photo', photo_id=photo_p.id))
+    return redirect(url_for('.show_photo', photo_id=previous_photo.id))
 
 
 @main_bp.route('/collect/<int:photo_id>', methods=['POST'])
@@ -361,17 +359,18 @@ def delete_photo(photo_id):
     db.session.commit()
     flash('Photo deleted.', 'info')
 
-    photo_n = db.session.scalar(
-        select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
+    base_stmt = select(Photo).filter(Photo.author_id == photo.author_id)
+    next_photo = db.session.scalar(
+        base_stmt.filter(Photo.id < photo_id).order_by(Photo.id.desc())
     )
-    if photo_n is None:
-        photo_p = db.session.scalar(
-            select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
+    if next_photo is None:
+        previous_photo = db.session.scalar(
+            base_stmt.filter(Photo.id > photo_id).order_by(Photo.id.asc())
         )
-        if photo_p is None:
+        if previous_photo is None:
             return redirect(url_for('user.index', username=photo.author.username))
-        return redirect(url_for('.show_photo', photo_id=photo_p.id))
-    return redirect(url_for('.show_photo', photo_id=photo_n.id))
+        return redirect(url_for('.show_photo', photo_id=previous_photo.id))
+    return redirect(url_for('.show_photo', photo_id=next_photo.id))
 
 
 @main_bp.route('/delete/comment/<int:comment_id>', methods=['POST'])

@@ -109,7 +109,7 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Delete', data)
 
-    def test_photo_next(self):
+    def test_get_next_photo(self):
         user = db.session.get(User, 1)
         photo2 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user

@@ -34,9 +34,8 @@ def index(username):
 
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    pagination = db.paginate(
-        select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc()), page=page, per_page=per_page
-    )
+    stmt = select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
     photos = pagination.items
     return render_template('user/index.html', user=user, pagination=pagination, photos=photos)
 
