@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 from typing import Optional, List
 
@@ -380,15 +379,15 @@ def delete_avatars(**kwargs):
     target = kwargs['target']
     for filename in [target.avatar_s, target.avatar_m, target.avatar_l, target.avatar_raw]:
         if filename is not None:  # avatar_raw may be None
-            path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], filename)
-            if os.path.exists(path):  # not every filename map a unique file
-                os.remove(path)
+            path = current_app.config['AVATARS_SAVE_PATH'] / filename
+            if path.exists():  # not every filename map a unique file
+                path.unlink()
 
 
 @event.listens_for(Photo, 'after_delete', named=True)
 def delete_photos(**kwargs):
     target = kwargs['target']
     for filename in [target.filename, target.filename_s, target.filename_m]:
-        path = os.path.join(current_app.config['MOMENTS_UPLOAD_PATH'], filename)
-        if os.path.exists(path):  # not every filename map a unique file
-            os.remove(path)
+        path = current_app.config['MOMENTS_UPLOAD_PATH'] / filename
+        if path.exists():  # not every filename map a unique file
+            path.unlink()

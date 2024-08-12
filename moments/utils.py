@@ -1,7 +1,7 @@
-import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
+from pathlib import Path
 
 import jwt
 import PIL
@@ -28,13 +28,13 @@ def parse_token(user, token, operation):
 
 
 def rename_image(old_filename):
-    ext = os.path.splitext(old_filename)[1]
+    ext = Path(old_filename).suffix
     new_filename = uuid.uuid4().hex + ext
     return new_filename
 
 
 def resize_image(image, filename, base_width):
-    filename, ext = os.path.splitext(filename)
+    ext = Path(filename).suffix
     img = Image.open(image)
     if img.size[0] <= base_width:
         return filename + ext
@@ -48,9 +48,9 @@ def resize_image(image, filename, base_width):
 
 
 def validate_image(filename):
-    ext = filename.rsplit('.', 1)[1].lower()
+    ext = Path(filename).suffix
     allowed_extensions = current_app.config['DROPZONE_ALLOWED_FILE_TYPE'].split(',')
-    return '.' in filename and f'.{ext}' in allowed_extensions
+    return '.' in filename and ext in allowed_extensions
 
 
 def is_safe_url(target):

@@ -139,7 +139,7 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('This is already the last one.', data)
 
-    def test_photo_prev(self):
+    def test_get_previousr_photo(self):
         user = db.session.get(User, 1)
         photo2 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
