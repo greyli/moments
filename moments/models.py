@@ -22,8 +22,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
-roles_permissions = db.Table(
-    'roles_permissions',
+role_permission = db.Table(
+    'role_permission',
     Column('role_id', ForeignKey('role.id', ondelete='CASCADE'), primary_key=True),
     Column('permission_id', ForeignKey('permission.id', ondelete='CASCADE'), primary_key=True),
 )
@@ -35,7 +35,7 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[List['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
+    roles: Mapped[List['Role']] = relationship(secondary=role_permission, back_populates='permissions')
 
     def __repr__(self):
         return f'Permission {self.id}: {self.name}'
@@ -48,7 +48,7 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role')
-    permissions: Mapped[List['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
+    permissions: Mapped[List['Permission']] = relationship(secondary=role_permission, back_populates='roles')
 
     @staticmethod
     def init_role():
@@ -275,8 +275,8 @@ class User(db.Model, UserMixin):
         return f'User {self.id}: {self.username}'
 
 
-tagging = db.Table(
-    'tagging',
+photo_tag = db.Table(
+    'photo_tag',
     Column('photo_id', ForeignKey('photo.id', ondelete='CASCADE'), primary_key=True),
     Column('tag_id', ForeignKey('tag.id', ondelete='CASCADE'), primary_key=True),
 )
@@ -304,7 +304,7 @@ class Photo(db.Model):
     collections: WriteOnlyMapped['Collection'] = relationship(
         back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[List['Tag']] = relationship(secondary=tagging, back_populates='photos')
+    tags: Mapped[List['Tag']] = relationship(secondary=photo_tag, back_populates='photos')
 
     @property
     def collectors_count(self):
@@ -325,11 +325,11 @@ class Tag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
-    photos: WriteOnlyMapped['Photo'] = relationship(secondary=tagging, back_populates='tags', passive_deletes=True)
+    photos: WriteOnlyMapped['Photo'] = relationship(secondary=photo_tag, back_populates='tags', passive_deletes=True)
 
     @property
     def photos_count(self):
-        return db.session.scalar(select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id))
+        return db.session.scalar(select(func.count(photo_tag.c.photo_id)).filter_by(tag_id=self.id))
 
     def __repr__(self):
         return f'Tag {self.id}: {self.name}'

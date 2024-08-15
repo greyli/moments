@@ -385,23 +385,18 @@ def delete_comment(comment_id):
     return redirect(url_for('.show_photo', photo_id=comment.photo_id))
 
 
-@main_bp.route('/tag/<int:tag_id>', defaults={'order': 'by_time'})
-@main_bp.route('/tag/<int:tag_id>/<order>')
-def show_tag(tag_id, order):
+@main_bp.route('/tag/<int:tag_id>')
+def show_tag(tag_id):
     tag = db.session.get(Tag, tag_id) or abort(404)
     page = request.args.get('page', 1, type=int)
+    order_rule = request.args.get('order_rule', 'time')
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    order_rule = 'time'
-    pagination = db.paginate(
-        select(Photo).join(Photo.tags).filter(Tag.id == tag.id).order_by(Photo.created_at.desc()),
-        page=page,
-        per_page=per_page,
-    )
+    stmt = tag.photos.select().order_by(Photo.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
     photos = pagination.items
 
-    if order == 'by_collects':
+    if order_rule == 'collections':
         photos.sort(key=lambda x: x.collectors_count, reverse=True)
-        order_rule = 'collects'
     return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
 
 
