@@ -37,7 +37,7 @@ def resize_image(image, filename, base_width):
     ext = Path(filename).suffix
     img = Image.open(image)
     if img.size[0] <= base_width:
-        return filename + ext
+        return filename
     w_percent = base_width / float(img.size[0])
     h_size = int(float(img.size[1]) * float(w_percent))
     img = img.resize((base_width, h_size), PIL.Image.LANCZOS)
