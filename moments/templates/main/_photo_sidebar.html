@@ -35,6 +35,8 @@
       <p>
         {% if photo.description %}
         {{ photo.description }}
+        {% else %}
+        <small class="text-muted">No description</small>
         {% endif %}
         {% if current_user == photo.author %}
         <a id="description-btn" href="#!">
