@@ -201,13 +201,13 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def uncollect(self, photo):
-        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        collection = db.session.scalar(self.collections.select().filter_by(photo_id=photo.id))
         if collection:
             db.session.delete(collection)
             db.session.commit()
 
     def is_collecting(self, photo):
-        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        collection = db.session.scalar(self.collections.select().filter_by(photo_id=photo.id))
         return collection is not None
 
     def lock(self):

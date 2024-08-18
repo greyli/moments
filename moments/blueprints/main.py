@@ -69,12 +69,12 @@ def search():
 def show_notifications():
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_NOTIFICATION_PER_PAGE']
-    notifications = select(Notification).filter_by(receiver_id=current_user.id)
+    stmt = current_user.notifications.select()
     filter_rule = request.args.get('filter')
     if filter_rule == 'unread':
-        notifications = notifications.filter_by(is_read=False)
+        stmt = stmt.filter_by(is_read=False)
 
-    pagination = db.paginate(notifications.order_by(Notification.created_at.desc()), page=page, per_page=per_page)
+    pagination = db.paginate(stmt.order_by(Notification.created_at.desc()), page=page, per_page=per_page)
     notifications = pagination.items
     return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
 
@@ -165,7 +165,14 @@ def show_photo(photo_id):
 @main_bp.route('/photo/n/<int:photo_id>')
 def get_next_photo(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
-    stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
+    from sqlalchemy.orm import with_parent
+    # stmt = select(Photo).filter(with_parent(photo.author, User.photos), Photo.id < photo_id).order_by(Photo.id.desc())
+    stmt = (
+        select(Photo)
+        .filter(with_parent(photo.author, User.photos), Photo.created_at < photo.created_at)
+        .order_by(Photo.created_at.desc())
+    )
+    # stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
     next_photo = db.session.scalar(stmt)
 
     if next_photo is None:
@@ -242,13 +249,10 @@ def show_collectors(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = db.paginate(
-        select(User).join(Collection, Collection.user_id == User.id).filter(Collection.photo_id == photo.id),
-        page=page,
-        per_page=per_page,
-    )
-    collectors = pagination.items
-    return render_template('main/collectors.html', collectors=collectors, photo=photo, pagination=pagination)
+    stmt = photo.collections.select().order_by(Collection.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
+    collections = pagination.items
+    return render_template('main/collectors.html', collections=collections, photo=photo, pagination=pagination)
 
 
 @main_bp.route('/photo/<int:photo_id>/description', methods=['POST'])

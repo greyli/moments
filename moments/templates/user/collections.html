@@ -11,7 +11,7 @@
     {% if user.public_collections or current_user == user %}
       {% if collections %}
         {% for collection in collections %}
-        {{ photo_card(collection) }}
+        {{ photo_card(collection.photo) }}
         {% endfor %}
       {% else %}
       <div class="tip">
@@ -25,7 +25,7 @@
     {% endif %}
   </div>
 </div>
-{% if collects %}
+{% if collections %}
 <div class="page-footer">
   {{ render_pagination(pagination, align='center') }}
 </div>

@@ -311,7 +311,7 @@ class MainTestCase(BaseTestCase):
 
         response = self.client.get('/tag/1/by_collects')
         data = response.get_data(as_text=True)
-        self.assertIn('Order by collects', data)
+        self.assertIn('Order by collections', data)
 
     def test_delete_tag(self):
         photo = db.session.get(Photo, 2)

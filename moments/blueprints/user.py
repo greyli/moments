@@ -45,14 +45,8 @@ def show_collections(username):
     user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    pagination = db.paginate(
-        select(Photo)
-        .join(Collection, Collection.photo_id == Photo.id)
-        .filter_by(user_id=user.id)
-        .order_by(Collection.created_at.desc()),
-        page=page,
-        per_page=per_page,
-    )
+    stmt = user.collections.select().order_by(Collection.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
     collections = pagination.items
     return render_template('user/collections.html', user=user, pagination=pagination, collections=collections)
 
@@ -92,13 +86,10 @@ def show_followers(username):
     user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = db.paginate(
-        select(User).join(Follow, Follow.follower_id == User.id).filter_by(followed_id=user.id),
-        page=page,
-        per_page=per_page,
-    )
-    followers = pagination.items
-    return render_template('user/followers.html', user=user, pagination=pagination, followers=followers)
+    stmt = user.followers.select().order_by(Follow.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
+    follows = pagination.items
+    return render_template('user/followers.html', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/<username>/following')
@@ -106,13 +97,10 @@ def show_following(username):
     user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = db.paginate(
-        select(User).join(Follow, Follow.followed_id == User.id).filter_by(follower_id=user.id),
-        page=page,
-        per_page=per_page,
-    )
-    following = pagination.items
-    return render_template('user/following.html', user=user, pagination=pagination, following=following)
+    stmt = user.following.select().order_by(Follow.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
+    follows = pagination.items
+    return render_template('user/following.html', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/settings/profile', methods=['GET', 'POST'])

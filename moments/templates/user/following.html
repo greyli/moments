@@ -8,10 +8,10 @@
 {% include 'user/_header.html' %}
 <div class="row">
   <div class="col-md-12">
-    {% if following|length != 1 %}
-      {% for following in following %}
-        {% if following != user %}
-        {{ user_card(user=following) }}
+    {% if follows|length != 1 %}
+      {% for follow in follows %}
+        {% if follow.followed != user %}
+        {{ user_card(user=follow.followed) }}
         {% endif %}
       {% endfor %}
     {% else %}
@@ -21,9 +21,9 @@
     {% endif %}
   </div>
 </div>
-{% if followers|length != 1 %}
+{% if follows|length != 1 %}
 <div class="page-footer">
-  {{ render_pagination(pagination) }}
+  {{ render_pagination(pagination, align='center') }}
 </div>
 {% endif %}
 {% endblock %}
