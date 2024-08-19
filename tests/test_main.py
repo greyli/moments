@@ -309,7 +309,7 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Order by time', data)
 
-        response = self.client.get('/tag/1/by_collects')
+        response = self.client.get('/tag/1?order_rule=collections')
         data = response.get_data(as_text=True)
         self.assertIn('Order by collections', data)
 

@@ -22,11 +22,13 @@
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         {% if order_rule == 'collections' %}
-        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='time') }}">Order by
-          time</a>
+        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='time') }}">
+          Order by time
+        </a>
         {% else %}
-        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='collections') }}">Order by
-          collections</a>
+        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='collections') }}">
+          Order by collections
+        </a>
         {% endif %}
       </div>
     </span>

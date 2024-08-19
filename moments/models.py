@@ -181,17 +181,19 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
+        follow = db.session.scalar(self.following.select().filter_by(followed_id=user.id))
         if follow:
             db.session.delete(follow)
             db.session.commit()
 
     def is_following(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
+        if user.id is None:  # user.id will be None when follow self
+            return False
+        follow = db.session.scalar(self.following.select().filter_by(followed_id=user.id))
         return follow is not None
 
     def is_followed_by(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=user.id, followed_id=self.id))
+        follow = db.session.scalar(self.followers.select().filter_by(follower_id=user.id))
         return follow is not None
 
     def collect(self, photo):
@@ -249,15 +251,13 @@ class User(db.Model, UserMixin):
 
     @property
     def followers_count(self):
-        return (
-            db.session.scalar(select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)) - 1
-        )  # minus user self
+        stmt = self.followers.select().with_only_columns(func.count())
+        return db.session.scalar(stmt) - 1  # minus user self
 
     @property
     def following_count(self):
-        return (
-            db.session.scalar(select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)) - 1
-        )  # minus user self
+        stmt = self.following.select().with_only_columns(func.count())
+        return db.session.scalar(stmt) - 1  # minus user self
 
     @property
     def photos_count(self):
