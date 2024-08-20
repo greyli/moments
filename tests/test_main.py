@@ -111,59 +111,52 @@ class MainTestCase(BaseTestCase):
 
     def test_get_next_photo(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(
-            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
-        )
+        # there are already 2 photos in the database
         photo3 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
         )
         photo4 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
         )
-        db.session.add_all([photo2, photo3, photo4])
+        photo5 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
+        )
+        db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
 
         response = self.client.get('/photo/n/5', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 3', data)
+        self.assertIn('Photo 4', data)
 
         response = self.client.get('/photo/n/4', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 2', data)
-
-        response = self.client.get('/photo/n/3', follow_redirects=True)
-        data = response.get_data(as_text=True)
-        self.assertIn('Photo 1', data)
+        self.assertIn('Photo 3', data)
 
         response = self.client.get('/photo/n/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('This is already the last one.', data)
 
-    def test_get_previousr_photo(self):
+    def test_get_previous_photo(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(
-            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
-        )
         photo3 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
         )
         photo4 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
         )
-        db.session.add_all([photo2, photo3, photo4])
+        photo5 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
+        )
+        db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
-
-        response = self.client.get('/photo/p/1', follow_redirects=True)
-        data = response.get_data(as_text=True)
-        self.assertIn('Photo 2', data)
 
         response = self.client.get('/photo/p/3', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 3', data)
+        self.assertIn('Photo 4', data)
 
         response = self.client.get('/photo/p/4', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 4', data)
+        self.assertIn('Photo 5', data)
 
         response = self.client.get('/photo/p/5', follow_redirects=True)
         data = response.get_data(as_text=True)

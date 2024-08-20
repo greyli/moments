@@ -1,8 +1,7 @@
-import os
-
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, select
+from sqlalchemy.orm import with_parent
 
 from moments.core.extensions import db
 from moments.decorators import confirm_required, permission_required
@@ -165,14 +164,11 @@ def show_photo(photo_id):
 @main_bp.route('/photo/n/<int:photo_id>')
 def get_next_photo(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
-    from sqlalchemy.orm import with_parent
-    # stmt = select(Photo).filter(with_parent(photo.author, User.photos), Photo.id < photo_id).order_by(Photo.id.desc())
     stmt = (
         select(Photo)
         .filter(with_parent(photo.author, User.photos), Photo.created_at < photo.created_at)
         .order_by(Photo.created_at.desc())
     )
-    # stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id < photo_id).order_by(Photo.id.desc())
     next_photo = db.session.scalar(stmt)
 
     if next_photo is None:
@@ -184,7 +180,11 @@ def get_next_photo(photo_id):
 @main_bp.route('/photo/p/<int:photo_id>')
 def get_previous_photo(photo_id):
     photo = db.session.get(Photo, photo_id) or abort(404)
-    stmt = select(Photo).filter(Photo.author_id == photo.author_id, Photo.id > photo_id).order_by(Photo.id.asc())
+    stmt = (
+        select(Photo)
+        .filter(with_parent(photo.author, User.photos), Photo.created_at > photo.created_at)
+        .order_by(Photo.created_at.asc())
+    )
     previous_photo = db.session.scalar(stmt)
     if previous_photo is None:
         flash('This is already the first one.', 'info')
@@ -363,13 +363,13 @@ def delete_photo(photo_id):
     db.session.commit()
     flash('Photo deleted.', 'info')
 
-    base_stmt = select(Photo).filter(Photo.author_id == photo.author_id)
+    base_stmt = select(Photo).filter(with_parent(photo.author, User.photos))
     next_photo = db.session.scalar(
-        base_stmt.filter(Photo.id < photo_id).order_by(Photo.id.desc())
+        base_stmt.filter(Photo.created_at < photo.created_at).order_by(Photo.created_at.desc())
     )
     if next_photo is None:
         previous_photo = db.session.scalar(
-            base_stmt.filter(Photo.id > photo_id).order_by(Photo.id.asc())
+            base_stmt.filter(Photo.created_at > photo.created_at).order_by(Photo.created_at.asc())
         )
         if previous_photo is None:
             return redirect(url_for('user.index', username=photo.author.username))
