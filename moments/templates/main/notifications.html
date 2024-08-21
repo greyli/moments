@@ -43,7 +43,7 @@
             {{ notification.message|safe }}
             <span class="float-end">
               <span class="dayjs-from-now">{{ notification.created_at }}</span>
-              {% if notification.is_read == False %}
+              {% if not notification.is_read %}
               <form class="inline" action="{{ url_for('.read_notification', notification_id=notification.id) }}"
                 method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

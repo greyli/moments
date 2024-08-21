@@ -94,7 +94,8 @@ def read_notification(notification_id):
 @main_bp.route('/notifications/read/all', methods=['POST'])
 @login_required
 def read_all_notification():
-    notifications = db.session.scalars(current_user.notifications.select().filter_by(is_read=False)).all()
+    stmt = current_user.notifications.select().filter_by(is_read=False)
+    notifications = db.session.scalars(stmt).all()
     for notification in notifications:
         notification.is_read = True
     db.session.commit()

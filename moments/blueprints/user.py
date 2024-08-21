@@ -73,7 +73,7 @@ def follow(username):
 def unfollow(username):
     user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if not current_user.is_following(user):
-        flash('Not follow yet.', 'info')
+        flash('Not following yet.', 'info')
         return redirect(url_for('.index', username=username))
 
     current_user.unfollow(user)

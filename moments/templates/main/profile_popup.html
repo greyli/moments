@@ -26,11 +26,11 @@
   {% if current_user.is_authenticated %}
     {% if user != current_user %}
     <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.unfollow', username=user.username) }}"
-      class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-secondary btn-sm unfollow-btn" title="Unfollow">
+      class="{% if not current_user.is_following(user) %}hide{% endif %} btn btn-secondary btn-sm unfollow-btn">
       Unfollow
     </a>
     <a data-id="{{ user.id }}" data-href="{{ url_for('ajax.follow', username=user.username) }}"
-      class="{% if current_user.is_following(user) %}hide{% endif %} btn btn-primary btn-sm follow-btn" title="Follow">
+      class="{% if current_user.is_following(user) %}hide{% endif %} btn btn-primary btn-sm follow-btn">
       Follow
     </a>
     {% endif %}

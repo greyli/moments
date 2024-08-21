@@ -66,7 +66,7 @@ class UserTestCase(BaseTestCase):
         response = self.client.post('/user/unfollow/admin', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Not follow yet.', data)
+        self.assertIn('Not following yet.', data)
 
         self.client.post('/user/follow/admin', follow_redirects=True)
 

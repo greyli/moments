@@ -14,7 +14,8 @@ def notifications_count():
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    count = db.session.scalar(select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False))
+    stmt = current_user.notifications.select().filter_by(is_read=False).with_only_columns(func.count())
+    count = db.session.scalar(stmt)
     return {'count': count}
 
 
@@ -77,7 +78,7 @@ def follow(username):
     if not current_user.can('FOLLOW'):
         return {'message': 'No permission.'}, 403
 
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if current_user.is_following(user):
         return {'message': 'Already followed.'}, 400
 
@@ -92,9 +93,9 @@ def unfollow(username):
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if not current_user.is_following(user):
-        return {'message': 'Not follow yet.'}, 400
+        return {'message': 'Not following yet.'}, 400
 
     current_user.unfollow(user)
     return {'message': 'Follow canceled.'}
