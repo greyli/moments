@@ -362,7 +362,7 @@ class Notification(db.Model):
     __tablename__ = 'notification'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    message: Mapped[str] = mapped_column(Text, nullable=False)
+    message: Mapped[str] = mapped_column(Text)
     is_read: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
 
