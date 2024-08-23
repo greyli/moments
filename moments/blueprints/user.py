@@ -116,11 +116,12 @@ def edit_profile():
         db.session.commit()
         flash('Profile updated.', 'success')
         return redirect(url_for('.index', username=current_user.username))
-    form.name.data = current_user.name
-    form.username.data = current_user.username
-    form.bio.data = current_user.bio
-    form.website.data = current_user.website
-    form.location.data = current_user.location
+    if request.method == 'GET':
+        form.name.data = current_user.name
+        form.username.data = current_user.username
+        form.bio.data = current_user.bio
+        form.website.data = current_user.website
+        form.location.data = current_user.location
     return render_template('user/settings/edit_profile.html', form=form)
 
 

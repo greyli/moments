@@ -211,7 +211,7 @@ class UserTestCase(BaseTestCase):
         response = self.client.get('/user/normal/collections')
         data = response.get_data(as_text=True)
         self.assertIn("Normal User's collection", data)
-        self.assertIn("This user's collections was private.", data)
+        self.assertIn("This user's collections are private.", data)
 
     def test_delete_account(self):
         self.login()
