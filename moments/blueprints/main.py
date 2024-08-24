@@ -18,34 +18,39 @@ def index():
     if current_user.is_authenticated:
         page = request.args.get('page', 1, type=int)
         per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-        pagination = db.paginate(
+        stmt = (
             select(Photo)
             .join(Follow, Follow.followed_id == Photo.author_id)
             .filter(Follow.follower_id == current_user.id)
-            .order_by(Photo.created_at.desc()),
-            page=page,
-            per_page=per_page,
+            .order_by(Photo.created_at.desc())
         )
+        pagination = db.paginate(stmt, page=page, per_page=per_page)
         photos = pagination.items
     else:
         pagination = None
         photos = None
-    tags = db.session.scalars(
-        select(Tag).join(Tag.photos).group_by(Tag.id).order_by(func.count(Photo.id).desc()).limit(10)
-    ).all()
-    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags, Collect=Collection)
+    stmt = (
+        select(Tag)
+        .join(Tag.photos)
+        .group_by(Tag.id)
+        .order_by(func.count(Photo.id).desc())
+        .limit(10)
+    )
+    tags = db.session.scalars(stmt).all()
+    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags)
 
 
 @main_bp.route('/explore')
 def explore():
-    photos = db.session.scalars(select(Photo).order_by(func.random()).limit(12)).all()
+    stmt = select(Photo).order_by(func.random()).limit(12)
+    photos = db.session.scalars(stmt).all()
     return render_template('main/explore.html', photos=photos)
 
 
 @main_bp.route('/search')
 def search():
-    q = request.args.get('q', '').strip()
-    if q == '':
+    q = request.args.get('q').strip()
+    if not q:
         flash('Enter keyword about photo, user or tag.', 'warning')
         return redirect_back()
 

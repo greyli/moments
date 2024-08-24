@@ -58,15 +58,16 @@ def edit_profile_admin(user_id):
         db.session.commit()
         flash('Profile updated.', 'success')
         return redirect_back()
-    form.name.data = user.name
-    form.role.data = user.role_id
-    form.bio.data = user.bio
-    form.website.data = user.website
-    form.location.data = user.location
-    form.username.data = user.username
-    form.email.data = user.email
-    form.confirmed.data = user.confirmed
-    form.active.data = user.active
+    if request.method == 'GET':
+        form.name.data = user.name
+        form.role.data = user.role_id
+        form.bio.data = user.bio
+        form.website.data = user.website
+        form.location.data = user.location
+        form.username.data = user.username
+        form.email.data = user.email
+        form.confirmed.data = user.confirmed
+        form.active.data = user.active
     return render_template('admin/edit_profile.html', form=form, user=user)
 
 

@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function uncollect(event) {
-    let elem = e.target;
+    let elem = event.target;
     while (elem && !elem.classList.contains('uncollect-btn')) {
       elem = elem.parentElement;
     }
