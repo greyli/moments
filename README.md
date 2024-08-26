@@ -6,7 +6,7 @@
 
 <!-- Demo: http://moments.helloflask.com -->
 
-![Screenshot](https://helloflask.com/screenshots/moments.png)
+![Screenshot](https://helloflask.com/screenshots/moments.jpg)
 
 ## Installation
 
