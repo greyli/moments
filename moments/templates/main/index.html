@@ -15,7 +15,7 @@
         <a class="dead-link" href="{{ url_for('user.index', username=photo.author.username) }}">
           <img class="rounded img-fluid avatar-s profile-popover"
             data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
-            src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
+            src="{{ url_for('main.get_avatar', filename=photo.author.avatar_s) }}">
         </a>
         <a class="profile-popover trend-card-avatar text-decoration-none"
           data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
@@ -89,7 +89,7 @@
     </div>
     <div class="col-md-4 align-self-center">
       <h1>Moments</h1>
-      <p>Capture and remember every wonderful moment.</p>
+      <p>Capture and share every wonderful moment.</p>
       <p><a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">Join Now</a></p>
     </div>
   </div>

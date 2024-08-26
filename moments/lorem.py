@@ -77,7 +77,7 @@ def fake_photo(count=30):
         filename = f'random_{i}.jpg'
         r = lambda: random.randint(128, 255)  # noqa: E731
         img = Image.new(mode='RGB', size=(800, 800), color=(r(), r(), r()))
-        img.save(os.path.join(upload_path, filename))
+        img.save(upload_path / filename)
 
         user_count = db.session.scalar(select(func.count(User.id)))
         user = db.session.get(User, random.randint(1, user_count))

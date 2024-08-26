@@ -1,3 +1,6 @@
+import io
+from datetime import datetime, timedelta
+
 from moments.core.extensions import db
 from moments.models import Comment, Notification, Photo, Tag, User
 from tests import BaseTestCase
@@ -107,61 +110,62 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Delete', data)
 
-    def test_photo_next(self):
+    def test_get_next_photo(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(
-            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
-        )
+        # there are already 2 photos in the database
         photo3 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
         )
         photo4 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
         )
-        db.session.add_all([photo2, photo3, photo4])
+        photo5 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
+        )
+        now = datetime.now()
+        photo3.timestamp = now
+        photo4.timestamp = now + timedelta(seconds=1)
+        photo5.timestamp = now + timedelta(seconds=2)
+        db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
 
         response = self.client.get('/photo/n/5', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 3', data)
+        self.assertIn('Photo 4', data)
 
         response = self.client.get('/photo/n/4', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 2', data)
-
-        response = self.client.get('/photo/n/3', follow_redirects=True)
-        data = response.get_data(as_text=True)
-        self.assertIn('Photo 1', data)
+        self.assertIn('Photo 3', data)
 
         response = self.client.get('/photo/n/1', follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('This is already the last one.', data)
 
-    def test_photo_prev(self):
+    def test_get_previous_photo(self):
         user = db.session.get(User, 1)
-        photo2 = Photo(
-            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 2', author=user
-        )
         photo3 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 3', author=user
         )
         photo4 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 4', author=user
         )
-        db.session.add_all([photo2, photo3, photo4])
+        photo5 = Photo(
+            filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
+        )
+        now = datetime.now()
+        photo3.timestamp = now
+        photo4.timestamp = now + timedelta(seconds=1)
+        photo5.timestamp = now + timedelta(seconds=2)
+        db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
-
-        response = self.client.get('/photo/p/1', follow_redirects=True)
-        data = response.get_data(as_text=True)
-        self.assertIn('Photo 2', data)
 
         response = self.client.get('/photo/p/3', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 3', data)
+        self.assertIn('Photo 4', data)
 
         response = self.client.get('/photo/p/4', follow_redirects=True)
         data = response.get_data(as_text=True)
-        self.assertIn('Photo 4', data)
+        self.assertIn('Photo 5', data)
 
         response = self.client.get('/photo/p/5', follow_redirects=True)
         data = response.get_data(as_text=True)
@@ -307,9 +311,9 @@ class MainTestCase(BaseTestCase):
         data = response.get_data(as_text=True)
         self.assertIn('Order by time', data)
 
-        response = self.client.get('/tag/1/by_collects')
+        response = self.client.get('/tag/1?order_rule=collections')
         data = response.get_data(as_text=True)
-        self.assertIn('Order by collects', data)
+        self.assertIn('Order by collections', data)
 
     def test_delete_tag(self):
         photo = db.session.get(Photo, 2)
@@ -325,3 +329,16 @@ class MainTestCase(BaseTestCase):
 
         self.assertEqual(photo.tags, [])
         self.assertIsNone(db.session.get(Tag, tag_id))
+
+    def test_upload_image(self):
+        self.login()
+        # test no image
+        response = self.client.post('/upload', follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('No image.', data)
+        # test invalid image type
+        response = self.client.post('/upload', follow_redirects=True, data=dict(file=(io.BytesIO(b'test'), 'test.pdf')))
+        data = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Invalid image.', data)

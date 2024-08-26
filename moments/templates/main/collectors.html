@@ -16,13 +16,13 @@
 </div>
 <div class="row">
   <div class="col-md-12">
-    <h3>{{ collectors|length }} Collectors</h3>
-    {% for collector in collectors %}
-    {{ user_card(user=collector) }}
+    <h3>{{ collections|length }} Collectors</h3>
+    {% for collection in collections %}
+    {{ user_card(user=collection.user) }}
     {% endfor %}
   </div>
 </div>
-{% if collects %}
+{% if collections %}
 <div class="page-footer">
   {{ render_pagination(pagination, align='center') }}
 </div>

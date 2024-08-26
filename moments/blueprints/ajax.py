@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, abort
 from flask_login import current_user
 from sqlalchemy import func, select
 
@@ -14,25 +14,26 @@ def notifications_count():
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    count = db.session.scalar(select(func.count(Notification.id)).filter_by(receiver_id=current_user.id, is_read=False))
+    stmt = current_user.notifications.select().filter_by(is_read=False).with_only_columns(func.count())
+    count = db.session.scalar(stmt)
     return {'count': count}
 
 
 @ajax_bp.route('/profile/<int:user_id>')
 def get_profile(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     return render_template('main/profile_popup.html', user=user)
 
 
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     return {'count': user.followers_count}
 
 
 @ajax_bp.route('/collectors-count/<int:photo_id>')
 def collectors_count(photo_id):
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     return {'count': photo.collectors_count}
 
 
@@ -45,7 +46,7 @@ def collect(photo_id):
     if not current_user.can('COLLECT'):
         return {'message': 'No permission.'}, 403
 
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if current_user.is_collecting(photo):
         return {'message': 'Already collected.'}, 400
 
@@ -60,7 +61,7 @@ def uncollect(photo_id):
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    photo = db.get_or_404(Photo, photo_id)
+    photo = db.session.get(Photo, photo_id) or abort(404)
     if not current_user.is_collecting(photo):
         return {'message': 'Not collect yet.'}, 400
 
@@ -77,7 +78,7 @@ def follow(username):
     if not current_user.can('FOLLOW'):
         return {'message': 'No permission.'}, 403
 
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if current_user.is_following(user):
         return {'message': 'Already followed.'}, 400
 
@@ -92,9 +93,9 @@ def unfollow(username):
     if not current_user.is_authenticated:
         return {'message': 'Login required.'}, 403
 
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if not current_user.is_following(user):
-        return {'message': 'Not follow yet.'}, 400
+        return {'message': 'Not following yet.'}, 400
 
     current_user.unfollow(user)
     return {'message': 'Follow canceled.'}

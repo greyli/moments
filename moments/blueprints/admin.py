@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, flash, render_template, request
+from flask import Blueprint, current_app, flash, render_template, request, abort
 from flask_login import login_required
 from sqlalchemy import func, select
 
@@ -40,7 +40,7 @@ def index():
 @login_required
 @admin_required
 def edit_profile_admin(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     form = EditProfileAdminForm(user=user)
     if form.validate_on_submit():
         user.name = form.name.data
@@ -58,15 +58,16 @@ def edit_profile_admin(user_id):
         db.session.commit()
         flash('Profile updated.', 'success')
         return redirect_back()
-    form.name.data = user.name
-    form.role.data = user.role_id
-    form.bio.data = user.bio
-    form.website.data = user.website
-    form.location.data = user.location
-    form.username.data = user.username
-    form.email.data = user.email
-    form.confirmed.data = user.confirmed
-    form.active.data = user.active
+    if request.method == 'GET':
+        form.name.data = user.name
+        form.role.data = user.role_id
+        form.bio.data = user.bio
+        form.website.data = user.website
+        form.location.data = user.location
+        form.username.data = user.username
+        form.email.data = user.email
+        form.confirmed.data = user.confirmed
+        form.active.data = user.active
     return render_template('admin/edit_profile.html', form=form, user=user)
 
 
@@ -74,7 +75,7 @@ def edit_profile_admin(user_id):
 @login_required
 @permission_required('MODERATE')
 def block_user(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     if user.role.name in ['Administrator', 'Moderator']:
         flash('Permission denied.', 'warning')
     else:
@@ -87,7 +88,7 @@ def block_user(user_id):
 @login_required
 @permission_required('MODERATE')
 def unblock_user(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     user.unblock()
     flash('Block canceled.', 'info')
     return redirect_back()
@@ -97,7 +98,7 @@ def unblock_user(user_id):
 @login_required
 @permission_required('MODERATE')
 def lock_user(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     if user.role.name in ['Administrator', 'Moderator']:
         flash('Permission denied.', 'warning')
     else:
@@ -110,7 +111,7 @@ def lock_user(user_id):
 @login_required
 @permission_required('MODERATE')
 def unlock_user(user_id):
-    user = db.get_or_404(User, user_id)
+    user = db.session.get(User, user_id) or abort(404)
     user.unlock()
     flash('Lock canceled.', 'info')
     return redirect_back()
@@ -120,7 +121,7 @@ def unlock_user(user_id):
 @login_required
 @permission_required('MODERATE')
 def delete_tag(tag_id):
-    tag = db.get_or_404(Tag, tag_id)
+    tag = db.session.get(Tag, tag_id) or abort(404)
     db.session.delete(tag)
     db.session.commit()
     flash('Tag deleted.', 'info')

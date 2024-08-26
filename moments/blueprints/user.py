@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, fresh_login_required, login_required, logout_user
 from sqlalchemy import select
 
@@ -25,7 +25,7 @@ user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/<username>')
 def index(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if user == current_user and user.locked:
         flash('Your account is locked.', 'danger')
 
@@ -34,26 +34,19 @@ def index(username):
 
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    pagination = db.paginate(
-        select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc()), page=page, per_page=per_page
-    )
+    stmt = select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
     photos = pagination.items
     return render_template('user/index.html', user=user, pagination=pagination, photos=photos)
 
 
 @user_bp.route('/<username>/collections')
 def show_collections(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    pagination = db.paginate(
-        select(Photo)
-        .join(Collection, Collection.photo_id == Photo.id)
-        .filter_by(user_id=user.id)
-        .order_by(Collection.created_at.desc()),
-        page=page,
-        per_page=per_page,
-    )
+    stmt = user.collections.select().order_by(Collection.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
     collections = pagination.items
     return render_template('user/collections.html', user=user, pagination=pagination, collections=collections)
 
@@ -63,7 +56,7 @@ def show_collections(username):
 @confirm_required
 @permission_required('FOLLOW')
 def follow(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if current_user.is_following(user):
         flash('Already followed.', 'info')
         return redirect(url_for('.index', username=username))
@@ -78,9 +71,9 @@ def follow(username):
 @user_bp.route('/unfollow/<username>', methods=['POST'])
 @login_required
 def unfollow(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     if not current_user.is_following(user):
-        flash('Not follow yet.', 'info')
+        flash('Not following yet.', 'info')
         return redirect(url_for('.index', username=username))
 
     current_user.unfollow(user)
@@ -90,30 +83,24 @@ def unfollow(username):
 
 @user_bp.route('/<username>/followers')
 def show_followers(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = db.paginate(
-        select(User).join(Follow, Follow.follower_id == User.id).filter_by(followed_id=user.id),
-        page=page,
-        per_page=per_page,
-    )
-    followers = pagination.items
-    return render_template('user/followers.html', user=user, pagination=pagination, followers=followers)
+    stmt = user.followers.select().order_by(Follow.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
+    follows = pagination.items
+    return render_template('user/followers.html', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/<username>/following')
 def show_following(username):
-    user = db.first_or_404(select(User).filter_by(username=username))
+    user = db.session.scalar(select(User).filter_by(username=username)) or abort(404)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_USER_PER_PAGE']
-    pagination = db.paginate(
-        select(User).join(Follow, Follow.followed_id == User.id).filter_by(follower_id=user.id),
-        page=page,
-        per_page=per_page,
-    )
-    following = pagination.items
-    return render_template('user/following.html', user=user, pagination=pagination, following=following)
+    stmt = user.following.select().order_by(Follow.created_at.desc())
+    pagination = db.paginate(stmt, page=page, per_page=per_page)
+    follows = pagination.items
+    return render_template('user/following.html', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/settings/profile', methods=['GET', 'POST'])
@@ -129,11 +116,12 @@ def edit_profile():
         db.session.commit()
         flash('Profile updated.', 'success')
         return redirect(url_for('.index', username=current_user.username))
-    form.name.data = current_user.name
-    form.username.data = current_user.username
-    form.bio.data = current_user.bio
-    form.website.data = current_user.website
-    form.location.data = current_user.location
+    if request.method == 'GET':
+        form.name.data = current_user.name
+        form.username.data = current_user.username
+        form.bio.data = current_user.bio
+        form.website.data = current_user.website
+        form.location.data = current_user.location
     return render_template('user/settings/edit_profile.html', form=form)
 
 

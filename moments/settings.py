@@ -28,10 +28,10 @@ class BaseConfig:
     MOMENTS_SEARCH_RESULT_PER_PAGE = 20
     MOMENTS_MAIL_SUBJECT_PREFIX = '[Moments]'
     MOMENTS_UPLOAD_PATH = os.getenv('MOMENTS_UPLOAD_PATH', BASE_DIR / 'uploads')
-    MOMENTS_PHOTO_SIZE = {'small': 400, 'medium': 800}
-    MOMENTS_PHOTO_SUFFIX = {
-        MOMENTS_PHOTO_SIZE['small']: '_s',  # thumbnail
-        MOMENTS_PHOTO_SIZE['medium']: '_m',  # display
+    MOMENTS_PHOTO_SIZES = {'small': 400, 'medium': 800}
+    MOMENTS_PHOTO_SUFFIXES = {
+        MOMENTS_PHOTO_SIZES['small']: '_s',  # thumbnail
+        MOMENTS_PHOTO_SIZES['medium']: '_m',  # display
     }
 
     SECRET_KEY = os.getenv('SECRET_KEY', 'secret string')
@@ -41,7 +41,7 @@ class BaseConfig:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    AVATARS_SAVE_PATH = os.path.join(MOMENTS_UPLOAD_PATH, 'avatars')
+    AVATARS_SAVE_PATH = MOMENTS_UPLOAD_PATH / 'avatars'
     AVATARS_SIZE_TUPLE = (30, 100, 200)
 
     MAIL_SERVER = os.getenv('MAIL_SERVER')
@@ -51,7 +51,8 @@ class BaseConfig:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('Moments Admin', MAIL_USERNAME)
 
-    DROPZONE_ALLOWED_FILE_TYPE = 'image'
+    DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_ALLOWED_FILE_TYPE = '.png,.jpg,.jpeg'
     DROPZONE_MAX_FILE_SIZE = 3
     DROPZONE_MAX_FILES = 30
     DROPZONE_ENABLE_CSRF = True

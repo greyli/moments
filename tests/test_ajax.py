@@ -126,7 +126,7 @@ class AjaxTestCase(BaseTestCase):
         response = self.client.post('/ajax/unfollow/admin')
         data = response.get_json()
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['message'], 'Not follow yet.')
+        self.assertEqual(data['message'], 'Not following yet.')
 
         user = db.session.get(User, 2)
         user.follow(db.session.get(User, 1))

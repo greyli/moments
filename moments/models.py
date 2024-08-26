@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 from typing import Optional, List
 
@@ -12,6 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from moments.core.extensions import db, whooshee
 
 
+# enbale foreign key support for SQLite
 @event.listens_for(engine.Engine, 'connect')
 def set_sqlite_pragma(dbapi_connection, connection_record):
     import sqlite3
@@ -22,8 +22,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
-roles_permissions = db.Table(
-    'roles_permissions',
+role_permission = db.Table(
+    'role_permission',
     Column('role_id', ForeignKey('role.id', ondelete='CASCADE'), primary_key=True),
     Column('permission_id', ForeignKey('permission.id', ondelete='CASCADE'), primary_key=True),
 )
@@ -35,7 +35,7 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[List['Role']] = relationship(secondary=roles_permissions, back_populates='permissions')
+    roles: Mapped[List['Role']] = relationship(secondary=role_permission, back_populates='permissions')
 
     def __repr__(self):
         return f'Permission {self.id}: {self.name}'
@@ -48,24 +48,24 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role')
-    permissions: Mapped[List['Permission']] = relationship(secondary=roles_permissions, back_populates='roles')
+    permissions: Mapped[List['Permission']] = relationship(secondary=role_permission, back_populates='roles')
 
     @staticmethod
     def init_role():
-        roles_permissions_map = {
+        permissions_by_role  = {
             'Locked': ['FOLLOW', 'COLLECT'],
             'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
             'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
-            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
+            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMIN'],
         }
 
-        for role_name in roles_permissions_map:
+        for role_name in permissions_by_role:
             role = db.session.scalar(select(Role).filter_by(name=role_name))
             if role is None:
                 role = Role(name=role_name)
                 db.session.add(role)
             role.permissions = []
-            for permission_name in roles_permissions_map[role_name]:
+            for permission_name in permissions_by_role[role_name]:
                 permission = db.session.scalar(select(Permission).filter_by(name=permission_name))
                 if permission is None:
                     permission = Permission(name=permission_name)
@@ -165,8 +165,9 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password)
 
     def set_role(self):
+        admin_email = current_app.config['MOMENTS_ADMIN_EMAIL']
         if self.role is None:
-            role_name = 'Administrator' if self.email == current_app.config['MOMENTS_ADMIN_EMAIL'] else 'User'
+            role_name = 'Administrator' if self.email == admin_email else 'User'
             self.role = db.session.scalar(select(Role).filter_by(name=role_name))
             db.session.commit()
 
@@ -180,17 +181,19 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def unfollow(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
+        follow = db.session.scalar(self.following.select().filter_by(followed_id=user.id))
         if follow:
             db.session.delete(follow)
             db.session.commit()
 
     def is_following(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=self.id, followed_id=user.id))
+        if user.id is None:  # user.id will be None when follow self
+            return False
+        follow = db.session.scalar(self.following.select().filter_by(followed_id=user.id))
         return follow is not None
 
     def is_followed_by(self, user):
-        follow = db.session.scalar(select(Follow).filter_by(follower_id=user.id, followed_id=self.id))
+        follow = db.session.scalar(self.followers.select().filter_by(follower_id=user.id))
         return follow is not None
 
     def collect(self, photo):
@@ -200,13 +203,13 @@ class User(db.Model, UserMixin):
             db.session.commit()
 
     def uncollect(self, photo):
-        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        collection = db.session.scalar(self.collections.select().filter_by(photo_id=photo.id))
         if collection:
             db.session.delete(collection)
             db.session.commit()
 
     def is_collecting(self, photo):
-        collection = db.session.scalar(select(Collection).filter_by(user_id=self.id, photo_id=photo.id))
+        collection = db.session.scalar(self.collections.select().filter_by(photo_id=photo.id))
         return collection is not None
 
     def lock(self):
@@ -248,15 +251,13 @@ class User(db.Model, UserMixin):
 
     @property
     def followers_count(self):
-        return (
-            db.session.scalar(select(func.count(Follow.follower_id)).filter_by(followed_id=self.id)) - 1
-        )  # minus user self
+        stmt = self.followers.select().with_only_columns(func.count())
+        return db.session.scalar(stmt) - 1  # minus user self
 
     @property
     def following_count(self):
-        return (
-            db.session.scalar(select(func.count(Follow.followed_id)).filter_by(follower_id=self.id)) - 1
-        )  # minus user self
+        stmt = self.following.select().with_only_columns(func.count())
+        return db.session.scalar(stmt) - 1  # minus user self
 
     @property
     def photos_count(self):
@@ -274,8 +275,8 @@ class User(db.Model, UserMixin):
         return f'User {self.id}: {self.username}'
 
 
-tagging = db.Table(
-    'tagging',
+photo_tag = db.Table(
+    'photo_tag',
     Column('photo_id', ForeignKey('photo.id', ondelete='CASCADE'), primary_key=True),
     Column('tag_id', ForeignKey('tag.id', ondelete='CASCADE'), primary_key=True),
 )
@@ -303,7 +304,7 @@ class Photo(db.Model):
     collections: WriteOnlyMapped['Collection'] = relationship(
         back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[List['Tag']] = relationship(secondary=tagging, back_populates='photos')
+    tags: Mapped[List['Tag']] = relationship(secondary=photo_tag, back_populates='photos')
 
     @property
     def collectors_count(self):
@@ -324,11 +325,11 @@ class Tag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64), index=True, unique=True)
 
-    photos: WriteOnlyMapped['Photo'] = relationship(secondary=tagging, back_populates='tags', passive_deletes=True)
+    photos: WriteOnlyMapped['Photo'] = relationship(secondary=photo_tag, back_populates='tags', passive_deletes=True)
 
     @property
     def photos_count(self):
-        return db.session.scalar(select(func.count(tagging.c.photo_id)).filter_by(tag_id=self.id))
+        return db.session.scalar(select(func.count(photo_tag.c.photo_id)).filter_by(tag_id=self.id))
 
     def __repr__(self):
         return f'Tag {self.id}: {self.name}'
@@ -361,7 +362,7 @@ class Notification(db.Model):
     __tablename__ = 'notification'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    message: Mapped[str] = mapped_column(Text, nullable=False)
+    message: Mapped[str] = mapped_column(Text)
     is_read: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
 
@@ -378,15 +379,15 @@ def delete_avatars(**kwargs):
     target = kwargs['target']
     for filename in [target.avatar_s, target.avatar_m, target.avatar_l, target.avatar_raw]:
         if filename is not None:  # avatar_raw may be None
-            path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], filename)
-            if os.path.exists(path):  # not every filename map a unique file
-                os.remove(path)
+            path = current_app.config['AVATARS_SAVE_PATH'] / filename
+            if path.exists():  # not every filename map a unique file
+                path.unlink()
 
 
 @event.listens_for(Photo, 'after_delete', named=True)
 def delete_photos(**kwargs):
     target = kwargs['target']
     for filename in [target.filename, target.filename_s, target.filename_m]:
-        path = os.path.join(current_app.config['MOMENTS_UPLOAD_PATH'], filename)
-        if os.path.exists(path):  # not every filename map a unique file
-            os.remove(path)
+        path = current_app.config['MOMENTS_UPLOAD_PATH'] / filename
+        if path.exists():  # not every filename map a unique file
+            path.unlink()

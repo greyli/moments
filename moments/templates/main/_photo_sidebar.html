@@ -3,10 +3,10 @@
 <nav aria-label="Page navigation">
   <ul class="pagination">
     <li class="page-item">
-      <a class="page-link" href="{{ url_for('.photo_previous', photo_id=photo.id) }}">&larr; Previous</a>
+      <a class="page-link" href="{{ url_for('.get_previous_photo', photo_id=photo.id) }}">&larr; Previous</a>
     </li>
     <li class="page-item">
-      <a class="page-link" href="{{ url_for('.photo_next', photo_id=photo.id) }}">Next &rarr;</a>
+      <a class="page-link" href="{{ url_for('.get_next_photo', photo_id=photo.id) }}">Next &rarr;</a>
     </li>
   </ul>
 </nav>
@@ -35,6 +35,8 @@
       <p>
         {% if photo.description %}
         {{ photo.description }}
+        {% else %}
+        <small class="text-muted">No description</small>
         {% endif %}
         {% if current_user == photo.author %}
         <a id="description-btn" href="#!">

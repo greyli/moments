@@ -21,12 +21,14 @@
         Order by {{ order_rule }} {{ render_icon('chevron-expand') }}
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        {% if order_rule == 'collects' %}
-        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order='by_time') }}">Order by
-          Time</a>
+        {% if order_rule == 'collections' %}
+        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='time') }}">
+          Order by time
+        </a>
         {% else %}
-        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order='by_collects') }}">Order by
-          Collects</a>
+        <a class="dropdown-item" href="{{ url_for('.show_tag', tag_id=tag.id, order_rule='collections') }}">
+          Order by collections
+        </a>
         {% endif %}
       </div>
     </span>

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const defaultErrorMessage = 'Server error, please try again later.';
   let hoverTimer = null;
 
@@ -12,27 +12,27 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function toast(message, category) {
-    const toastEl = document.getElementById('mainToast')
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
-    toastEl.querySelector('.toast-body').textContent = message
+    const toastElem = document.getElementById('mainToast')
+    const toast = bootstrap.Toast.getOrCreateInstance(toastElem)
+    toastElem.querySelector('.toast-body').textContent = message
 
     if (category === 'error') {
-      toastEl.classList.replace('text-bg-secondary', 'text-bg-danger')
+      toastElem.classList.replace('text-bg-secondary', 'text-bg-danger')
     } else {
-      toastEl.classList.replace('text-bg-danger', 'text-bg-secondary')
+      toastElem.classList.replace('text-bg-danger', 'text-bg-secondary')
     }
     toast.show()
   }
 
-  function showProfilePopover(e) {
-    const el = e.target;
+  function showProfilePopover(event) {
+    const elem = event.target;
 
-    hoverTimer = setTimeout(function () {
+    hoverTimer = setTimeout(() => {
       hoverTimer = null;
-      fetch(el.dataset.href)
-        .then((response) => response.text())
-        .then(function (data) {
-          const popover = bootstrap.Popover.getOrCreateInstance(el, {
+      fetch(elem.dataset.href)
+        .then(response => response.text())
+        .then(data => {
+          const popover = bootstrap.Popover.getOrCreateInstance(elem, {
               content: data,
               html: true,
               sanitize: false,
@@ -42,170 +42,170 @@ document.addEventListener('DOMContentLoaded', function () {
             '.popover-body': data
           })
           popover.show();
-          document.querySelector('.popover').addEventListener('mouseleave', function () {
-            setTimeout(function () {
+          document.querySelector('.popover').addEventListener('mouseleave', () => {
+            setTimeout(() => {
               popover.hide();
             }, 200);
           });
         })
-        .catch(function (error) {
+        .catch(error => {
           handleFetchError(error);
         });
     }, 500);
   }
 
-  function hideProfilePopover(e) {
-    const el = e.target;
+  function hideProfilePopover(event) {
+    const elem = event.target;
 
     if (hoverTimer) {
       clearTimeout(hoverTimer);
       hoverTimer = null;
     } else {
-      setTimeout(function () {
+      setTimeout(() => {
         if (!document.querySelector('.popover:hover')) {
-          const popover = bootstrap.Popover.getInstance(el);
+          const popover = bootstrap.Popover.getInstance(elem);
           popover.hide();
         }
       }, 200);
     }
   }
 
-  document.querySelectorAll('.profile-popover').forEach(function (el) {
-    el.addEventListener('mouseenter', showProfilePopover);
-    el.addEventListener('mouseleave', hideProfilePopover);
+  document.querySelectorAll('.profile-popover').forEach(elem => {
+    elem.addEventListener('mouseenter', showProfilePopover);
+    elem.addEventListener('mouseleave', hideProfilePopover);
   });
 
 
   function updateFollowersCount(id) {
-    const el = document.getElementById('followers-count-' + id);
-    fetch(el.dataset.href)
-      .then((response) => response.json())
-      .then(function (data) {
-        el.textContent = data.count;
+    const elem = document.getElementById('followers-count-' + id);
+    fetch(elem.dataset.href)
+      .then(response => response.json())
+      .then(data => {
+        elem.textContent = data.count;
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
   function updateCollectorsCount(id) {
-    const el = document.getElementById('collectors-count-' + id);
-    fetch(el.dataset.href)
-      .then((response) => response.json())
-      .then(function (data) {
-        el.textContent = data.count;
+    const elem = document.getElementById('collectors-count-' + id);
+    fetch(elem.dataset.href)
+      .then(response => response.json())
+      .then(data => {
+        elem.textContent = data.count;
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
   function updateNotificationsCount() {
-    const el = document.getElementById('notification-badge');
-    if (!el) {
+    const elem = document.getElementById('notification-badge');
+    if (!elem) {
       return;
     }
-    fetch(el.dataset.href)
-      .then((response) => response.json())
-      .then(function (data) {
+    fetch(elem.dataset.href)
+      .then(response => response.json())
+      .then(data => {
         if (data.count === 0) {
-          el.style.display = 'none';
+          elem.style.display = 'none';
         } else {
-          el.style.display = 'block';
-          el.textContent = data.count;
+          elem.style.display = 'block';
+          elem.textContent = data.count;
         }
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
-  function follow(e) {
-    const el = e.target;
-    const id = el.dataset.id;
-    fetch(el.dataset.href, {
+  function follow(event) {
+    const elem = event.target;
+    const id = elem.dataset.id;
+    fetch(elem.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then((response) => response.json())
-      .then(function (data) {
-        el.previousElementSibling.style.display = 'inline-block';
-        el.style.display = 'none';
+      .then(response => response.json())
+      .then(data => {
+        elem.previousElementSibling.style.display = 'inline-block';
+        elem.style.display = 'none';
         updateFollowersCount(id);
         toast(data.message);
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
-  function unfollow(e) {
-    const el = e.target;
-    const id = el.dataset.id;
-    fetch(el.dataset.href, {
+  function unfollow(event) {
+    const elem = event.target;
+    const id = elem.dataset.id;
+    fetch(elem.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then((response) => response.json())
-      .then(function (data) {
-          el.nextElementSibling.style.display = 'inline-block';
-          el.style.display = 'none';
+      .then(response => response.json())
+      .then(data => {
+        elem.nextElementSibling.style.display = 'inline-block';
+        elem.style.display = 'none';
           updateFollowersCount(id);
         toast(data.message);
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
-  function collect(e) {
-    let el = e.target;
-    while (el && !el.classList.contains('collect-btn')) {
-      el = el.parentElement;
+  function collect(event) {
+    let elem = event.target;
+    while (elem && !elem.classList.contains('collect-btn')) {
+      elem = elem.parentElement;
     }
-    const id = el.dataset.id;
-    fetch(el.dataset.href, {
+    const id = elem.dataset.id;
+    fetch(elem.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then((response) => response.json())
-      .then(function (data) {
-        el.previousElementSibling.style.display = 'block';
-        el.style.display = 'none';
+      .then(response => response.json())
+      .then(data => {
+        elem.previousElementSibling.style.display = 'block';
+        elem.style.display = 'none';
         updateCollectorsCount(id);
         toast(data.message);
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
 
-  function uncollect(e) {
-    let el = e.target;
-    while (el && !el.classList.contains('uncollect-btn')) {
-      el = el.parentElement;
+  function uncollect(event) {
+    let elem = event.target;
+    while (elem && !elem.classList.contains('uncollect-btn')) {
+      elem = elem.parentElement;
     }
-    const id = el.dataset.id;
-    fetch(el.dataset.href, {
+    const id = elem.dataset.id;
+    fetch(elem.dataset.href, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken
       }
     })
-      .then((response) => response.json())
-      .then(function (data) {
-        el.nextElementSibling.style.display = 'block';
-        el.style.display = 'none';
+      .then(response => response.json())
+      .then(data => {
+        elem.nextElementSibling.style.display = 'block';
+        elem.style.display = 'none';
         updateCollectorsCount(id);
         toast(data.message);
       })
-      .catch(function (error) {
+      .catch(error => {
         handleFetchError(error);
       });
   }
@@ -238,57 +238,65 @@ document.addEventListener('DOMContentLoaded', function () {
     })
   }
 
-  document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('follow-btn')) {
-      follow(e);
-    } else if (e.target.classList.contains('unfollow-btn')) {
-      unfollow(e);
+  document.addEventListener('click', event => {
+    if (event.target.classList.contains('follow-btn')) {
+      follow(event);
+    } else if (event.target.classList.contains('unfollow-btn')) {
+      unfollow(event);
     }
   });
 
   if (document.getElementsByClassName('collect-btn')) {
-    document.querySelectorAll('.collect-btn').forEach(function (el) {
-      el.addEventListener('click', collect);
+    document.querySelectorAll('.collect-btn').forEach(elem => {
+      elem.addEventListener('click', collect);
     });
   }
 
   if (document.getElementsByClassName('uncollect-btn')) {
-    document.querySelectorAll('.uncollect-btn').forEach(function (el) {
-      el.addEventListener('click', uncollect);
+    document.querySelectorAll('.uncollect-btn').forEach(elem => {
+      elem.addEventListener('click', uncollect);
     });
   }
 
   if (document.getElementById('tag-btn')) {
-    document.getElementById('tag-btn').addEventListener('click', function () {
+    document.getElementById('tag-btn').addEventListener('click', () => {
       document.getElementById('tags').style.display = 'none';
       document.getElementById('tag-form').style.display = 'block';
     });
   }
 
   if (document.getElementById('cancel-tag')) {
-    document.getElementById('cancel-tag').addEventListener('click', function () {
+    document.getElementById('cancel-tag').addEventListener('click', () => {
       document.getElementById('tag-form').style.display = 'none';
       document.getElementById('tags').style.display = 'block';
     });
   }
 
-  if (document.getElementById('description-btn')) {
-    document.getElementById('description-btn').addEventListener('click', function () {
-      document.getElementById('description').style.display = 'none';
-      document.getElementById('description-form').style.display = 'block';
+  const descriptionBtn = document.getElementById('description-btn');
+  const cancelDescription = document.getElementById('cancel-description');
+  const description = document.getElementById('description');
+  const descriptionForm = document.getElementById('description-form');
+
+  if (descriptionBtn) {
+    descriptionBtn.addEventListener('click', () => {
+      description.style.display = 'none';
+      descriptionForm.style.display = 'block';
     });
   }
 
-  if (document.getElementById('cancel-description')) {
-    document.getElementById('cancel-description').addEventListener('click', function () {
-      document.getElementById('description-form').style.display = 'none';
-      document.getElementById('description').style.display = 'block';
+  if (cancelDescription) {
+    cancelDescription.addEventListener('click', () => {
+      descriptionForm.style.display = 'none';
+      description.style.display = 'block';
     });
   }
 
-  if (document.getElementById('delete-modal')) {
-    document.getElementById('delete-modal').addEventListener('show.bs.modal', function (e) {
-      document.querySelector('.delete-form').setAttribute('action', e.relatedTarget.dataset.href);
+  const deleteModal = document.getElementById('delete-modal');
+  const deleteForm = document.querySelector('.delete-form');
+
+  if (deleteModal && deleteForm) {
+    deleteModal.addEventListener('show.bs.modal', event => {
+      deleteForm.setAttribute('action', event.relatedTarget.dataset.href);
     });
   }
 
@@ -297,8 +305,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
+  const tooltipList = tooltipTriggerList.map(tooltipTriggerElem => {
+    return new bootstrap.Tooltip(tooltipTriggerElem)
   });
 
   renderAllDatetime()
