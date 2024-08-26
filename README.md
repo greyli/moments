@@ -4,9 +4,9 @@
 
 > Example application for *[Python Web Development with Flask](https://helloflask.com/en/book/1)* (《[Flask Web 开发实战](https://helloflask.com/book/4)》).
 
-<!-- Demo: http://moments.helloflask.com
+<!-- Demo: http://moments.helloflask.com -->
 
-![Screenshot](https://helloflask.com/screenshots/moments.png) -->
+![Screenshot](https://helloflask.com/screenshots/moments.png)
 
 ## Installation
 
@@ -34,7 +34,7 @@ $ pdm run flask run
 Test account:
 
 * email: `admin@helloflask.com`
-* password: `helloflask`
+* password: `moments`
 
 ## License
 
