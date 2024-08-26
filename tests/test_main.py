@@ -1,4 +1,5 @@
 import io
+from datetime import datetime, timedelta
 
 from moments.core.extensions import db
 from moments.models import Comment, Notification, Photo, Tag, User
@@ -121,6 +122,10 @@ class MainTestCase(BaseTestCase):
         photo5 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
         )
+        now = datetime.now()
+        photo3.timestamp = now
+        photo4.timestamp = now + timedelta(seconds=1)
+        photo5.timestamp = now + timedelta(seconds=2)
         db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
 
@@ -147,6 +152,10 @@ class MainTestCase(BaseTestCase):
         photo5 = Photo(
             filename='test.jpg', filename_s='test_s.jpg', filename_m='test_m.jpg', description='Photo 5', author=user
         )
+        now = datetime.now()
+        photo3.timestamp = now
+        photo4.timestamp = now + timedelta(seconds=1)
+        photo5.timestamp = now + timedelta(seconds=2)
         db.session.add_all([photo3, photo4, photo5])
         db.session.commit()
 
