@@ -11,17 +11,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from moments.core.extensions import db, whooshee
 
 
-# enbale foreign key support for SQLite
-@event.listens_for(engine.Engine, 'connect')
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    import sqlite3
-
-    if isinstance(dbapi_connection, sqlite3.Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute('PRAGMA foreign_keys=ON')
-        cursor.close()
-
-
 role_permission = db.Table(
     'role_permission',
     Column('role_id', ForeignKey('role.id', ondelete='CASCADE'), primary_key=True),
@@ -372,6 +361,17 @@ class Notification(db.Model):
 
     def __repr__(self):
         return f'Notification {self.id}: {self.message}'
+
+
+# enbale foreign key support for SQLite
+@event.listens_for(engine.Engine, 'connect')
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    import sqlite3
+
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute('PRAGMA foreign_keys=ON')
+        cursor.close()
 
 
 @event.listens_for(User, 'after_delete', named=True)
