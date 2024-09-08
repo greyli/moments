@@ -19,7 +19,6 @@ dependencies = [
     "flask-avatars>=0.2.3",
     "pyjwt>=2.8.0",
     "email-validator>=2.1.0.post1",
-    "selenium>=4.18.1",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -39,8 +38,7 @@ dev = [
     "watchdog>=4.0.0",
     "ruff>=0.4.10",
     "pre-commit>=3.5.0",
-]
-test = [
+    "selenium>=4.24.0",
     "pytest>=8.1.1",
 ]
 
