@@ -2,6 +2,7 @@ import click
 
 from moments.core.extensions import db
 from moments.models import Role
+from moments.lorem import fake_admin, fake_collect, fake_comment, fake_follow, fake_photo, fake_tag, fake_user
 
 
 def register_commands(app):
@@ -34,9 +35,6 @@ def register_commands(app):
     @click.option('--comment', default=100, help='Quantity of comments, default is 100.')
     def lorem_command(user, follow, photo, tag, collect, comment):
         """Generate fake data."""
-
-        from moments.lorem import fake_admin, fake_collect, fake_comment, fake_follow, fake_photo, fake_tag, fake_user
-
         db.drop_all()
         db.create_all()
 

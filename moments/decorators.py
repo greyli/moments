@@ -11,9 +11,9 @@ def confirm_required(func):
         if not current_user.confirmed:
             resend_url = url_for('auth.resend_confirmation_email')
             message = Markup(
-                'Please confirm your account first.'
-                'Not receive the email?'
-                f'<a class="alert-link" href="{resend_url}">Resend Confirm Email</a>'
+                'Please confirm your account first. '
+                'Didn\'t receive the email? '
+                f'<a class="alert-link" href="{resend_url}">Resend Confirmation Email</a>'
             )
             flash(message, 'warning')
             return redirect(url_for('main.index'))

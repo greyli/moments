@@ -83,9 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         elem.textContent = data.count;
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function updateCollectorsCount(id) {
@@ -95,9 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         elem.textContent = data.count;
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function updateNotificationsCount() {
@@ -115,9 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
           elem.textContent = data.count;
         }
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function follow(event) {
@@ -136,9 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFollowersCount(id);
         toast(data.message);
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function unfollow(event) {
@@ -157,9 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
           updateFollowersCount(id);
         toast(data.message);
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function collect(event) {
@@ -181,9 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCollectorsCount(id);
         toast(data.message);
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   function uncollect(event) {
@@ -205,9 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCollectorsCount(id);
         toast(data.message);
       })
-      .catch(error => {
-        handleFetchError(error);
-      });
+      .catch(handleFetchError);
   }
 
   dayjs.extend(window.dayjs_plugin_relativeTime)
