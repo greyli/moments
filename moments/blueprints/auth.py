@@ -100,7 +100,7 @@ def resend_confirmation_email():
 
     token = generate_token(user=current_user, operation=Operations.CONFIRM)
     send_confirmation_email(user=current_user, token=token)
-    flash('New email sent, check your inbox.', 'info')
+    flash('New email sent, please check your inbox.', 'info')
     return redirect(url_for('main.index'))
 
 
