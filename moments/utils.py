@@ -48,7 +48,7 @@ def resize_image(image, filename, base_width):
 
 
 def validate_image(filename):
-    ext = Path(filename).suffix
+    ext = Path(filename).suffix.lower()
     allowed_extensions = current_app.config['DROPZONE_ALLOWED_FILE_TYPE'].split(',')
     return '.' in filename and ext in allowed_extensions
 

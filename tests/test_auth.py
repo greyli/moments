@@ -57,7 +57,7 @@ class AuthTestCase(BaseTestCase):
             follow_redirects=True,
         )
         data = response.get_data(as_text=True)
-        self.assertIn('Confirm email sent, check your inbox.', data)
+        self.assertIn('Confirmation email sent, please check your inbox.', data)
 
     def test_confirm_account(self):
         user = User.query.filter_by(email='unconfirmed@helloflask.com').first()
@@ -85,7 +85,7 @@ class AuthTestCase(BaseTestCase):
             follow_redirects=True,
         )
         data = response.get_data(as_text=True)
-        self.assertIn('Password reset email sent, check your inbox.', data)
+        self.assertIn('Password reset email sent, please check your inbox.', data)
         user = User.query.filter_by(email='normal@helloflask.com').first()
         self.assertTrue(user.validate_password('123'))
 
