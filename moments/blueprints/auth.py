@@ -71,8 +71,8 @@ def register():
         login_user(user)
         token = generate_token(user=user, operation=Operations.CONFIRM)
         send_confirmation_email(user=user, token=token)
-        flash('Confirm email sent, check your inbox.', 'info')
-        return redirect(url_for('main.index'))
+        flash('Confirmation email sent, please check your inbox.', 'info')
+        return redirect(url_for('.login'))
     return render_template('auth/register.html', form=form)
 
 
@@ -116,7 +116,7 @@ def forget_password():
         if user:
             token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
             send_reset_password_email(user=user, token=token)
-            flash('Password reset email sent, check your inbox.', 'info')
+            flash('Password reset email sent, please check your inbox.', 'info')
             return redirect(url_for('.login'))
         flash('Invalid email.', 'warning')
         return redirect(url_for('.forget_password'))
