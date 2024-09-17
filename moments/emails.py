@@ -12,6 +12,12 @@ def _send_async_mail(app, message):
 
 
 def send_mail(to, subject, template, **kwargs):
+    if current_app.debug:
+        current_app.logger.debug('Skip sending email in debug mode.')
+        current_app.logger.debug(f'To: {to}')
+        current_app.logger.debug(f'Subject: {subject}')
+        current_app.logger.debug(f'Template: {template}')
+        return
     message = Message(current_app.config['MOMENTS_MAIL_SUBJECT_PREFIX'] + subject, recipients=[to])
     message.body = render_template(template + '.txt', **kwargs)
     message.html = render_template(template + '.html', **kwargs)
