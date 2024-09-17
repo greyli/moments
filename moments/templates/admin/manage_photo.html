@@ -72,7 +72,7 @@
     <td><span class="dayjs" data-format="LL">{{ photo.created_at }}</span></td>
     <td>
       <form class="inline" method="post"
-        action="{{ url_for('main.delete_photo', photo_id=photo.id, next=request.full_path) }}">
+        action="{{ url_for('admin.delete_photo', photo_id=photo.id, next=request.full_path) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete
         </button>

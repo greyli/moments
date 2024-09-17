@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, flash, render_template, request, abort
+from flask import Blueprint, current_app, flash, render_template, request, abort, redirect, url_for
 from flask_login import login_required
 from sqlalchemy import func, select
 
@@ -163,10 +163,12 @@ def manage_photo(order):
     per_page = current_app.config['MOMENTS_MANAGE_PHOTO_PER_PAGE']
     order_rule = 'flag'
     if order == 'by_time':
-        pagination = db.paginate(select(Photo).order_by(Photo.created_at.desc()), page=page, per_page=per_page)
+        pagination = db.paginate(select(Photo).order_by(Photo.created_at.desc()), page=page, per_page=per_page, error_out=False)
         order_rule = 'time'
     else:
-        pagination = db.paginate(select(Photo).order_by(Photo.flag.desc()), page=page, per_page=per_page)
+        pagination = db.paginate(select(Photo).order_by(Photo.flag.desc()), page=page, per_page=per_page, error_out=False)
+    if page > pagination.pages:
+        return redirect(url_for('.manage_photo', page=pagination.pages, order_rule=order_rule))
     photos = pagination.items
     return render_template('admin/manage_photo.html', pagination=pagination, photos=photos, order_rule=order_rule)
 
@@ -191,9 +193,33 @@ def manage_comment(order):
     per_page = current_app.config['MOMENTS_MANAGE_COMMENT_PER_PAGE']
     order_rule = 'flag'
     if order == 'by_time':
-        pagination = db.paginate(select(Comment).order_by(Comment.created_at.desc()), page=page, per_page=per_page)
+        pagination = db.paginate(select(Comment).order_by(Comment.created_at.desc()), page=page, per_page=per_page, error_out=False)
         order_rule = 'time'
     else:
-        pagination = db.paginate(select(Comment).order_by(Comment.flag.desc()), page=page, per_page=per_page)
+        pagination = db.paginate(select(Comment).order_by(Comment.flag.desc()), page=page, per_page=per_page, error_out=False)
+    if page > pagination.pages:
+        return redirect(url_for('.manage_comment', page=pagination.pages, order_rule=order_rule))
     comments = pagination.items
     return render_template('admin/manage_comment.html', pagination=pagination, comments=comments, order_rule=order_rule)
+
+
+@admin_bp.route('/delete/photo/<int:photo_id>', methods=['POST'])
+@login_required
+@permission_required('MODERATE')
+def delete_photo(photo_id):
+    photo = db.session.get(Photo, photo_id) or abort(404)
+    db.session.delete(photo)
+    db.session.commit()
+    flash('Photo deleted.', 'info')
+    return redirect_back()
+
+
+@admin_bp.route('/delete/comment/<int:comment_id>', methods=['POST'])
+@login_required
+@permission_required('MODERATE')
+def delete_comment(comment_id):
+    comment = db.session.get(Comment, comment_id) or abort(404)
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Comment deleted.', 'info')
+    return redirect_back()
