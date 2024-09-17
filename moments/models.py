@@ -24,7 +24,11 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[List['Role']] = relationship(secondary=role_permission, back_populates='permissions')
+    roles: Mapped[List['Role']] = relationship(
+        secondary=role_permission,
+        back_populates='permissions',
+        passive_deletes=True
+    )
 
     def __repr__(self):
         return f'Permission {self.id}: {self.name}'
@@ -37,7 +41,11 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role')
-    permissions: Mapped[List['Permission']] = relationship(secondary=role_permission, back_populates='roles')
+    permissions: Mapped[List['Permission']] = relationship(
+        secondary=role_permission,
+        back_populates='roles',
+        passive_deletes=True
+    )
 
     @staticmethod
     def init_role():
@@ -293,7 +301,7 @@ class Photo(db.Model):
     collections: WriteOnlyMapped['Collection'] = relationship(
         back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[List['Tag']] = relationship(secondary=photo_tag, back_populates='photos')
+    tags: Mapped[List['Tag']] = relationship(secondary=photo_tag, back_populates='photos', passive_deletes=True)
 
     @property
     def collectors_count(self):
