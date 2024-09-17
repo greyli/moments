@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:9b57f5731de651ff102a0281c852de6a90dce75d4cb109b9f94c21e5820ede7f"
+content_hash = "sha256:5a42527a683460ebd49d450fb587270a6b0024513577b89f1e4dde34643e4fe2"
 
 [[package]]
 name = "attrs"
@@ -253,14 +253,16 @@ files = [
 
 [[package]]
 name = "flask-mail"
-version = "0.9.1"
+version = "0.10.0"
+requires_python = ">=3.8"
 summary = "Flask extension for sending email"
 dependencies = [
-    "Flask",
     "blinker",
+    "flask",
 ]
 files = [
-    {file = "Flask-Mail-0.9.1.tar.gz", hash = "sha256:22e5eb9a940bf407bcf30410ecc3708f3c56cc44b29c34e1726fe85006935f41"},
+    {file = "flask_mail-0.10.0-py3-none-any.whl", hash = "sha256:a451e490931bb3441d9b11ebab6812a16bfa81855792ae1bf9c1e1e22c4e51e7"},
+    {file = "flask_mail-0.10.0.tar.gz", hash = "sha256:44083e7b02bbcce792209c06252f8569dd5a325a7aaa76afe7330422bd97881d"},
 ]
 
 [[package]]
