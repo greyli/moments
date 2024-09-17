@@ -40,7 +40,7 @@ class Role(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    users: WriteOnlyMapped['User'] = relationship(back_populates='role')
+    users: WriteOnlyMapped['User'] = relationship(back_populates='role', passive_deletes=True)
     permissions: Mapped[List['Permission']] = relationship(
         secondary=role_permission,
         back_populates='roles',
