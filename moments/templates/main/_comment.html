@@ -17,7 +17,7 @@
       <a href="{{ url_for('user.index', username=comment.author.username) }}">
         <img class="rounded img-fluid avatar-s profile-popover"
           data-href="{{ url_for('ajax.get_profile', user_id=comment.author.id) }}"
-          src="{{ url_for('main.get_avatar', filename=comment.author.avatar_s) }}">
+          src="{{ url_for('main.get_avatar', filename=comment.author.avatar_m) }}">
       </a>
     </div>
     <div class="comment-body">
@@ -96,7 +96,7 @@
         {% endif %}
         <div class="comment-form-area">
           <div class="comment-form-thumbnail">
-            <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_s) }}">
+            <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
           </div>
           <div class="comment-form" id="comment-form">
             {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, page=pagination.pages or 1,
