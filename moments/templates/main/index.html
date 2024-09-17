@@ -15,7 +15,7 @@
         <a class="dead-link" href="{{ url_for('user.index', username=photo.author.username) }}">
           <img class="rounded img-fluid avatar-s profile-popover"
             data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"
-            src="{{ url_for('main.get_avatar', filename=photo.author.avatar_s) }}">
+            src="{{ url_for('main.get_avatar', filename=photo.author.avatar_m) }}">
         </a>
         <a class="profile-popover trend-card-avatar text-decoration-none"
           data-href="{{ url_for('ajax.get_profile', user_id=photo.author.id) }}"

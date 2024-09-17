@@ -8,7 +8,7 @@
     <img class="card-img-top" src="{{ url_for('static', filename='images/error.jpg') }}">
     <div class="card-body">
       <h5 class="card-title">413 Error</h5>
-      <p class="card-text">File Too Large</p>
+      <p class="card-text">{{ description|default('File Too Large') }}</p>
     </div>
     <div class="card-footer">
       <div class="float-end">

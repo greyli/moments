@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from sqlalchemy import select
 from wtforms import BooleanField, HiddenField, PasswordField, StringField, SubmitField, TextAreaField, ValidationError
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
+from wtforms.validators import DataRequired, URL, Email, EqualTo, Length, Optional, Regexp
 
 from moments.core.extensions import db
 from moments.models import User
@@ -19,7 +19,7 @@ class EditProfileForm(FlaskForm):
             Regexp('^[a-zA-Z0-9]*$', message='The username should contain only a-z, A-Z and 0-9.'),
         ],
     )
-    website = StringField('Website', validators=[Optional(), Length(0, 255)])
+    website = StringField('Website', validators=[URL(), Optional(), Length(0, 255)])
     location = StringField('City', validators=[Optional(), Length(0, 50)])
     bio = TextAreaField('Bio', validators=[Optional(), Length(0, 120)])
     submit = SubmitField()

@@ -46,6 +46,7 @@
     <tr>
       <th>Avatars</th>
       <th>Name/username</th>
+      <th>Email</th>
       <th>Role</th>
       <th>Bio</th>
       <th>City</th>
@@ -58,6 +59,7 @@
   <tr>
     <td><img src="{{ url_for('main.get_avatar', filename=user.avatar_s) }}"></td>
     <td>{{ user.name }}<br>{{ user.username }}</td>
+    <td>{{ user.email }}</td>
     <td>{{ user.role.name }}</td>
     <td>{{ user.bio }}</td>
     <td>{{ user.location }}</td>
