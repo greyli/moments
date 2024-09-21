@@ -1,40 +1,52 @@
 # Moments
 
-*Capture and share every wonderful moment.*
+A photo sharing social networking app built with Python and Flask. The example application for the book *[Python Web Development with Flask](https://helloflask.com/en/book/1)* (《[Flask Web 开发实战（第 2 版）](https://helloflask.com/book/4)》).
 
-> Example application for *[Python Web Development with Flask](https://helloflask.com/en/book/1)* (《[Flask Web 开发实战](https://helloflask.com/book/4)》).
+Demo: http://moments.helloflask.com
 
-<!-- Demo: http://moments.helloflask.com -->
-
-![Screenshot](https://helloflask.com/screenshots/moments.jpg)
+![Screenshot](demo.png)
 
 ## Installation
 
 Clone the repo:
 
 ```
-$ git clone https://github.com/greyli/moments.git
+$ git clone https://github.com/greyli/moments
 $ cd moments
 ```
 
-Create & activate virtual env then install dependency with PDM:
+Install dependencies with [PDM](https://pdm.fming.dev):
 
 ```
 $ pdm install
 ```
 
-Generate fake data then run:
+> [!TIP]
+> If you don't have PDM installed, you can create a virtual environment with `venv` and install dependencies with `pip install -r requirements.txt`.
+
+To initialize the app, run the `flask init-app` command:
+
+```
+$ pdm run flask init-app
+```
+
+If you just want to try it out, generate fake data with `flask lorem` command then run the app:
 
 ```
 $ pdm run flask lorem
-$ pdm run flask run
-* Running on http://127.0.0.1:5000/
 ```
 
-Test account:
+It will create a test account:
 
 * email: `admin@helloflask.com`
 * password: `moments`
+
+Now you can run the app:
+
+```
+$ pdm run flask run
+* Running on http://127.0.0.1:5000/
+```
 
 ## License
 
