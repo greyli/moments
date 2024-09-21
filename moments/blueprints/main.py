@@ -123,6 +123,9 @@ def get_avatar(filename):
 @confirm_required
 @permission_required('UPLOAD')
 def upload():
+    if current_user.photos_count >= 100:
+        flash('You can only upload 100 photos in this demo instance.', 'warning')
+        return redirect(url_for('user.index', username=current_user.username))
     if request.method == 'POST':
         if 'file' not in request.files:
             return 'No image.', 400
