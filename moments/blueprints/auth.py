@@ -66,12 +66,11 @@ def register():
         username = form.username.data
         password = form.password.data
         user = User(name=name, email=email, username=username, password=password)
+        user.confirmed = True
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        token = generate_token(user=user, operation=Operations.CONFIRM)
-        send_confirmation_email(user=user, token=token)
-        flash('Confirmation email sent, please check your inbox.', 'info')
+        flash('Welcome to Moments!', 'info')
         return redirect(url_for('.login'))
     return render_template('auth/register.html', form=form)
 
@@ -111,14 +110,7 @@ def forget_password():
 
     form = ForgetPasswordForm()
     if form.validate_on_submit():
-        stmt = select(User).filter_by(email=form.email.data.lower())
-        user = db.session.scalar(stmt)
-        if user:
-            token = generate_token(user=user, operation=Operations.RESET_PASSWORD)
-            send_reset_password_email(user=user, token=token)
-            flash('Password reset email sent, please check your inbox.', 'info')
-            return redirect(url_for('.login'))
-        flash('Invalid email.', 'warning')
+        flash('In the demo instance, this feature is disabled.', 'warning')
         return redirect(url_for('.forget_password'))
     return render_template('auth/reset_password.html', form=form)
 
