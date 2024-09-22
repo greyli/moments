@@ -70,6 +70,8 @@ def register():
         db.session.add(user)
         db.session.commit()
         login_user(user)
+        admin = db.session.get(User, 1)
+        user.follow(admin)
         flash('Welcome to Moments!', 'info')
         return redirect(url_for('.login'))
     return render_template('auth/register.html', form=form)
