@@ -47,6 +47,11 @@ def explore():
     return render_template('main/explore.html', photos=photos)
 
 
+@main_bp.route('/about')
+def about():
+    return render_template('main/about.html')
+
+
 @main_bp.route('/search')
 def search():
     q = request.args.get('q').strip()

@@ -33,6 +33,7 @@
         <div class="navbar-nav me-auto">
           {{ render_nav_item('main.index', 'Home') }}
           {{ render_nav_item('main.explore', 'Explore') }}
+          {{ render_nav_item('main.about', 'About') }}
           <form class="d-flex" role="search" action="{{ url_for('main.search') }}">
             <input class="form-control me-2" name="q" type="search" placeholder="Photo, tag or user" aria-label="Search" required>
             <button class="btn btn-light my-2 my-sm-0" type="submit">
