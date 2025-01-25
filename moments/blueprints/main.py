@@ -293,13 +293,12 @@ def new_comment(photo_id):
         replied_id = request.args.get('reply')
         if replied_id:
             comment.replied = db.session.get(Comment, replied_id) or abort(404)
-            if comment.replied.author.receive_comment_notification:
-                push_comment_notification(photo_id=photo.id, receiver=comment.replied.author)
+            push_comment_notification(photo_id=photo.id, receiver=comment.replied.author)
         db.session.add(comment)
         db.session.commit()
         flash('Comment published.', 'success')
 
-        if current_user != photo.author and photo.author.receive_comment_notification:
+        if current_user != photo.author:
             push_comment_notification(photo_id, receiver=photo.author, page=page)
 
     flash_errors(form)

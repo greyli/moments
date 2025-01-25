@@ -34,7 +34,7 @@ def index(username):
 
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_PHOTO_PER_PAGE']
-    stmt = select(Photo).filter_by(author_id=user.id).order_by(Photo.created_at.desc())
+    stmt = user.photos.select().order_by(Photo.created_at.desc())
     pagination = db.paginate(stmt, page=page, per_page=per_page)
     photos = pagination.items
     return render_template('user/index.html', user=user, pagination=pagination, photos=photos)
@@ -63,8 +63,7 @@ def follow(username):
 
     current_user.follow(user)
     flash('User followed.', 'success')
-    if user.receive_follow_notification:
-        push_follow_notification(follower=current_user, receiver=user)
+    push_follow_notification(follower=current_user, receiver=user)
     return redirect_back()
 
 

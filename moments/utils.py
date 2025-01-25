@@ -11,7 +11,11 @@ from PIL import Image
 
 
 def generate_token(user, operation, expiration=3600, **kwargs):
-    payload = {'id': user.id, 'operation': operation.value, 'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)}
+    payload = {
+        'id': user.id,
+        'operation': operation.value,
+        'exp': datetime.now(timezone.utc) + timedelta(seconds=expiration)
+    }
     payload.update(**kwargs)
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 

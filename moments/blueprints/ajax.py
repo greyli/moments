@@ -51,7 +51,7 @@ def collect(photo_id):
         return {'message': 'Already collected.'}, 400
 
     current_user.collect(photo)
-    if current_user != photo.author and photo.author.receive_collect_notification:
+    if current_user != photo.author:
         push_collect_notification(user=current_user, photo_id=photo_id, receiver=photo.author)
     return {'message': 'Photo collected.'}
 
@@ -83,8 +83,7 @@ def follow(username):
         return {'message': 'Already followed.'}, 400
 
     current_user.follow(user)
-    if user.receive_collect_notification:
-        push_follow_notification(follower=current_user, receiver=user)
+    push_follow_notification(follower=current_user, receiver=user)
     return {'message': 'User followed.'}
 
 
