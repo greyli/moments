@@ -11,7 +11,6 @@ from moments.core.extensions import avatars, bootstrap, csrf, db, dropzone, logi
 from moments.core.logging import register_logging
 from moments.core.request import register_request_handlers
 from moments.core.templating import register_template_handlers
-from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
 from moments.settings import config
 
 
@@ -40,18 +39,5 @@ def create_app(config_name):
     register_template_handlers(app)
     register_request_handlers(app)
     register_error_handlers(app)
-
-    @app.shell_context_processor
-    def make_shell_context():
-        return dict(
-            db=db,
-            User=User,
-            Photo=Photo,
-            Tag=Tag,
-            Follow=Follow,
-            Collect=Collection,
-            Comment=Comment,
-            Notification=Notification,
-        )
 
     return app
