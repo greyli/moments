@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional
 
 from flask import current_app
 from flask_avatars import Identicon
@@ -24,7 +24,7 @@ class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
-    roles: Mapped[List['Role']] = relationship(
+    roles: Mapped[list['Role']] = relationship(
         secondary=role_permission,
         back_populates='permissions',
         passive_deletes=True
@@ -41,7 +41,7 @@ class Role(db.Model):
     name: Mapped[str] = mapped_column(String(30), unique=True)
 
     users: WriteOnlyMapped['User'] = relationship(back_populates='role', passive_deletes=True)
-    permissions: Mapped[List['Permission']] = relationship(
+    permissions: Mapped[list['Permission']] = relationship(
         secondary=role_permission,
         back_populates='roles',
         passive_deletes=True
@@ -301,7 +301,7 @@ class Photo(db.Model):
     collections: WriteOnlyMapped['Collection'] = relationship(
         back_populates='photo', cascade='all, delete-orphan', passive_deletes=True
     )
-    tags: Mapped[List['Tag']] = relationship(secondary=photo_tag, back_populates='photos', passive_deletes=True)
+    tags: Mapped[list['Tag']] = relationship(secondary=photo_tag, back_populates='photos', passive_deletes=True)
 
     @property
     def collectors_count(self):

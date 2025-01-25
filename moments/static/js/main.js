@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         elem.nextElementSibling.style.display = 'inline-block';
         elem.style.display = 'none';
-          updateFollowersCount(id);
+        updateFollowersCount(id);
         toast(data.message);
       })
       .catch(handleFetchError);

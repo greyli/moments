@@ -20,7 +20,7 @@ dependencies = [
     "pyjwt>=2.8.0",
     "email-validator>=2.1.0.post1",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 
