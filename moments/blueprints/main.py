@@ -2,13 +2,13 @@ from flask import Blueprint, abort, current_app, flash, redirect, render_templat
 from flask_login import current_user, login_required
 from sqlalchemy import func, select
 from sqlalchemy.orm import with_parent
-
+import os
 from moments.core.extensions import db
 from moments.decorators import confirm_required, permission_required
 from moments.forms.main import CommentForm, DescriptionForm, TagForm
-from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
+from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User, photo_tag
 from moments.notifications import push_collect_notification, push_comment_notification
-from moments.utils import flash_errors, redirect_back, rename_image, resize_image, validate_image
+from moments.utils import flash_errors, redirect_back, rename_image, resize_image, validate_image, imageAltTextGeneration, analyzeImage
 
 main_bp = Blueprint('main', __name__)
 
@@ -130,14 +130,37 @@ def upload():
         if not validate_image(f.filename):
             return 'Invalid image.', 400
         filename = rename_image(f.filename)
-        f.save(current_app.config['MOMENTS_UPLOAD_PATH'] / filename)
+        image_path = current_app.config['MOMENTS_UPLOAD_PATH']/filename
+        f.save(str(image_path))
         filename_s = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['small'])
         filename_m = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['medium'])
+        f.seek(0)
+        binaryImage = f.read()
+        description = imageAltTextGeneration(binaryImage)
+
         photo = Photo(
-            filename=filename, filename_s=filename_s, filename_m=filename_m, author=current_user._get_current_object()
+            filename=filename, 
+            filename_s=filename_s, 
+            filename_m=filename_m, 
+            author=current_user._get_current_object(), 
+            description=description
         )
         db.session.add(photo)
         db.session.commit()
+        f.seek(0)
+        binaryImage = f.read()
+        tags = analyzeImage(binaryImage)
+        tag_objects = []
+        for tag_name in tags:
+            tag = db.session.scalar(select(Tag).filter_by(name=tag_name))
+            if tag is None:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+                db.session.commit()
+            tag_objects.append(tag)
+        photo.tags.extend(tag_objects)  
+        db.session.commit()
+
     return render_template('main/upload.html')
 
 

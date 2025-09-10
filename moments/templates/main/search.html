@@ -6,41 +6,78 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>Search: {{ q }}</h1>
+  <h1>Search: "{{ q }}"</h1>
 </div>
+
 <div class="row">
+
   <div class="col-md-3">
     <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
       <a class="nav-item nav-link {% if category == 'photo' %}active{% endif %}"
-        href="{{ url_for('.search', q=q, category='photo') }}">Photo</a>
+        href="{{ url_for('.search', q=q, category='photo') }}">Photos</a>
       <a class="nav-item nav-link {% if category == 'user' %}active{% endif %}"
-        href="{{ url_for('.search', q=q, category='user') }}">User</a>
+        href="{{ url_for('.search', q=q, category='user') }}">Users</a>
       <a class="nav-item nav-link {% if category == 'tag' %}active{% endif %}"
-        href="{{ url_for('.search', q=q, category='tag') }}">Tag</a>
+        href="{{ url_for('.search', q=q, category='tag') }}">Tags</a>
     </div>
   </div>
+
+
   <div class="col-md-9">
     {% if results %}
-      <h5>{{ results|length }} results</h5>
-      {% for item in results %}
+      <h5 class="mb-3">{{ results|length }} results found</h5>
+
       {% if category == 'photo' %}
-        {{ photo_card(item) }}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          {% for photo in results %}
+            <div class="col">
+              <div class="card">
+                <a href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
+                  <img src="{{ url_for('main.get_image', filename=photo.filename_m) }}" class="card-img-top" alt="Photo">
+                </a>
+                <div class="card-body">
+                  <h5 class="card-title">{{ photo.description or "No description" }}</h5>
+                  <p class="card-text">
+                    Tags: 
+                    {% for tag in photo.tags %}
+                      <a href="{{ url_for('.search', q=tag.name, category='tag') }}" class="badge bg-secondary">
+                        #{{ tag.name }}
+                      </a>
+                    {% endfor %}
+                  </p>
+                  <a href="{{ url_for('main.show_photo', photo_id=photo.id) }}" class="btn btn-primary">View</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
       {% elif category == 'user' %}
-        {{ user_card(item) }}
-      {% else %}
-      <a class="badge text-bg-light rounded-pill" href="{{ url_for('.show_tag', tag_id=item.id) }}">
-        {{ item.name }} {{ item.photos|length }}
-      </a>
+        {% for user in results %}
+          <div class="mb-3">
+            {{ user_card(user) }}
+          </div>
+        {% endfor %}
+      {% elif category == 'tag' %}
+        <div class="d-flex flex-wrap">
+          {% for tag in results %}
+            <a href="{{ url_for('.search', q=tag.name, category='photo') }}" class="badge bg-primary m-1 p-2">
+              #{{ tag.name }} ({{ tag.photos_count }} photos)
+            </a>
+          {% endfor %}
+        </div>
       {% endif %}
-      {% endfor %}
+      
     {% else %}
-    <h5 class="tip">No results.</h5>
+      <h5 class="tip">No results found for "{{ q }}".</h5>
     {% endif %}
   </div>
 </div>
+
+<!-- Pagination -->
 {% if results %}
-<div class="page-footer">
-  {{ render_pagination(pagination, align='right') }}
-</div>
+  <div class="page-footer mt-4">
+    {{ render_pagination(pagination, align='right') }}
+  </div>
 {% endif %}
+
 {% endblock %}

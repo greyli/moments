@@ -8,6 +8,11 @@ import PIL
 from flask import current_app, flash, redirect, request, url_for
 from jwt.exceptions import InvalidTokenError
 from PIL import Image
+from azure.ai.vision.imageanalysis import ImageAnalysisClient
+from azure.core.credentials import AzureKeyCredential
+from azure.ai.vision.imageanalysis.models import VisualFeatures
+from msrest.authentication import CognitiveServicesCredentials
+import os
 
 
 def generate_token(user, operation, expiration=3600, **kwargs):
@@ -76,3 +81,34 @@ def flash_errors(form):
     for field, errors in form.errors.items():
         for error in errors:
             flash(f'Error in the {getattr(form, field).label.text} field - {error}')
+
+def imageAltTextGeneration(image):
+
+    endpoint=os.getenv("AZURE_VISION_ENDPOINT")
+    credentials=AzureKeyCredential(os.getenv("AZURE_VISION_KEY"))
+    client = ImageAnalysisClient(
+        endpoint=endpoint,
+        credential=credentials
+        )
+
+    response = client.analyze(
+        image_data=image,  
+        visual_features=[VisualFeatures.CAPTION]  
+    )
+    return response.caption.text if response.caption else "No caption available."
+
+
+def analyzeImage(imageBinary : bytes):
+    endpoint=os.getenv("AZURE_VISION_ENDPOINT")
+    credentials=AzureKeyCredential(os.getenv("AZURE_VISION_KEY"))
+
+    client = ImageAnalysisClient(
+        endpoint=endpoint,
+        credential=credentials
+        )
+    response = client.analyze(
+        image_data=imageBinary,
+        visual_features=[VisualFeatures.TAGS]
+    )
+
+    return [value.get("name", "") for value in response.get("tagsResult", {}).get("values", [])]

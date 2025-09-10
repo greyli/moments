@@ -1,30 +1,24 @@
 # Moments
 
-A photo sharing social networking app built with Python and Flask. The example application for the book *[Python Web Development with Flask (2nd edition)](https://helloflask.com/en/book/4)* (《[Flask Web 开发实战（第 2 版）](https://helloflask.com/book/4)》).
+Moments is a photo-sharing social networking application developed using Python and the Flask web framework. The application allows users to share and explore photos within a social platform. We introduced two machine learning-powered features into the platform:
+1. Alternative Text Generation: Automatically generates alternative text (alt-text) for uploaded images using Azure Computer Vision API.
+2. Image Search: Uses object detection and image tagging to identify objects present in uploaded images. And enables keyword-based image search by allowing users to find images based on detected objects or tags.
 
-Demo: http://moments.helloflask.com
+## Instructions
+We are using Azure Computer Vision API for introducing the above ML features. Please follow the below steps to create the same -
+1. Sign in to Azure Portal
+2. Create a New Resource
+3. Configure the Resource by adding the Subscription, Resource Group, Region, Name and Pricing Tier
+4. Review & Create
+5. Once the resource is created, get API Key & Endpoint and update it in the code.
+6. Create a .env file to copy the API Key & Endpoint and set up the environment variables.
 
-![Screenshot](demo.png)
+Create a virtual environment using 'venv' and run the following commands
+1. Install dependencies with `pip install -r requirements.txt`
+2.  `pip install azure-ai-vision-imageanalysis`
+3.  `pip install azure-cognitiveservices-vision-computervision`
 
-## Installation
-
-Clone the repo:
-
-```
-$ git clone https://github.com/greyli/moments
-$ cd moments
-```
-
-Install dependencies with [PDM](https://pdm.fming.dev):
-
-```
-$ pdm install
-```
-
-> [!TIP]
-> If you don't have PDM installed, you can create a virtual environment with `venv` and install dependencies with `pip install -r requirements.txt`.
-
-To initialize the app, run the `flask init-app` command:
+Next, to initialize the app, run the `flask init-app` command:
 
 ```
 $ pdm run flask init-app
@@ -47,8 +41,3 @@ Now you can run the app:
 $ pdm run flask run
 * Running on http://127.0.0.1:5000/
 ```
-
-## License
-
-This project is licensed under the MIT License (see the
-[LICENSE](LICENSE) file for details).

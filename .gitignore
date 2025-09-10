@@ -5,6 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
+.vs/
+*.vsidx
+*.wsuo
+*.sqlite
 
 # Distribution / packaging
 .Python
