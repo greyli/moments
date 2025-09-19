@@ -1,5 +1,5 @@
 from flask import Flask
-
+from flask_migrate import Migrate
 from moments.blueprints.admin import admin_bp
 from moments.blueprints.ajax import ajax_bp
 from moments.blueprints.auth import auth_bp
@@ -21,6 +21,7 @@ def create_app(config_name):
 
     bootstrap.init_app(app)
     db.init_app(app)
+    migrate = Migrate(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
     dropzone.init_app(app)

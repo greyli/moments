@@ -1,54 +1,54 @@
 # Moments
 
-A photo sharing social networking app built with Python and Flask. The example application for the book *[Python Web Development with Flask (2nd edition)](https://helloflask.com/en/book/4)* (《[Flask Web 开发实战（第 2 版）](https://helloflask.com/book/4)》).
-
-Demo: http://moments.helloflask.com
+A photo sharing social networking app built with Python and Flask. Fork of the example app from *[Python Web Development with Flask (2nd ed.)](https://helloflask.com/en/book/4)*, extended with **ML-powered accessibility and search**.
 
 ![Screenshot](demo.png)
 
-## Installation
+---
 
-Clone the repo:
+## What’s new in this fork
 
-```
-$ git clone https://github.com/greyli/moments
-$ cd moments
-```
+- **Auto alternative text (alt)** for user photos on upload using Azure AI Vision.  
+- **Object search**: find photos by detected objects via a new **Object** category in Search.  
+- Templates now ensure every user photo renders with an `alt="..."` (accessibility).
 
-Install dependencies with [PDM](https://pdm.fming.dev):
+---
 
-```
-$ pdm install
-```
+## Prerequisites
 
-> [!TIP]
-> If you don't have PDM installed, you can create a virtual environment with `venv` and install dependencies with `pip install -r requirements.txt`.
+- Python **3.11** (we use [uv](https://docs.astral.sh/uv/) for env + deps)
+- An Azure AI Vision resource (endpoint + key)
 
-To initialize the app, run the `flask init-app` command:
+> macOS: `brew install uv`  
+> Windows: `winget install --id=astral-sh.uv -e`
 
-```
-$ pdm run flask init-app
-```
+---
 
-If you just want to try it out, generate fake data with `flask lorem` command then run the app:
+## Quick start
 
-```
-$ pdm run flask lorem
-```
+```bash
+# 1) Clone
+git clone https://github.com/<your-username>/moments.git
+cd moments
 
-It will create a test account:
+# 2) Pin Python & install deps
+uv python pin 3.11
+uv sync
 
-* email: `admin@helloflask.com`
-* password: `moments`
+# 3) Configure environment
+cp .env.example .env
+python3 -c 'import secrets; print("SECRET_KEY=" + secrets.token_hex(32))' >> .env
+# Edit .env and set:
+# AZURE_VISION_ENDPOINT=https://<name>.cognitiveservices.azure.com
+# AZURE_VISION_KEY=<key>
 
-Now you can run the app:
+# 4) Initialize app (DB + roles)
+uv run flask --app app init-app
 
-```
-$ pdm run flask run
-* Running on http://127.0.0.1:5000/
-```
+# (Optional) generate lorem demo data
+uv run flask --app app lorem
 
-## License
-
-This project is licensed under the MIT License (see the
-[LICENSE](LICENSE) file for details).
+# 5) Run
+uv run flask --app app run
+# App: http://127.0.0.1:5000/
+# Upload photos at /upload

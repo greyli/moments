@@ -10,9 +10,18 @@
   <div class="col-lg-8">
     <div class="photo">
       <a href="{{ url_for('.get_image', filename=photo.filename) }}" target="_blank">
-        <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}">
+        <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}"
+        alt="{{ photo.description or photo.alt_text or 'Image' }}">
+          {% if photo.alt_text and not photo.description %}
+          <span class="badge text-bg-secondary">Generated</span>
+          {% endif %}        
       </a>
       <span class="photo-bottom"></span>
+      {% if photo.detected_labels %}
+      <p class="mt-2 text-muted small">
+        Detected: {{ photo.detected_labels }}
+      </p>
+    {% endif %}    
     </div>
     {% if current_user.is_authenticated %}
       {% if current_user.is_collecting(photo) %}

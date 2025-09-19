@@ -170,3 +170,9 @@ uploads/avatars/*
 logs/*
 !logs/.gitkeep
 whooshee
+.venv/
+uv.lock
+.env
+.env.local
+__pycache__/
+.DS_Store
