@@ -50,7 +50,7 @@ def explore():
 
 @main_bp.route('/search')
 def search():
-    q = request.args.get('q', '').strip()
+    q = (request.args.get('q') or '').strip()
     if not q:
         flash('Enter keyword about photo, user or tag.', 'warning')
         return redirect_back()
@@ -62,25 +62,38 @@ def search():
     if category == 'user':
         pagination = User.query.whooshee_search(q).paginate(page=page, per_page=per_page)
         results = pagination.items
+
     elif category == 'tag':
         pagination = Tag.query.whooshee_search(q).paginate(page=page, per_page=per_page)
         results = pagination.items
+
     elif category == 'object':
-        # NEW: search in ML-detected labels (CSV string), case-insensitive
-        from sqlalchemy import or_, func, select
-        terms = [t for t in q.split() if t.strip()]
-        if terms:
-            likes = [func.lower(Photo.detected_labels).like(f"%{t.lower()}%") for t in terms]
-            stmt = select(Photo).filter(or_(*likes)).order_by(Photo.created_at.desc())
-        else:
-            stmt = select(Photo).where(False)
+        # Search ML-detected labels stored on Photo.detected_labels (CSV string).
+        from sqlalchemy import or_
+        terms = [t.lower() for t in q.replace(",", " ").split() if t.strip()]
+        stmt = (
+            select(Photo)
+            .where(
+                Photo.detected_labels.is_not(None),
+                or_(*[func.lower(Photo.detected_labels).like(f"%{t}%") for t in terms]) if terms
+                   else func.false()
+            )
+            .order_by(Photo.created_at.desc())
+        )
         pagination = db.paginate(stmt, page=page, per_page=per_page)
         results = pagination.items
+
     else:
         pagination = Photo.query.whooshee_search(q).paginate(page=page, per_page=per_page)
         results = pagination.items
 
-    return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)
+    return render_template(
+        'main/search.html',
+        q=q,
+        results=results,
+        pagination=pagination,
+        category=category,
+    )
 
 
 @main_bp.route('/notifications')
