@@ -3,7 +3,8 @@
 {% macro photo_card(photo) %}
 <div class="photo-card card">
   <a class="card-thumbnail" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
-    <img class="card-img-top portrait" src="{{ url_for('main.get_image', filename=photo.filename_s) }}">
+    <img class="card-img-top portrait" src="{{ url_for('main.get_image', filename=photo.filename_s) }}"
+         alt="{{ photo.alt_text or photo.description or 'Image' }}">
   </a>
   <div class="card-body">
     {{ render_icon('suit-heart-fill') }} {{ photo.collectors_count }}

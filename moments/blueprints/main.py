@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import with_parent
 
 from moments.core.extensions import db
+from moments.services.vision import analyze_image
 from moments.decorators import confirm_required, permission_required
 from moments.forms.main import CommentForm, DescriptionForm, TagForm
 from moments.models import Collection, Comment, Follow, Notification, Photo, Tag, User
@@ -49,7 +50,7 @@ def explore():
 
 @main_bp.route('/search')
 def search():
-    q = request.args.get('q').strip()
+    q = request.args.get('q', '').strip()
     if not q:
         flash('Enter keyword about photo, user or tag.', 'warning')
         return redirect_back()
@@ -57,14 +58,28 @@ def search():
     category = request.args.get('category', 'photo')
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['MOMENTS_SEARCH_RESULT_PER_PAGE']
-    # TODO: add SQLAlchemy 2.x support to Flask-Whooshee then update the following code
+
     if category == 'user':
         pagination = User.query.whooshee_search(q).paginate(page=page, per_page=per_page)
+        results = pagination.items
     elif category == 'tag':
         pagination = Tag.query.whooshee_search(q).paginate(page=page, per_page=per_page)
+        results = pagination.items
+    elif category == 'object':
+        # NEW: search in ML-detected labels (CSV string), case-insensitive
+        from sqlalchemy import or_, func, select
+        terms = [t for t in q.split() if t.strip()]
+        if terms:
+            likes = [func.lower(Photo.detected_labels).like(f"%{t.lower()}%") for t in terms]
+            stmt = select(Photo).filter(or_(*likes)).order_by(Photo.created_at.desc())
+        else:
+            stmt = select(Photo).where(False)
+        pagination = db.paginate(stmt, page=page, per_page=per_page)
+        results = pagination.items
     else:
         pagination = Photo.query.whooshee_search(q).paginate(page=page, per_page=per_page)
-    results = pagination.items
+        results = pagination.items
+
     return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)
 
 
@@ -129,16 +144,35 @@ def upload():
         f = request.files.get('file')
         if not validate_image(f.filename):
             return 'Invalid image.', 400
+
+        # 1) Analyze raw bytes for caption/tags (rewind after reading)
+        raw = f.read()
+        f.seek(0)
+        analysis = analyze_image(raw)
+        generated_alt = analysis.get("caption")
+        labels = analysis.get("labels") or []
+
+        # 2) Save originals/derivatives as before
         filename = rename_image(f.filename)
         f.save(current_app.config['MOMENTS_UPLOAD_PATH'] / filename)
         filename_s = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['small'])
         filename_m = resize_image(f, filename, current_app.config['MOMENTS_PHOTO_SIZES']['medium'])
+
+        # 3) Create the Photo and store ML outputs
         photo = Photo(
-            filename=filename, filename_s=filename_s, filename_m=filename_m, author=current_user._get_current_object()
+            filename=filename,
+            filename_s=filename_s,
+            filename_m=filename_m,
+            author=current_user._get_current_object()
         )
+        # Prefer user description if your form sets it elsewhere; for now, fall back to generated
+        photo.alt_text = generated_alt or "Image"
+        photo.detected_labels = ",".join(labels) if labels else None
+
         db.session.add(photo)
         db.session.commit()
     return render_template('main/upload.html')
+
 
 
 @main_bp.route('/photo/<int:photo_id>')

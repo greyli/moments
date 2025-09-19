@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
-
+from sqlalchemy import Text
 from flask import current_app
 from flask_avatars import Identicon
 from flask_login import UserMixin
@@ -291,7 +291,8 @@ class Photo(db.Model):
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
     can_comment: Mapped[bool] = mapped_column(default=True)
     flag: Mapped[int] = mapped_column(default=0)
-
+    alt_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)           # ML caption or user-provided
+    detected_labels: Mapped[Optional[str]] = mapped_column(Text, nullable=True)    # comma-separated labels, e.g., "dog,ball,park"
     author_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
 
     author: Mapped['User'] = relationship(back_populates='photos')

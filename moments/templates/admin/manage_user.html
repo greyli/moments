@@ -57,7 +57,7 @@
   </thead>
   {% for user in users %}
   <tr>
-    <td><img src="{{ url_for('main.get_avatar', filename=user.avatar_s) }}"></td>
+    <td><img src="{{ url_for('main.get_avatar', filename=user.avatar_s) }}" alt="{{ user.name }}" width="250" height="250"></td>
     <td>{{ user.name }}<br>{{ user.username }}</td>
     <td>{{ user.email }}</td>
     <td>{{ user.role.name }}</td>
