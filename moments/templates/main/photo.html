@@ -14,6 +14,11 @@
           alt="{{ photo.alt_text or photo.description or 'Image' }}">
       </a>
       <span class="photo-bottom"></span>
+      {% if photo.detected_labels %}
+      <p class="mt-2 text-muted small">
+        Detected: {{ photo.detected_labels }}
+      </p>
+    {% endif %}    
     </div>
     {% if current_user.is_authenticated %}
       {% if current_user.is_collecting(photo) %}

@@ -1,7 +1,9 @@
 import click
+from flask import current_app
 
 from moments.core.extensions import db
-from moments.models import Role
+from moments.models import Role, Photo
+from moments.services.vision import analyze_image
 
 
 def register_commands(app):
@@ -56,3 +58,30 @@ def register_commands(app):
         fake_comment(comment)
         click.echo(f'Generated {comment} comments.')
         click.echo('Done.')
+
+    # NEW: backfill ML captions/labels for existing photos
+    @app.cli.command('reanalyze')
+    def reanalyze_command():
+        """Re-run vision analysis for photos missing caption/labels."""
+        updated = 0
+        photos = Photo.query.all()
+        for p in photos:
+            need_alt = not p.alt_text or p.alt_text == "Image"
+            need_labels = not p.detected_labels
+            if not (need_alt or need_labels):
+                continue
+
+            path = current_app.config['MOMENTS_UPLOAD_PATH'] / p.filename
+            try:
+                with open(path, "rb") as f:
+                    out = analyze_image(f.read())
+                if need_alt:
+                    p.alt_text = out.get('caption') or p.alt_text or "Image"
+                if need_labels and (out.get('labels') or []):
+                    p.detected_labels = ",".join(out['labels'])
+                updated += 1
+            except Exception:
+                # ignore unreadable files or API failures for this pass
+                pass
+        db.session.commit()
+        click.echo(f"Reanalyzed {updated} photo(s).")
