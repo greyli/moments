@@ -11,7 +11,7 @@
     <div class="photo">
       <a href="{{ url_for('.get_image', filename=photo.filename) }}" target="_blank">
         <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}"
-          alt="{{ photo.alt_text or photo.description or 'Image' }}">
+        alt="{{ photo.description or photo.alt_text or 'Image' }}">
           {% if photo.alt_text and not photo.description %}
           <span class="badge text-bg-secondary">Generated</span>
           {% endif %}        
