@@ -24,6 +24,14 @@ $ pdm install
 > [!TIP]
 > If you don't have PDM installed, you can create a virtual environment with `venv` and install dependencies with `pip install -r requirements.txt`.
 
+Setting up environment variables for azure congnitive services
+- create a (.env) file with:
+```
+VISION_KEY = YOUR_SUBSCRIPTION_KEY
+VISION_ENDPOINT = YOUR_AZURE_ENDPOINT
+```
+- get your key and endpoint by following the documentation - https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/quickstarts-sdk/image-analysis-client-library
+
 To initialize the app, run the `flask init-app` command:
 
 ```

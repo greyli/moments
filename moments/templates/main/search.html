@@ -29,7 +29,7 @@
         {{ user_card(item) }}
       {% else %}
       <a class="badge text-bg-light rounded-pill" href="{{ url_for('.show_tag', tag_id=item.id) }}">
-        {{ item.name }} {{ item.photos|length }}
+        {{ item.name }} {{ item.photos_count }}
       </a>
       {% endif %}
       {% endfor %}
